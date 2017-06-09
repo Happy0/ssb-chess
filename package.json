@@ -1,0 +1,16 @@
+{
+  "name": "skuttlebutt-chess",
+  "version": "1.0.0",
+  "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
+  "main": "index.js",
+  "dependencies": {
+    "scuttlebot": "10.0.0",
+    "chessground": "6.4.23",
+    "uuid": "3.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL-2.0"
+}
