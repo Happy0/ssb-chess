@@ -6,8 +6,8 @@ module.exports = (sbot) => {
 
   }
 
-  function makeMove(gameId, originSquare, destinationSquare) {
-
+  function makeMove(gameRootMessage, originSquare, destinationSquare) {
+    
   }
 
   return {

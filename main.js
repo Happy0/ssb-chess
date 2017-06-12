@@ -6,19 +6,18 @@ var homeDirectory = require('os').homedir();
 var ssbChessDirectory = homeDirectory + "/.ssb-chess/";
 
 var ssbChessKeys = ssbChessDirectory + "keys";
-var ssbDb = ssbChessDirectory + "/db"
+var ssbDb = ssbChessDirectory + "/db";
 
+var conf = require("./conf/config.json");
+
+// TODO: parameterise path or just use the ssb default
 var keys = ssbKeys.loadOrCreateSync(ssbChessKeys);
 
-var gameChallengeCtrl = require('./ctrl/game_challenge')(feed);
+var GameChallengeCtrl = require('./ssb_ctrl/game_challenge');
 
-ssbClient(keys, {
-  host: 'locahost',
-  port: 8080,
-  key: keys.id
-  },
+ssbClient(keys,
   function (err, sbot) {
-
+    GameChallengeCtrl(sbot);
   });
 
 

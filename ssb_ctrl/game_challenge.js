@@ -1,9 +1,8 @@
-const uuidV4 = require('uuid/v4');
-
 module.exports = (sbot) => {
 
+  const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
   function inviteToPlay(invitingPubKey, asWhite) {
-    const gameId = uuidV4();
 
     const post = {
       'type': 'ssb_chess_invite',
@@ -13,18 +12,18 @@ module.exports = (sbot) => {
     }
 
     sbot.publish(post, function(err,msg) {
-      console.log("Posting invite: " + msg);
+      console.log("Posting invite: " + console.dir(msg));
     });
   }
 
-  function acceptChallenge(gameId) {
+  function acceptChallenge(gameRootMessage) {
     const post = {
       'type': 'ssb_chess_invite_accept',
-      'gameId': gameId
+      'root': gameRootMessage
     }
 
     sbot.publish(post, function(err, msg) {
-      console.log("Accepting game invite: " + msg);
+      console.log("Accepting game invite: " + console.dir(msg));
     })
   }
 

@@ -1,0 +1,7 @@
+{
+  "keysFile": "~/.ssh-chess/keys",
+  "sbot": {
+    "host": "localhost",
+    "port": 8080
+  }
+}
