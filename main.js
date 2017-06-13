@@ -17,6 +17,10 @@ var GameChallengeCtrl = require('./ssb_ctrl/game_challenge');
 
 ssbClient(keys,
   function (err, sbot) {
+    if (err) {
+      console.log(err);
+    }
+
     GameChallengeCtrl(sbot);
   });
 

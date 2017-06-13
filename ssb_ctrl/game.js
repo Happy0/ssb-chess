@@ -2,10 +2,30 @@ const filter = require('pull-stream/throughs/filter')
 const pull = require("pull-stream/pull");
 const map = require("pull-stream/throughs/map");
 const collect = require("pull-stream/sinks/collect");
+const many = require('pull-many')
 
 module.exports = (sbot) => {
 
   const chessWorker = new Worker('../vendor/scalachessjs.js');
+
+  function getEndedGames(playerId) {
+    //TODO
+  }
+
+  function getGamesInProgressIds(playerId) {
+    const feedSource = sbot.createHistoryStream(playerId);
+    const invitesSentFilter = filter(msg => msg.value.content.type === "ssb_chess_invite");
+    const invitesAcceptedFilter = filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
+
+    const myInviteGameIds = pull(source, invitesSentFilter, map(msg => msg.key));
+    const inviteAcceptedIds = pull(source, invitesAcceptedFilter, map(msg => msg.value.root));
+
+
+    new Promise((resolve, reject) = {
+      pull(many(myInviteGameIds, inviteAcceptedIds), collect(resolve));
+    });
+
+  }
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
@@ -37,17 +57,32 @@ module.exports = (sbot) => {
           values: true
         });
 
+        const filterByPlayerMoves =
+          filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author));
+
+        const getPlayerToMove = players => {
+          const colourToMove = pgnMoves.length % 2 !== 0 ? "white": "black" ;
+          const playerIds = Object.keys(players);
+
+          for (var i = 0; i < playerIds.length; i++) {
+            if (players(playerIds[i]) === colourToMove) {
+              return playerIds[i];
+            }
+          }
+
+        };
+
         getPlayers(gameRootMessage).then(players => {
 
             pull(source,
               pull(
-                filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author)),
+                filterByPlayerMoves,
                 map(msg => msg.content.pgnMove)
               ),
               collect(pgns => resolve({
                 pgnMoves: pgnMoves,
-                whiteToMove: pgnMoves.length % 2 !== 0,
-                players
+                players: players,
+                toMove: getPlayerToMove(players)
               }));
             });
         });
@@ -69,6 +104,7 @@ module.exports = (sbot) => {
   }
 
   return {
+    getGamesInProgressIds: getGamesInProgressIds,
     getPlayers: getPlayers,
     getSituation: getSituation,
     makeMove: makeMove
