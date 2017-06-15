@@ -7,7 +7,8 @@
     "chessground": "6.4.23",
     "scuttlebot": "^10.0.0",
     "secure-scuttlebutt": "16.2.4",
-    "pull-stream": "3.6.0"
+    "pull-stream": "3.6.0",
+    "uuid": "3.0.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

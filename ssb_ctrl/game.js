@@ -77,10 +77,12 @@ module.exports = (sbot) => {
             pull(source,
               pull(
                 filterByPlayerMoves,
-                map(msg => msg.content.pgnMove)
+                map(msg => msg.content)
               ),
-              collect(pgns => resolve({
-                pgnMoves: pgnMoves,
+              collect(msgs => resolve({
+                pgnMoves: msgs.map(msg => msg.pgnMove),
+                origDests: msgs.map(msg => {orig: msg.org, dest: msg.dest}),
+                fen: msgs[msgs.length -1].fen,
                 players: players,
                 toMove: getPlayerToMove(players)
               }));
@@ -88,14 +90,15 @@ module.exports = (sbot) => {
         });
     }
 
-    function makeMove(gameRootMessage, ply, originSquare, destinationSquare, pgnMove) {
+    function makeMove(gameRootMessage, ply, originSquare, destinationSquare, pgnMove, fen) {
       const post = {
         type: 'ssb_chess_move',
         ply: ply,
         root: gameRootMessage,
         orig: originSquare,
         dest: destinationSquare,
-        pgnMove: pgnMove
+        pgnMove: pgnMove,
+        fen: fen
       }
 
       sbot.publish(post, function(err, msg) {

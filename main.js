@@ -21,7 +21,9 @@ ssbClient(keys,
       console.log(err);
     }
 
-    GameChallengeCtrl(sbot);
+    sbot.whoAmI((err,ident) => {
+      GameChallengeCtrl(sbot, ident.id);
+    })
   });
 
 
