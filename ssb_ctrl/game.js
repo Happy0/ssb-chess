@@ -21,7 +21,7 @@ module.exports = (sbot) => {
     const inviteAcceptedIds = pull(source, invitesAcceptedFilter, map(msg => msg.value.root));
 
 
-    new Promise((resolve, reject) = {
+    new Promise((resolve, reject) => {
       pull(many(myInviteGameIds, inviteAcceptedIds), collect(resolve));
     });
 
@@ -81,11 +81,11 @@ module.exports = (sbot) => {
               ),
               collect(msgs => resolve({
                 pgnMoves: msgs.map(msg => msg.pgnMove),
-                origDests: msgs.map(msg => {orig: msg.org, dest: msg.dest}),
+                origDests: msgs.map(msg => ({ 'orig': msg.org , 'dest': msg.dest })),
                 fen: msgs[msgs.length -1].fen,
                 players: players,
                 toMove: getPlayerToMove(players)
-              }));
+              })));
             });
         });
     }
@@ -102,7 +102,7 @@ module.exports = (sbot) => {
       }
 
       sbot.publish(post, function(err, msg) {
-          console.log("Posting move: " + console.dir(msg)));
+          console.log("Posting move: " + console.dir(msg));
       });
   }
 

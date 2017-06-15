@@ -45,14 +45,14 @@ module.exports = (sbot, myIdent) => {
                  originSquare,
                  destinationSquare,
                  e.data.payload.situation.fen,
-                 e.data.payload.situation.pgnMoves.last);
+                 e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]);
 
               // Return the new fen
               resolve(e.data.payload.situation.fen);
             }
         }
 
-        worker.addEventListener('message', handleMoveResponse});
+        worker.addEventListener('message', handleMoveResponse);
 
         const pgnMoves = situation.pgnMoves;
 

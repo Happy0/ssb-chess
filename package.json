@@ -5,9 +5,10 @@
   "main": "index.js",
   "dependencies": {
     "chessground": "6.4.23",
+    "neodoc": "^1.4.0",
+    "pull-stream": "3.6.0",
     "scuttlebot": "^10.0.0",
     "secure-scuttlebutt": "16.2.4",
-    "pull-stream": "3.6.0",
     "uuid": "3.0.1"
   },
   "scripts": {

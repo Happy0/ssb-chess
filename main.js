@@ -13,7 +13,9 @@ var conf = require("./conf/config.json");
 // TODO: parameterise path or just use the ssb default
 var keys = ssbKeys.loadOrCreateSync(ssbChessKeys);
 
-var GameChallengeCtrl = require('./ssb_ctrl/game_challenge');
+var GameCtrl = require('./ctrl/game');
+
+var CommandLine = require("./command_line")
 
 ssbClient(keys,
   function (err, sbot) {
@@ -22,7 +24,8 @@ ssbClient(keys,
     }
 
     sbot.whoAmI((err,ident) => {
-      GameChallengeCtrl(sbot, ident.id);
+      const gameCtrl = GameCtrl(sbot, ident.id);
+      const commandHandler = CommandLine(gameCtrl);
     })
   });
 
