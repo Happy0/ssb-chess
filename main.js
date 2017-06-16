@@ -22,19 +22,21 @@ ssbClient(keys,
     if (err) {
       console.log(err);
     }
-    
+
     sbot.whoami((err,ident) => {
       const gameCtrl = GameCtrl(sbot, ident.id);
       const commandHandler = CommandLine(gameCtrl);
+
+      // console.log("dfsfdsf");
+      // pull(
+      //   sbot.createFeedStream(),
+      //   pull.collect(function (err, ary) {
+      //     console.log("yoyo");
+      //     console.log(ary)
+      //   })
+      // )
     })
   });
 
-
-// stream all messages for all keypairs.
-// pull(
-//   ssb.createFeedStream(),
-//   pull.collect(function (err, ary) {
-//     console.log("yoyo");
-//     console.log(ary)
-//   })
-// )
+const pull = require("pull-stream");
+//stream all messages for all keypairs.

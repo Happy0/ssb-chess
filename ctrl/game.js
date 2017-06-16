@@ -5,7 +5,7 @@ const Worker = require("tiny-worker");
 
 module.exports = (sbot, myIdent) => {
 
-  const chessWorker = new Worker('vendor/scalachessjs.js');
+  const chessWorker = null;//new Worker('vendor/scalachessjs.js');
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot);
 
@@ -40,7 +40,10 @@ module.exports = (sbot, myIdent) => {
         const reqId = uuidV4();
 
         function handleMoveResponse(e) {
-          if (e.data.payload.reqid === reqId) {
+          if (e.data.payload.error) {
+            reject(e.data.payload.error);
+          }
+          else if (e.data.payload.reqid === reqId) {
             //TODO: make this more robust
               worker.removeEventListener('message', handleMoveResponse);
 

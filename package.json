@@ -5,12 +5,12 @@
   "main": "index.js",
   "dependencies": {
     "chessground": "6.4.23",
-    "neodoc": "^1.4.0",
+    "neodoc": "1.4.0",
     "pull-stream": "3.6.0",
-    "scuttlebot": "^10.0.5",
-    "secure-scuttlebutt": "16.2.4",
-    "tiny-worker": "^2.1.1",
-    "uuid": "3.0.1"
+    "scuttlebot": "10.0.5",
+    "secure-scuttlebutt": "16.3.3",
+    "tiny-worker": "2.1.1",
+    "uuid": "3.1.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
