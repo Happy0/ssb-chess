@@ -6,7 +6,7 @@ module.exports = (gameCtrl) => {
     return `
       Usage:
         ssb_chess invite <invitee_pub_key> <as_colour>
-        ssb_chess accept_invite <game id>
+        ssb_chess accept_invite <game_id>
 
         ssb_chess list_games
 
@@ -29,9 +29,17 @@ module.exports = (gameCtrl) => {
       gameCtrl.inviteToPlay(invitee, asColour);
     }
     else if (args["accept_invite"]) {
-      const gameId = args["game_id"];
+      const gameId = args["<game_id>"];
+      console.log("Game idarooni: " + gameId);
 
       gameCtrl.acceptChallenge(gameId);
+    }
+    else if (args["move"]) {
+      const gameId = args["<game_id>"];
+      const orig = args["<orig_square>"];
+      const dest = args["<dest_square>"];
+
+      gameCtrl.makeMove(gameId, orig, dest).then(result => console.dir(result));
     }
 
     //process.exit(1);

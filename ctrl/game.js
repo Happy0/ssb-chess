@@ -5,7 +5,7 @@ const Worker = require("tiny-worker");
 
 module.exports = (sbot, myIdent) => {
 
-  const chessWorker = null;//new Worker('vendor/scalachessjs.js');
+  const chessWorker = new Worker('vendor/scalachessjs.js');
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot);
 
@@ -45,7 +45,7 @@ module.exports = (sbot, myIdent) => {
           }
           else if (e.data.payload.reqid === reqId) {
             //TODO: make this more robust
-              worker.removeEventListener('message', handleMoveResponse);
+              chessWorker.removeEventListener('message', handleMoveResponse);
 
               gameSSBDao.makeMove(gameRootMessage,
                  e.data.payload.situation.ply,
@@ -59,11 +59,11 @@ module.exports = (sbot, myIdent) => {
             }
         }
 
-        worker.addEventListener('message', handleMoveResponse);
+        chessWorker.addEventListener('message', handleMoveResponse);
 
         const pgnMoves = situation.pgnMoves;
 
-        worker.postMessage({
+        chessWorker.postMessage({
           'topic': 'move',
           'payload': {
             'fen': 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
@@ -71,7 +71,7 @@ module.exports = (sbot, myIdent) => {
             'orig': originSquare,
             'dest': destinationSquare
           },
-          reqid: messageId
+          reqid: reqId
         });
 
       });

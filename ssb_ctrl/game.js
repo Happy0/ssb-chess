@@ -29,11 +29,11 @@ module.exports = (sbot) => {
     return new Promise((resolve, reject) => {
       sbot.get(gameRootMessage, function(error, result) {
         if (error) reject(error);
+        console.dir(result);
+        const authorId = result.author;
+        const invited = result.content.inviting;
 
-        const authorId = result.value.author;
-        const invited = result.value.content.inviting;
-
-        const authorColour = result.value.content.myColor ? result.value.content.myColor : "white";
+        const authorColour = result.content.myColor ? result.content.myColor : "white";
         const players = {
           authorId: authorColour,
           invited: authorColour === "white" ? "black" : "white"
@@ -58,12 +58,12 @@ module.exports = (sbot) => {
         const filterByPlayerMoves =
           filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author));
 
-        const getPlayerToMove = players => {
-          const colourToMove = pgnMoves.length % 2 !== 0 ? "white": "black" ;
+        const getPlayerToMove = (players, numMoves) => {
+          const colourToMove = numMoves% 2 !== 0 ? "white": "black" ;
           const playerIds = Object.keys(players);
 
           for (var i = 0; i < playerIds.length; i++) {
-            if (players(playerIds[i]) === colourToMove) {
+            if (players[playerIds[i]] === colourToMove) {
               return playerIds[i];
             }
           }
@@ -73,17 +73,19 @@ module.exports = (sbot) => {
         getPlayers(gameRootMessage).then(players => {
 
             pull(source,
-              pull(
                 filterByPlayerMoves,
-                map(msg => msg.content)
-              ),
-              collect(msgs => resolve({
-                pgnMoves: msgs.map(msg => msg.pgnMove),
-                origDests: msgs.map(msg => ({ 'orig': msg.org , 'dest': msg.dest })),
-                fen: msgs[msgs.length -1].fen,
-                players: players,
-                toMove: getPlayerToMove(players)
-              })));
+              collect(msgs => {
+                  if (!msgs) msgs = [];
+
+                  var pgnMoves = msgs.map(msg => msg.pgnMove);
+
+                  resolve({
+                  pgnMoves: pgnMoves,
+                  origDests: msgs.map(msg => ({ 'orig': msg.org , 'dest': msg.dest })),
+                  fen: msgs.length > 0 ? msgs[msgs.length -1].fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                  players: players,
+                  toMove: getPlayerToMove(players, pgnMoves.length)
+                })}));
             });
         });
     }

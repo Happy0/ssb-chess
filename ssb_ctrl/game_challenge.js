@@ -16,12 +16,14 @@ module.exports = (sbot) => {
   }
 
   function acceptChallenge(gameRootMessage) {
+    console.dir("Trying to accept: " + gameRootMessage);
     const post = {
       'type': 'ssb_chess_invite_accept',
       'root': gameRootMessage
     }
 
     sbot.publish(post, function(err, msg) {
+      console.log("Error while accepting game invite: " + console.dir(err));
       console.log("Accepting game invite: " + console.dir(msg));
     })
   }
