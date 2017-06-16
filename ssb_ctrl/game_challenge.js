@@ -7,7 +7,6 @@ module.exports = (sbot) => {
     const post = {
       'type': 'ssb_chess_invite',
       'inviting': invitingPubKey,
-      'gameId': gameId,
       'myColor': asWhite? 'white' : 'black'
     }
 
