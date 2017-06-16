@@ -6,8 +6,6 @@ const many = require('pull-many')
 
 module.exports = (sbot) => {
 
-  const chessWorker = new Worker('../vendor/scalachessjs.js');
-
   function getEndedGames(playerId) {
     //TODO
   }

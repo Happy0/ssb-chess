@@ -22,8 +22,8 @@ ssbClient(keys,
     if (err) {
       console.log(err);
     }
-
-    sbot.whoAmI((err,ident) => {
+    
+    sbot.whoami((err,ident) => {
       const gameCtrl = GameCtrl(sbot, ident.id);
       const commandHandler = CommandLine(gameCtrl);
     })

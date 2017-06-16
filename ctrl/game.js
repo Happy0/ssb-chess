@@ -1,10 +1,11 @@
 const GameChallenger = require("../ssb_ctrl/game_challenge");
 const GameSSBDao = require("../ssb_ctrl/game");
 const uuidV4 = require('uuid/v4');
+const Worker = require("tiny-worker");
 
 module.exports = (sbot, myIdent) => {
 
-  const chessWorker = new Worker('../vendor/scalachessjs.js');
+  const chessWorker = new Worker('vendor/scalachessjs.js');
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot);
 
