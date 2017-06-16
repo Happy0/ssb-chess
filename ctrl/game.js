@@ -34,6 +34,7 @@ module.exports = (sbot, myIdent) => {
       gameSSBDao.getSituation(gameRootMessage).then(situation => {
         if (situation.toMove !== myIdent) {
           reject("Not " + myIdent + " to move");
+          return;
         }
 
         // So that we know whether the message is intended for our listener
@@ -42,6 +43,7 @@ module.exports = (sbot, myIdent) => {
         function handleMoveResponse(e) {
           if (e.data.payload.error) {
             reject(e.data.payload.error);
+            return;
           }
           else if (e.data.reqid === reqId) {
             //TODO: make this more robust
