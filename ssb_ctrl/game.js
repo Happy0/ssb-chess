@@ -11,18 +11,17 @@ module.exports = (sbot) => {
   }
 
   function getGamesInProgressIds(playerId) {
-    const feedSource = sbot.createHistoryStream(playerId);
+    const myFeedSource = sbot.createHistoryStream(playerId);
     const invitesSentFilter = filter(msg => msg.value.content.type === "ssb_chess_invite");
     const invitesAcceptedFilter = filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
 
-    const myInviteGameIds = pull(source, invitesSentFilter, map(msg => msg.key));
-    const inviteAcceptedIds = pull(source, invitesAcceptedFilter, map(msg => msg.value.root));
+    const myInviteGameIds = pull(myFeedSource, invitesSentFilter, map(msg => msg.key));
+    const inviteAcceptedIds = pull(myFeedSource, invitesAcceptedFilter, map(msg => msg.value.root));
 
 
-    new Promise((resolve, reject) => {
-      pull(many(myInviteGameIds, inviteAcceptedIds), collect(resolve));
+    return new Promise((resolve, reject) => {
+      pull(many([myInviteGameIds, inviteAcceptedIds]), collect(x => resolve(x)));
     });
-
   }
 
   function getPlayers(gameRootMessage) {

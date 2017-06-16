@@ -17,6 +17,10 @@ module.exports = (sbot, myIdent) => {
     return gameChallenger.acceptChallenge(rootGameMessage);
   }
 
+  function getMyGamesInProgress() {
+    return gameSSBDao.getGamesInProgressIds(myIdent);
+  }
+
   function getGamesInProgressIds(playerId) {
     return gameSSBDao.getGamesInProgressIds(playerId);
   }
@@ -36,9 +40,8 @@ module.exports = (sbot, myIdent) => {
         const reqId = uuidV4();
 
         function handleMoveResponse(e) {
-            //TODO: make this more robust / move to a promise approach
-            if (e.data.payload.reqid === reqId) {
-
+          if (e.data.payload.reqid === reqId) {
+            //TODO: make this more robust
               worker.removeEventListener('message', handleMoveResponse);
 
               gameSSBDao.makeMove(gameRootMessage,
@@ -75,6 +78,7 @@ module.exports = (sbot, myIdent) => {
   return {
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
+    getMyGamesInProgress: getMyGamesInProgress,
     getGamesInProgressIds: getGamesInProgressIds,
     getSituation: getSituation,
     makeMove: makeMove
