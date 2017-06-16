@@ -30,7 +30,7 @@ module.exports = (sbot, myIdent) => {
   }
 
   function makeMove(gameRootMessage, originSquare, destinationSquare) {
-    return new Promise( (resole, reject) => {
+    return new Promise( (resolve, reject) => {
       gameSSBDao.getSituation(gameRootMessage).then(situation => {
         if (situation.toMove !== myIdent) {
           reject("Not " + myIdent + " to move");
@@ -43,9 +43,10 @@ module.exports = (sbot, myIdent) => {
           if (e.data.payload.error) {
             reject(e.data.payload.error);
           }
-          else if (e.data.payload.reqid === reqId) {
+          else if (e.data.reqid === reqId) {
             //TODO: make this more robust
-              chessWorker.removeEventListener('message', handleMoveResponse);
+
+              //chessWorker.removeEventListener('message', handleMoveResponse);
 
               gameSSBDao.makeMove(gameRootMessage,
                  e.data.payload.situation.ply,
@@ -56,6 +57,10 @@ module.exports = (sbot, myIdent) => {
 
               // Return the new fen
               resolve(e.data.payload.situation.fen);
+            }
+            else {
+              console.dir("Unexpected message: ");
+              console.dir(e);
             }
         }
 

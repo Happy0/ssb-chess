@@ -35,11 +35,11 @@ module.exports = (gameCtrl) => {
       gameCtrl.acceptChallenge(gameId);
     }
     else if (args["move"]) {
-      const gameId = args["<game_id>"];
+      const moveInGameId = args["<game_id>"];
       const orig = args["<orig_square>"];
       const dest = args["<dest_square>"];
 
-      gameCtrl.makeMove(gameId, orig, dest).then(result => console.dir(result));
+      gameCtrl.makeMove(moveInGameId, orig, dest).then(result => console.dir(result));
     }
 
     //process.exit(1);
