@@ -90,10 +90,10 @@ module.exports = (sbot) => {
             resolve({
               pgnMoves: pgnMoves,
               origDests: msgs.map(msg => ({
-                'orig': msg.org,
-                'dest': msg.dest
+                'orig': msg.value.content.orig,
+                'dest': msg.value.content.dest
               })),
-              fen: msgs.length > 0 ? msgs[msgs.length - 1].fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+              fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
               players: players,
               toMove: getPlayerToMove(players, pgnMoves.length)
             })
