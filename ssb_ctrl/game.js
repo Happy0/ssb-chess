@@ -29,10 +29,11 @@ module.exports = (sbot) => {
     return new Promise((resolve, reject) => {
       sbot.get(gameRootMessage, function(error, result) {
         if (error) reject(error);
+        
         const authorId = result.author;
         const invited = result.content.inviting;
 
-        const authorColour = result.content.myColor ? result.content.myColor : "white";
+        const authorColour = result.content.myColor === "white" ? result.content.myColor : "black";
         const players = {};
 
         players[authorId] = authorColour;
@@ -46,6 +47,8 @@ module.exports = (sbot) => {
   }
 
   function getSituation(gameRootMessage) {
+    //TODO: tidy this function up
+
     return new Promise((resolve, reject) => {
 
         const source = sbot.links({
@@ -58,7 +61,8 @@ module.exports = (sbot) => {
           filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author));
 
         const getPlayerToMove = (players, numMoves) => {
-          const colourToMove = numMoves% 2 !== 0 ? "white": "black" ;
+          const colourToMove = numMoves% 2 === 0 ? "white": "black" ;
+
           const playerIds = Object.keys(players);
 
           for (var i = 0; i < playerIds.length; i++) {
