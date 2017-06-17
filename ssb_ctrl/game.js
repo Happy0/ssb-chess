@@ -50,18 +50,20 @@ module.exports = (sbot) => {
   }
 
   function getSituation(gameRootMessage) {
-    //TODO: tidy this function up
+    //TODO: worra mess, tidy this function up
 
     return new Promise((resolve, reject) => {
 
       const source = sbot.links({
-        source: gameRootMessage,
-        keys: false,
-        values: true
+        dest: gameRootMessage,
+        values: true,
+        keys: false
       });
 
-      const filterByPlayerMoves =
-        filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author));
+      const filterByPlayerMoves = players =>
+        filter(msg => {
+          return msg.value.content.type === "ssb_chess_move" && players.hasOwnProperty(msg.value.author)
+        });
 
       const getPlayerToMove = (players, numMoves) => {
         const colourToMove = numMoves % 2 === 0 ? "white" : "black";
@@ -79,11 +81,11 @@ module.exports = (sbot) => {
       getPlayers(gameRootMessage).then(players => {
 
         pull(source,
-          filterByPlayerMoves,
-          collect(msgs => {
+          filterByPlayerMoves(players),
+          collect((err, msgs) => {
             if (!msgs) msgs = [];
 
-            var pgnMoves = msgs.map(msg => msg.pgnMove);
+            var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
             resolve({
               pgnMoves: pgnMoves,

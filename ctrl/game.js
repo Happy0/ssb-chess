@@ -32,39 +32,30 @@ module.exports = (sbot, myIdent) => {
   function makeMove(gameRootMessage, originSquare, destinationSquare) {
     // lol worra mess
 
-    function handleMoveResponse(e) {
+    // So that we know whether the message is intended for our listener
+    const reqId = uuidV4();
+
+    function handleMoveResponse(resolve, reject, e) {
       if (e.data.payload.error) {
         reject(e.data.payload.error);
       } else if (e.data.reqid === reqId) {
         //TODO: make this more robust
-
+        console.info("req");
         //chessWorker.removeEventListener('message', handleMoveResponse);
 
         gameSSBDao.makeMove(gameRootMessage,
           e.data.payload.situation.ply,
           originSquare,
           destinationSquare,
-          e.data.payload.situation.fen,
-          e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]);
-
-        const pgnMoves = situation.pgnMoves;
-
-        chessWorker.postMessage({
-          'topic': 'move',
-          'payload': {
-            'fen': 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-            'pgnMoves': pgnMoves,
-            'orig': originSquare,
-            'dest': destinationSquare
-          },
-          reqid: reqId
-        });
+          e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
+          e.data.payload.situation.fen);
 
         // Return the new fen
-        resolve(e.data.payload.situation.fen);
+        resolve(e.data.payload.situation);
       } else {
         console.dir("Unexpected message: ");
         console.dir(e);
+        reject(e);
       }
     }
 
@@ -73,11 +64,24 @@ module.exports = (sbot, myIdent) => {
         if (situation.toMove !== myIdent) {
           reject("Not " + myIdent + " to move");
         } else {
-          chessWorker.addEventListener('message', handleMoveResponse);
-        }
 
-        // So that we know whether the message is intended for our listener
-        const reqId = uuidV4();
+          const moveResultHandler = handleMoveResponse.bind(this, resolve, reject);
+
+          chessWorker.addEventListener('message', moveResultHandler);
+
+          const pgnMoves = situation.pgnMoves;
+          chessWorker.postMessage({
+            'topic': 'move',
+            'payload': {
+              'fen': 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+              'pgnMoves': pgnMoves,
+              'orig': originSquare,
+              'dest': destinationSquare
+            },
+            reqid: reqId
+          });
+
+        }
       });
     });
   }
