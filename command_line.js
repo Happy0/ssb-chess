@@ -41,7 +41,7 @@ module.exports = (gameCtrl) => {
       const orig = args["<orig_square>"];
       const dest = args["<dest_square>"];
 
-      gameCtrl.makeMove(moveInGameId, orig, dest).then(result => console.dir(result));
+      gameCtrl.makeMove(moveInGameId, orig, dest).then(result => console.dir(result)).catch(err => console.dir(err));
     }
   }
 

@@ -12,10 +12,12 @@ module.exports = (sbot) => {
   }
 
   function getGamesInProgressIds(playerId) {
-    const myFeedSource = sbot.createHistoryStream({id: playerId});
+    const myFeedSource = sbot.createHistoryStream({
+      id: playerId
+    });
 
     const invitesSentFilter = filter(msg => msg.value.content.type === "ssb_chess_invite");
-    const invitesAcceptedFilter = filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
+    const invitesAcceptedFilter = filter(msg => msg.value.content.type === "0");
 
     const myInviteGameIds = pull(myFeedSource, invitesSentFilter, map(msg => msg.key));
     const inviteAcceptedIds = pull(myFeedSource, invitesAcceptedFilter, map(msg => msg.value.root));
@@ -28,19 +30,20 @@ module.exports = (sbot) => {
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
       sbot.get(gameRootMessage, function(error, result) {
-        if (error) reject(error);
-        
-        const authorId = result.author;
-        const invited = result.content.inviting;
+        if (error) {
+          reject(error)
+        } else {
+          const authorId = result.author;
+          const invited = result.content.inviting;
 
-        const authorColour = result.content.myColor === "white" ? result.content.myColor : "black";
-        const players = {};
+          const authorColour = result.content.myColor === "white" ? result.content.myColor : "black";
+          const players = {};
 
-        players[authorId] = authorColour;
-        players[invited] = authorColour === "white" ? "black" : "white";
+          players[authorId] = authorColour;
+          players[invited] = authorColour === "white" ? "black" : "white";
 
-        resolve(players);
-
+          resolve(players);
+        }
       });
 
     })
@@ -51,62 +54,66 @@ module.exports = (sbot) => {
 
     return new Promise((resolve, reject) => {
 
-        const source = sbot.links({
-          source: gameRootMessage,
-          keys: false,
-          values: true
-        });
+      const source = sbot.links({
+        source: gameRootMessage,
+        keys: false,
+        values: true
+      });
 
-        const filterByPlayerMoves =
-          filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author));
+      const filterByPlayerMoves =
+        filter(msg => msg.type === "ssb_chess_move" && players.hasOwnProperty(msg.author));
 
-        const getPlayerToMove = (players, numMoves) => {
-          const colourToMove = numMoves% 2 === 0 ? "white": "black" ;
+      const getPlayerToMove = (players, numMoves) => {
+        const colourToMove = numMoves % 2 === 0 ? "white" : "black";
 
-          const playerIds = Object.keys(players);
+        const playerIds = Object.keys(players);
 
-          for (var i = 0; i < playerIds.length; i++) {
-            if (players[playerIds[i]] === colourToMove) {
-              return playerIds[i];
-            }
+        for (var i = 0; i < playerIds.length; i++) {
+          if (players[playerIds[i]] === colourToMove) {
+            return playerIds[i];
           }
+        }
 
-        };
+      };
 
-        getPlayers(gameRootMessage).then(players => {
+      getPlayers(gameRootMessage).then(players => {
 
-            pull(source,
-                filterByPlayerMoves,
-              collect(msgs => {
-                  if (!msgs) msgs = [];
+        pull(source,
+          filterByPlayerMoves,
+          collect(msgs => {
+            if (!msgs) msgs = [];
 
-                  var pgnMoves = msgs.map(msg => msg.pgnMove);
+            var pgnMoves = msgs.map(msg => msg.pgnMove);
 
-                  resolve({
-                  pgnMoves: pgnMoves,
-                  origDests: msgs.map(msg => ({ 'orig': msg.org , 'dest': msg.dest })),
-                  fen: msgs.length > 0 ? msgs[msgs.length -1].fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                  players: players,
-                  toMove: getPlayerToMove(players, pgnMoves.length)
-                })}));
-            });
-        });
+            resolve({
+              pgnMoves: pgnMoves,
+              origDests: msgs.map(msg => ({
+                'orig': msg.org,
+                'dest': msg.dest
+              })),
+              fen: msgs.length > 0 ? msgs[msgs.length - 1].fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+              players: players,
+              toMove: getPlayerToMove(players, pgnMoves.length)
+            })
+          }));
+      });
+    });
+  }
+
+  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, pgnMove, fen) {
+    const post = {
+      type: 'ssb_chess_move',
+      ply: ply,
+      root: gameRootMessage,
+      orig: originSquare,
+      dest: destinationSquare,
+      pgnMove: pgnMove,
+      fen: fen
     }
 
-    function makeMove(gameRootMessage, ply, originSquare, destinationSquare, pgnMove, fen) {
-      const post = {
-        type: 'ssb_chess_move',
-        ply: ply,
-        root: gameRootMessage,
-        orig: originSquare,
-        dest: destinationSquare,
-        pgnMove: pgnMove,
-        fen: fen
-      }
-
-      sbot.publish(post, function(err, msg) {
-          console.log("Posting move: " + console.dir(msg));
-      });
+    sbot.publish(post, function(err, msg) {
+      console.log("Posting move: " + console.dir(msg));
+    });
   }
 
   return {
