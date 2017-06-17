@@ -57,13 +57,12 @@ module.exports = (sbot) => {
       const source = sbot.links({
         dest: gameRootMessage,
         values: true,
-        keys: false
+        keys: false,
+        reverse: true
       });
 
       const filterByPlayerMoves = players =>
-        filter(msg => {
-          return msg.value.content.type === "ssb_chess_move" && players.hasOwnProperty(msg.value.author)
-        });
+        filter(msg => msg.value.content.type === "ssb_chess_move" && players.hasOwnProperty(msg.value.author));
 
       const getPlayerToMove = (players, numMoves) => {
         const colourToMove = numMoves % 2 === 0 ? "white" : "black";
