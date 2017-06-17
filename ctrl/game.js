@@ -73,7 +73,7 @@ module.exports = (sbot, myIdent) => {
           chessWorker.postMessage({
             'topic': 'move',
             'payload': {
-              'fen': 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+              'fen': situation.fen,
               'pgnMoves': pgnMoves,
               'orig': originSquare,
               'dest': destinationSquare
