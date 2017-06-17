@@ -5,7 +5,7 @@ module.exports = (gameCtrl) => {
   function usage() {
     return `
       Usage:
-        ssb_chess invite <invitee_pub_key> <as_colour>
+        ssb_chess invite <invitee_pub_key> <as_white>
         ssb_chess accept_invite <game_id>
 
         ssb_chess list_games
@@ -29,8 +29,15 @@ module.exports = (gameCtrl) => {
       gameCtrl.getSituation(situationGameId).then(situation => console.dir(situation));
     } else if (args["invite"]) {
       const invitee = args["<invitee_pub_key>"];
-      const asColour = args["<as_colour>"];
-      gameCtrl.inviteToPlay(invitee, asColour);
+      const asColour = args["<as_white>"];
+      console.log("asColour: " + asColour + " type: " + typeof(asColour));
+
+      if ( (asColour !== true) && (asColour !== false)) {
+        console.error("asWhite must be true or false");
+      }
+      else {
+        gameCtrl.inviteToPlay(invitee, asColour);
+      }
     } else if (args["accept_invite"]) {
       const gameId = args["<game_id>"];
       console.log("Game idarooni: " + gameId);
