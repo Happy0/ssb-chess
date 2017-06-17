@@ -29,15 +29,14 @@ module.exports = (sbot) => {
     return new Promise((resolve, reject) => {
       sbot.get(gameRootMessage, function(error, result) {
         if (error) reject(error);
-        console.dir(result);
         const authorId = result.author;
         const invited = result.content.inviting;
 
         const authorColour = result.content.myColor ? result.content.myColor : "white";
-        const players = {
-          authorId: authorColour,
-          invited: authorColour === "white" ? "black" : "white"
-        }
+        const players = {};
+
+        players[authorId] = authorColour;
+        players[invited] = authorColour === "white" ? "black" : "white";
 
         resolve(players);
 

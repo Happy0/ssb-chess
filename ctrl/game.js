@@ -30,43 +30,22 @@ module.exports = (sbot, myIdent) => {
   }
 
   function makeMove(gameRootMessage, originSquare, destinationSquare) {
-    return new Promise( (resolve, reject) => {
-      gameSSBDao.getSituation(gameRootMessage).then(situation => {
-        if (situation.toMove !== myIdent) {
-          reject("Not " + myIdent + " to move");
-          return;
-        }
+    // lol worra mess
 
-        // So that we know whether the message is intended for our listener
-        const reqId = uuidV4();
+    function handleMoveResponse(e) {
+      if (e.data.payload.error) {
+        reject(e.data.payload.error);
+      } else if (e.data.reqid === reqId) {
+        //TODO: make this more robust
 
-        function handleMoveResponse(e) {
-          if (e.data.payload.error) {
-            reject(e.data.payload.error);
-            return;
-          }
-          else if (e.data.reqid === reqId) {
-            //TODO: make this more robust
+        //chessWorker.removeEventListener('message', handleMoveResponse);
 
-              //chessWorker.removeEventListener('message', handleMoveResponse);
-
-              gameSSBDao.makeMove(gameRootMessage,
-                 e.data.payload.situation.ply,
-                 originSquare,
-                 destinationSquare,
-                 e.data.payload.situation.fen,
-                 e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]);
-
-              // Return the new fen
-              resolve(e.data.payload.situation.fen);
-            }
-            else {
-              console.dir("Unexpected message: ");
-              console.dir(e);
-            }
-        }
-
-        chessWorker.addEventListener('message', handleMoveResponse);
+        gameSSBDao.makeMove(gameRootMessage,
+          e.data.payload.situation.ply,
+          originSquare,
+          destinationSquare,
+          e.data.payload.situation.fen,
+          e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]);
 
         const pgnMoves = situation.pgnMoves;
 
@@ -81,6 +60,24 @@ module.exports = (sbot, myIdent) => {
           reqid: reqId
         });
 
+        // Return the new fen
+        resolve(e.data.payload.situation.fen);
+      } else {
+        console.dir("Unexpected message: ");
+        console.dir(e);
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      gameSSBDao.getSituation(gameRootMessage).then(situation => {
+        if (situation.toMove !== myIdent) {
+          reject("Not " + myIdent + " to move");
+        } else {
+          chessWorker.addEventListener('message', handleMoveResponse);
+        }
+
+        // So that we know whether the message is intended for our listener
+        const reqId = uuidV4();
       });
     });
   }
