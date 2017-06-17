@@ -57,8 +57,7 @@ module.exports = (sbot) => {
       const source = sbot.links({
         dest: gameRootMessage,
         values: true,
-        keys: false,
-        reverse: true
+        keys: false
       });
 
       const filterByPlayerMoves = players =>
@@ -83,6 +82,9 @@ module.exports = (sbot) => {
           filterByPlayerMoves(players),
           collect((err, msgs) => {
             if (!msgs) msgs = [];
+
+            // Sort in ascending ply so that we get a list of moves linearly
+            msgs = msgs.sort((a,b) => a.value.content.ply - b.value.content.ply);
 
             var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
