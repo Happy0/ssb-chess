@@ -69,7 +69,7 @@ module.exports = (sbot, myIdent) => {
     const messagesByInviteTypeSource = sbot.messagesByType({
       type: "ssb_chess_invite"
     });
-    const filterByMeAsInviteeThrough = pull.filter(msg => msg.value.inviting === myIdent);
+    const filterByMeAsInviteeThrough = pull.filter(msg => msg.value.content.inviting === myIdent);
     const invitingMeIdsThrough = pull(filterByMeAsInviteeThrough, mapGameIdThrough);
 
     return new Promise((resolve, reject) => {
