@@ -8,6 +8,8 @@ module.exports = (gameCtrl) => {
         ssb_chess invite <invitee_pub_key> <as_white>
         ssb_chess accept_invite <game_id>
 
+        ssb_chess pending_invites_sent
+
         ssb_chess list_games
         ssb_chess situation <game_id>
 
@@ -32,10 +34,9 @@ module.exports = (gameCtrl) => {
       const asColour = args["<as_white>"];
       console.log("asColour: " + asColour + " type: " + typeof(asColour));
 
-      if ( (asColour !== true) && (asColour !== false)) {
+      if ((asColour !== true) && (asColour !== false)) {
         console.error("asWhite must be true or false");
-      }
-      else {
+      } else {
         gameCtrl.inviteToPlay(invitee, asColour);
       }
     } else if (args["accept_invite"]) {
@@ -43,12 +44,17 @@ module.exports = (gameCtrl) => {
       console.log("Game idarooni: " + gameId);
 
       gameCtrl.acceptChallenge(gameId);
+    } else if (args["pending_invites_sent"]) {
+      gameCtrl.pendingChallengesSent().then(res => {
+        console.log("Pending invites: ");
+        console.dir(res);
+      });
     } else if (args["move"]) {
       const moveInGameId = args["<game_id>"];
       const orig = args["<orig_square>"];
       const dest = args["<dest_square>"];
 
-      gameCtrl.makeMove(moveInGameId, orig, dest).then(result => console.dir(result)).catch(err => "error: "+ console.dir(err));
+      gameCtrl.makeMove(moveInGameId, orig, dest).then(result => console.dir(result)).catch(err => "error: " + console.dir(err));
     }
   }
 

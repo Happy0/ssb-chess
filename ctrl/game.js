@@ -7,7 +7,7 @@ module.exports = (sbot, myIdent) => {
 
   const chessWorker = new Worker('vendor/scalachessjs.js');
   const gameSSBDao = GameSSBDao(sbot);
-  const gameChallenger = GameChallenger(sbot);
+  const gameChallenger = GameChallenger(sbot, myIdent);
 
   function inviteToPlay(playerKey, asWhite) {
     return gameChallenger.inviteToPlay(playerKey, asWhite)
@@ -15,6 +15,14 @@ module.exports = (sbot, myIdent) => {
 
   function acceptChallenge(rootGameMessage) {
     return gameChallenger.acceptChallenge(rootGameMessage);
+  }
+
+  function pendingChallengesSent() {
+    return gameChallenger.pendingChallengesSent();
+  }
+
+  function pendingChallengesReceived() {
+    return gameChallenger.pendingChallengesReceived();
   }
 
   function getMyGamesInProgress() {
@@ -89,6 +97,7 @@ module.exports = (sbot, myIdent) => {
   return {
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
+    pendingChallengesSent: pendingChallengesSent,
     getMyGamesInProgress: getMyGamesInProgress,
     getGamesInProgressIds: getGamesInProgressIds,
     getSituation: getSituation,
