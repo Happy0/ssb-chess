@@ -42,9 +42,11 @@ module.exports = (sbot, myIdent) => {
           reject(err);
         } else {
           const acceptedChallenges = challengeMessages.map(challengeMessage =>
-             getAcceptMessageIfExists(challengeMessage.id, challengeMessage.value.content.inviting));
+             getAcceptMessageIfExists(challengeMessage.key, challengeMessage.value.content.inviting));
 
-          const allChallenges = challengeMessages.map(challenge => challenge.id);
+          //console.dir(challengeMessages);
+
+          const allChallenges = challengeMessages.map(challenge => challenge.key);
 
           Promise.all(acceptedChallenges).then(acceptedIds => {
             const unacceptedChallenges = diffArrays(allChallenges, acceptedIds.filter(i => i != null));
@@ -80,7 +82,7 @@ module.exports = (sbot, myIdent) => {
             reject(err);
           } else {
             // Result is 'null' if no such message
-            var id = result != null? result.id : null;
+            var id = result != null? result.value.content.root : null;
             resolve(id);
           }
         }));
