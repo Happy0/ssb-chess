@@ -65,16 +65,20 @@ module.exports = (sbot, myIdent) => {
   function pendingChallengesReceived() {
     const filterByChallengeAcceptedThrough = pull.filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
     const mapGameIdThrough = pull.map(msg => msg.key);
+    const mapRootGameIdThrough = pull.map(msg => msg.value.content.root);
 
     const messagesByInviteTypeSource = sbot.messagesByType({
       type: "ssb_chess_invite"
     });
-    const filterByMeAsInviteeThrough = pull.filter(msg => msg.value.content.inviting === myIdent);
+    const filterByMeAsInviteeThrough = pull.filter(msg => {
+      //console.dir(msg.value);
+      return msg.value.content.inviting === myIdent
+    });
     const invitingMeIdsThrough = pull(filterByMeAsInviteeThrough, mapGameIdThrough);
 
     return new Promise((resolve, reject) => {
 
-      pull(myFeedSource, mapGameIdThrough, pull.collect((err1, challengesAcceptedIds) => {
+      pull(myFeedSource, pull(filterByChallengeAcceptedThrough, mapRootGameIdThrough), pull.collect((err1, challengesAcceptedIds) => {
 
         pull(messagesByInviteTypeSource, invitingMeIdsThrough, pull.collect( (err2, invitingMeIds) => {
 
