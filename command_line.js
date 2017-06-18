@@ -9,6 +9,7 @@ module.exports = (gameCtrl) => {
         ssb_chess accept_invite <game_id>
 
         ssb_chess pending_invites_sent
+        ssb_chess pending_invites_received
 
         ssb_chess list_games
         ssb_chess situation <game_id>
@@ -46,7 +47,12 @@ module.exports = (gameCtrl) => {
       gameCtrl.acceptChallenge(gameId);
     } else if (args["pending_invites_sent"]) {
       gameCtrl.pendingChallengesSent().then(res => {
-        console.log("Pending invites: ");
+        console.log("Pending invites sent: ");
+        console.dir(res);
+      });
+    } else if (args["pending_invites_received"]) {
+      gameCtrl.pendingChallengesReceived().then(res => {
+        console.log("Pending invites received: ");
         console.dir(res);
       });
     } else if (args["move"]) {
