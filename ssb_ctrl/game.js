@@ -2,29 +2,11 @@ const filter = require('pull-stream/throughs/filter')
 const pull = require("pull-stream");
 const map = require("pull-stream/throughs/map");
 const collect = require("pull-stream/sinks/collect");
-const many = require('pull-many');
-const cat = require('pull-cat')
 
 module.exports = (sbot) => {
 
   function getEndedGames(playerId) {
     //TODO
-  }
-
-  function getGamesInProgressIds(playerId) {
-    const myFeedSource = sbot.createHistoryStream({
-      id: playerId
-    });
-
-    const invitesSentFilter = filter(msg => msg.value.content.type === "ssb_chess_invite");
-    const invitesAcceptedFilter = filter(msg => msg.value.content.type === "0");
-
-    const myInviteGameIds = pull(myFeedSource, invitesSentFilter, map(msg => msg.key));
-    const inviteAcceptedIds = pull(myFeedSource, invitesAcceptedFilter, map(msg => msg.value.root));
-
-    return new Promise((resolve, reject) => {
-      pull(cat([myInviteGameIds, inviteAcceptedIds]), pull.collect((err, res) => resolve(res)));
-    });
   }
 
   function getPlayers(gameRootMessage) {
@@ -120,7 +102,6 @@ module.exports = (sbot) => {
   }
 
   return {
-    getGamesInProgressIds: getGamesInProgressIds,
     getPlayers: getPlayers,
     getSituation: getSituation,
     makeMove: makeMove

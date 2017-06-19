@@ -8,6 +8,11 @@ module.exports = (sbot, myIdent) => {
     id: myIdent
   });
 
+  const invitesSentFilter = pull.filter(msg => msg.value.content.type === "ssb_chess_invite");
+
+  const filterByChallengeAcceptedThrough = pull.filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
+  const mapRootGameIdThrough = pull.map(msg => msg.value.content.root);
+
   function inviteToPlay(invitingPubKey, asWhite) {
 
     const post = {
@@ -62,10 +67,50 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
+  function sentInvitations(playerId) {
+    const feedSource = sbot.createHistoryStream({
+      id: playerId
+    });
+
+    console.log("hello")
+
+    return new Promise( (resolve, reject) => {
+      pull(feedSource, invitesSentFilter, pull.collect((err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+
+      }));
+    })
+  }
+
+  function getGamesInProgressIds(playerId) {
+    const feedSource = sbot.createHistoryStream({
+      id: playerId
+    });
+
+    return new Promise((resolve, reject) => {
+
+      const invitationsPromise = sentInvitations(playerId)
+        .then(sentInvites => Promise.all(sentInvites.map(msg=>
+          //console.log("msgarooni");
+          //console.dir(msg);
+          getAcceptMessageIfExists(msg.key, msg.value.content.inviting)   )));
+
+      const challengesAcceptedThrough = pull(filterByChallengeAcceptedThrough, mapRootGameIdThrough);
+
+      invitationsPromise
+        .then(acceptMessages => acceptMessages.filter(i => i != null))
+        .then(acceptedGameIds => {
+          pull(feedSource, challengesAcceptedThrough , pull.collect((err, res) => resolve(res.concat(acceptedGameIds))));
+        })
+    });
+  }
+
   function pendingChallengesReceived() {
-    const filterByChallengeAcceptedThrough = pull.filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
     const mapGameIdThrough = pull.map(msg => msg.key);
-    const mapRootGameIdThrough = pull.map(msg => msg.value.content.root);
 
     const messagesByInviteTypeSource = sbot.messagesByType({
       type: "ssb_chess_invite"
@@ -128,6 +173,7 @@ module.exports = (sbot, myIdent) => {
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
     pendingChallengesSent: pendingChallengesSent,
-    pendingChallengesReceived: pendingChallengesReceived
+    pendingChallengesReceived: pendingChallengesReceived,
+    getGamesInProgressIds: getGamesInProgressIds
   }
 }

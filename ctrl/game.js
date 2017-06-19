@@ -26,11 +26,11 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getMyGamesInProgress() {
-    return gameSSBDao.getGamesInProgressIds(myIdent);
+    return gameChallenger.getGamesInProgressIds(myIdent);
   }
 
   function getGamesInProgressIds(playerId) {
-    return gameSSBDao.getGamesInProgressIds(playerId);
+    return gameChallenger.getGamesInProgressIds(playerId);
   }
 
   function getSituation(gameId) {
