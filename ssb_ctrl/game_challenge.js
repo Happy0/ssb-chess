@@ -40,7 +40,6 @@ module.exports = (sbot, myIdent) => {
   }
 
   function pendingChallengesSent() {
-
     const filterByChallengeSentThrough = pull.filter(msg => msg.value.content.type === "ssb_chess_invite");
 
     return new Promise((resolve, reject) => {
@@ -49,16 +48,21 @@ module.exports = (sbot, myIdent) => {
           reject(err);
         } else {
           const acceptedChallenges = challengeMessages.map(challengeMessage =>
-            getAcceptMessageIfExists(challengeMessage.key, challengeMessage.value.content.inviting));
+            getAcceptMessageIfExists(challengeMessage.key,
+              challengeMessage.value.content.inviting)
+            );
 
           //console.dir(challengeMessages);
 
-          const allChallenges = challengeMessages.map(challenge => challenge.key);
+          //const allChallenges = challengeMessages.map(challenge => challenge.key);
 
-          Promise.all(acceptedChallenges).then(acceptedIds => {
-            const unacceptedChallenges = diffArrays(allChallenges, acceptedIds.filter(i => i != null));
+          Promise.all(acceptedChallenges)
+            .then(acceptedIds => acceptedIds.filter(a => a != null))
+            .then(acceptedIds => {
 
-            resolve(unacceptedChallenges);
+            const unacceptedChallenges = challengeMessages.filter(challenge => acceptedIds.indexOf(challenge.key) === -1 );
+
+            resolve(unacceptedChallenges.map(getInvitationSummary));
           });
 
         }
@@ -67,12 +71,24 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
+  function getInvitationSummary(gameInviteMessage) {
+    const inviteSentBy = gameInviteMessage.value.author;
+    const invitee = gameInviteMessage.value.content.inviting;
+    const inviterPlayingAs = gameInviteMessage.value.content.myColor;
+
+    const invitation = {
+      sentBy: inviteSentBy,
+      inviting: invitee,
+      inviterPlayingAs: inviterPlayingAs
+    }
+
+    return invitation;
+  }
+
   function sentInvitations(playerId) {
     const feedSource = sbot.createHistoryStream({
       id: playerId
     });
-
-    console.log("hello")
 
     return new Promise( (resolve, reject) => {
       pull(feedSource, invitesSentFilter, pull.collect((err, res) => {
@@ -119,21 +135,20 @@ module.exports = (sbot, myIdent) => {
       //console.dir(msg.value);
       return msg.value.content.inviting === myIdent
     });
-    const invitingMeIdsThrough = pull(filterByMeAsInviteeThrough, mapGameIdThrough);
 
     return new Promise((resolve, reject) => {
 
       pull(myFeedSource, pull(filterByChallengeAcceptedThrough, mapRootGameIdThrough), pull.collect((err1, challengesAcceptedIds) => {
 
-        pull(messagesByInviteTypeSource, invitingMeIdsThrough, pull.collect( (err2, invitingMeIds) => {
+        pull(messagesByInviteTypeSource, filterByMeAsInviteeThrough, pull.collect( (err2, invitingMes) => {
 
           if (err1) {
             reject(err1);
           } else if (err2) {
             reject(err2);
           } else {
-            const myInvitesPending = diffArrays(invitingMeIds, challengesAcceptedIds);
-            resolve(myInvitesPending);
+            const myInvitesPending = invitingMes.filter(invitation => challengesAcceptedIds.indexOf(invitation.key) === -1)
+            resolve(myInvitesPending.map(getInvitationSummary));
           }
 
         }));
@@ -141,12 +156,6 @@ module.exports = (sbot, myIdent) => {
     });
 
   }
-
-  function diffArrays(arr1, arr2) {
-    return arr1.filter(function(i) {
-      return arr2.indexOf(i) < 0;
-    });
-  };
 
   function getAcceptMessageIfExists(rootGameId, inviteSentTo) {
     return new Promise((resolve, reject) => {
@@ -172,6 +181,7 @@ module.exports = (sbot, myIdent) => {
   return {
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
+    getInvitationSummary: getInvitationSummary,
     pendingChallengesSent: pendingChallengesSent,
     pendingChallengesReceived: pendingChallengesReceived,
     getGamesInProgressIds: getGamesInProgressIds
