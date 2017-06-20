@@ -75,11 +75,14 @@ module.exports = (sbot, myIdent) => {
     const inviteSentBy = gameInviteMessage.value.author;
     const invitee = gameInviteMessage.value.content.inviting;
     const inviterPlayingAs = gameInviteMessage.value.content.myColor;
+    const timeStamp = gameInviteMessage.value.timestamp;
 
     const invitation = {
+      gameId: gameInviteMessage.key,
       sentBy: inviteSentBy,
       inviting: invitee,
-      inviterPlayingAs: inviterPlayingAs
+      inviterPlayingAs: inviterPlayingAs,
+      timeStamp: timeStamp
     }
 
     return invitation;
