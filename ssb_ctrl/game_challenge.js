@@ -10,7 +10,7 @@ module.exports = (sbot, myIdent) => {
 
   const invitesSentFilter = pull.filter(msg => msg.value.content.type === "ssb_chess_invite");
 
-  const filterByChallengeAcceptedThrough = pull.filter(msg => msg.value.content.type === "ssb_chess_invite_accept");
+  const filterByChallengeAcceptedThrough = pull.filter(msg => msg.value.content.type === "ssb_chess_invite_accept" && msg.value.content.root != null);
   const mapRootGameIdThrough = pull.map(msg => msg.value.content.root);
 
   function inviteToPlay(invitingPubKey, asWhite) {

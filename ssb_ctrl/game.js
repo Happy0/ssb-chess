@@ -31,6 +31,27 @@ module.exports = (sbot) => {
     })
   }
 
+  /*
+   * Return just the FEN, players, and who's move it is.
+   * This might be used for a miniboard view of a game, for example.
+  */
+  function getSmallGameSummary(gameRootMessage) {
+    // For now this just calls through to 'getSituation' - but we could maybe do something
+    // more efficient in the future.by just looking at the ply of the last move and the
+    // players from the original message, etc.
+
+    return getSituation(gameRootMessage).then(gameSituation => {
+      const summary = {
+        gameId: gameSituation.gameId,
+        fen: gameSituation.fen,
+        players: gameSituation.players,
+        toMove: gameSituation.toMove
+      }
+
+      return summary;
+    });
+  }
+
   function getSituation(gameRootMessage) {
     //TODO: worra mess, tidy this function up
 
@@ -71,6 +92,7 @@ module.exports = (sbot) => {
             var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
             resolve({
+              gameId: gameRootMessage,
               pgnMoves: pgnMoves,
               origDests: msgs.map(msg => ({
                 'orig': msg.value.content.orig,
@@ -104,6 +126,7 @@ module.exports = (sbot) => {
   return {
     getPlayers: getPlayers,
     getSituation: getSituation,
+    getSmallGameSummary: getSmallGameSummary,
     makeMove: makeMove
   }
 
