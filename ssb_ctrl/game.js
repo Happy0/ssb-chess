@@ -118,9 +118,16 @@ module.exports = (sbot) => {
       fen: fen
     }
 
-    sbot.publish(post, function(err, msg) {
-      console.log("Posting move: " + console.dir(msg));
-    });
+    return new Promise((resolve, reject) => {
+      sbot.publish(post, function(err, msg) {
+        if (err) {
+          reject(err);
+        } else {
+          console.log("Posting move: " + console.dir(msg));
+          resolve(msg);
+        }
+      });
+    })
   }
 
   return {

@@ -3,108 +3,117 @@ const GameSSBDao = require("../ssb_ctrl/game");
 const uuidV4 = require('uuid/v4');
 const Worker = require("tiny-worker");
 
+var PubSub = require('pubsub-js');
+
 module.exports = (sbot, myIdent) => {
 
-  const chessWorker = new Worker('vendor/scalachessjs.js');
-  const gameSSBDao = GameSSBDao(sbot);
-  const gameChallenger = GameChallenger(sbot, myIdent);
+    const chessWorker = new Worker('vendor/scalachessjs.js');
+    const gameSSBDao = GameSSBDao(sbot);
+    const gameChallenger = GameChallenger(sbot, myIdent);
 
-  function inviteToPlay(playerKey, asWhite) {
-    return gameChallenger.inviteToPlay(playerKey, asWhite)
-  }
-
-  function acceptChallenge(rootGameMessage) {
-    return gameChallenger.acceptChallenge(rootGameMessage);
-  }
-
-  function pendingChallengesSent() {
-    return gameChallenger.pendingChallengesSent();
-  }
-
-  function pendingChallengesReceived() {
-    return gameChallenger.pendingChallengesReceived();
-  }
-
-  function getMyGamesInProgress() {
-    return this.getGamesInProgressIds(myIdent);
-  }
-
-  function getGamesInProgressIds(playerId) {
-    return gameChallenger.getGamesInProgressIds(playerId).then(gamesInProgress => {
-      return Promise.all(gamesInProgress.map(gameSSBDao.getSmallGameSummary));
-    });
-  }
-
-  function getSituation(gameId) {
-    return gameSSBDao.getSituation(gameId);
-  }
-
-  function makeMove(gameRootMessage, originSquare, destinationSquare) {
-    // lol worra mess
-
-    // So that we know whether the message is intended for our listener
-    const reqId = uuidV4();
-
-    function handleMoveResponse(resolve, reject, e) {
-      if (e.data.payload.error) {
-        reject(e.data.payload.error);
-      } else if (e.data.reqid === reqId) {
-        //TODO: make this more robust
-        console.info("req");
-        //chessWorker.removeEventListener('message', handleMoveResponse);
-
-        gameSSBDao.makeMove(gameRootMessage,
-          e.data.payload.situation.ply,
-          originSquare,
-          destinationSquare,
-          e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
-          e.data.payload.situation.fen);
-
-        // Return the new fen
-        resolve(e.data.payload.situation);
-      } else {
-        console.dir("Unexpected message: ");
-        console.dir(e);
-        reject(e);
-      }
+    function inviteToPlay(playerKey, asWhite) {
+      return gameChallenger.inviteToPlay(playerKey, asWhite)
     }
 
-    return new Promise((resolve, reject) => {
+    function acceptChallenge(rootGameMessage) {
+      return gameChallenger.acceptChallenge(rootGameMessage);
+    }
+
+    function pendingChallengesSent() {
+      return gameChallenger.pendingChallengesSent();
+    }
+
+    function pendingChallengesReceived() {
+      return gameChallenger.pendingChallengesReceived();
+    }
+
+    function getMyGamesInProgress() {
+      return getGamesInProgressIds(myIdent);
+    }
+
+    // todo: this returns summaries, not ids: rename.
+    function getGamesInProgressIds(playerId) {
+      return gameChallenger.getGamesInProgressIds(playerId).then(gamesInProgress => {
+        return Promise.all(gamesInProgress.map(gameSSBDao.getSmallGameSummary));
+      });
+    }
+
+    function getGamesWhereMyMove() {
+      return getMyGamesInProgress().then(myGamesSummaries =>
+        myGamesSummaries.filter(summary => summary.toMove === myIdent)
+      )
+    }
+
+    function getSituation(gameId) {
+      return gameSSBDao.getSituation(gameId);
+    }
+
+    function makeMove(gameRootMessage, originSquare, destinationSquare) {
+
       gameSSBDao.getSituation(gameRootMessage).then(situation => {
-        if (situation.toMove !== myIdent) {
-          reject("Not " + myIdent + " to move");
+          if (situation.toMove !== myIdent) {
+            console.log("Not " + myIdent + " to move");
+          } else {
+
+            const pgnMoves = situation.pgnMoves;
+            chessWorker.postMessage({
+              'topic': 'move',
+              'payload': {
+                'fen': situation.fen,
+                'pgnMoves': pgnMoves,
+                'orig': originSquare,
+                'dest': destinationSquare
+              },
+              reqid: {
+                gameRootMessage: gameRootMessage,
+                originSquare: originSquare,
+                destinationSquare: destinationSquare
+              }
+
+            });
+
+          }
+        });
+      }
+
+      function handleMoveResponse(e) {
+        if (e.data.payload.error) {
+          console.log("move error");
+          console.dir(e);
+          PubSub.publish("move_error", e.data.payload.error);
         } else {
 
-          const moveResultHandler = handleMoveResponse.bind(this, resolve, reject);
+          // This is a hack. Reqid is meant to be used for a string to identity
+          // which request the response game from.
+          const gameRootMessage = e.data.reqid.gameRootMessage;
+          const originSquare = e.data.reqid.originSquare;
+          const destinationSquare = e.data.reqid.destinationSquare;
 
-          chessWorker.addEventListener('message', moveResultHandler);
-
-          const pgnMoves = situation.pgnMoves;
-          chessWorker.postMessage({
-            'topic': 'move',
-            'payload': {
-              'fen': situation.fen,
-              'pgnMoves': pgnMoves,
-              'orig': originSquare,
-              'dest': destinationSquare
-            },
-            reqid: reqId
+          gameSSBDao.makeMove(
+            gameRootMessage,
+            e.data.payload.situation.ply,
+            originSquare,
+            destinationSquare,
+            e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
+            e.data.payload.situation.fen
+          ).then(dc => {
+            getSituation(gameRootMessage).then(situation => PubSub.publish("move", situation));
           });
-
         }
-      });
-    });
-  }
+      }
 
-  return {
-    inviteToPlay: inviteToPlay,
-    acceptChallenge: acceptChallenge,
-    pendingChallengesSent: pendingChallengesSent,
-    pendingChallengesReceived: pendingChallengesReceived,
-    getMyGamesInProgress: getMyGamesInProgress,
-    getGamesInProgressIds: getGamesInProgressIds,
-    getSituation: getSituation,
-    makeMove: makeMove
-  }
+      chessWorker.addEventListener('message', handleMoveResponse);
 
-}
+      return {
+        inviteToPlay: inviteToPlay,
+        acceptChallenge: acceptChallenge,
+        getGamesWhereMyMove: getGamesWhereMyMove,
+        pendingChallengesSent: pendingChallengesSent,
+        pendingChallengesReceived: pendingChallengesReceived,
+        getMyGamesInProgress: getMyGamesInProgress,
+        getGamesInProgressIds: getGamesInProgressIds,
+        getSituation: getSituation,
+        makeMove: makeMove
+      }
+
+    }

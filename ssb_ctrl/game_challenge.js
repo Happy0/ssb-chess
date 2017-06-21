@@ -34,8 +34,13 @@ module.exports = (sbot, myIdent) => {
     }
 
     sbot.publish(post, function(err, msg) {
-      console.log("Error while accepting game invite: " + console.dir(err));
-      console.log("Accepting game invite: " + console.dir(msg));
+      if (err) {
+        console.log("Error while accepting game invite: ");
+        console.dir(err);
+      } else {
+        console.log("Accepting game invite: ");
+        console.dir(msg);
+      }
     })
   }
 
