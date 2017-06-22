@@ -1,0 +1,3 @@
+[submodule "vendor/scalachessjs"]
+	path = vendor/scalachessjs
+	url = https://github.com/veloce/scalachessjs.git

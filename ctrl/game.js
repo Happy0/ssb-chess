@@ -7,7 +7,7 @@ var PubSub = require('pubsub-js');
 
 module.exports = (sbot, myIdent) => {
 
-    const chessWorker = new Worker('vendor/scalachessjs.js');
+    const chessWorker = new Worker('vendor/scalachessjs/scalachess.js');
     const gameSSBDao = GameSSBDao(sbot);
     const gameChallenger = GameChallenger(sbot, myIdent);
 
