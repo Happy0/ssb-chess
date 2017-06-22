@@ -24,47 +24,44 @@ module.exports = (gameCtrl) => {
 
     if (args["list_games"]) {
       gameCtrl.getMyGamesInProgress().then(gameIds => {
-        console.log("games:");
         gameIds.forEach(console.dir);
-        console.log(gameIds.length);
-      });
+      }).then(() => process.exit(1));
     } else if (args["list_games_my_move"]) {
-      gameCtrl.getGamesWhereMyMove().then(summaries => console.dir(summaries));
-    }else if (args["situation"]) {
+      gameCtrl.getGamesWhereMyMove().then(summaries =>
+        console.dir(summaries)).then(() => process.exit(1));
+    } else if (args["situation"]) {
       const situationGameId = args["<game_id>"];
 
-      gameCtrl.getSituation(situationGameId).then(situation => console.dir(situation));
+      gameCtrl.getSituation(situationGameId).then(situation =>
+         console.dir(situation)).then(() => process.exit(1));
     } else if (args["invite"]) {
       const invitee = args["<invitee_pub_key>"];
       const asColour = args["<as_white>"];
-      console.log("asColour: " + asColour + " type: " + typeof(asColour));
 
       if ((asColour !== true) && (asColour !== false)) {
         console.error("asWhite must be true or false");
       } else {
-        gameCtrl.inviteToPlay(invitee, asColour);
+        gameCtrl.inviteToPlay(invitee, asColour).then(() =>
+         console.dir("Invite sent.")).then(() => process.exit(1));
       }
     } else if (args["accept_invite"]) {
       const gameId = args["<game_id>"];
-      console.log("Game idarooni: " + gameId);
 
-      gameCtrl.acceptChallenge(gameId);
+      gameCtrl.acceptChallenge(gameId).then(() =>
+       console.log("Invite accepted.")).then(() => process.exit(1));
     } else if (args["pending_invites_sent"]) {
-      gameCtrl.pendingChallengesSent().then(res => {
-        console.log("Pending invites sent: ");
-        console.dir(res);
-      });
+      gameCtrl.pendingChallengesSent().then((res) =>
+       console.dir(res)).then(() => process.exit(1));
     } else if (args["pending_invites_received"]) {
       gameCtrl.pendingChallengesReceived().then(res => {
-        console.log("Pending invites received: ");
         console.dir(res);
-      });
+      }).then(() => process.exit(1));
     } else if (args["move"]) {
       const moveInGameId = args["<game_id>"];
       const orig = args["<orig_square>"];
       const dest = args["<dest_square>"];
 
-      gameCtrl.makeMove(moveInGameId, orig, dest); //.then(result => console.dir(result)).catch(err => "error: " + console.dir(err));
+      gameCtrl.makeMove(moveInGameId, orig, dest);
     }
   }
 
@@ -73,10 +70,13 @@ module.exports = (gameCtrl) => {
       console.log("move");
       console.dir(data);
     } else if (msg === "move_error") {
-
+      console.log("Move error: ");
+      console.dir(msg);
     } else {
       console.dir("Unexpected message: " + msg);
     }
+
+    process.exit(1);
   })
 
   const args = neodoc.run(usage());

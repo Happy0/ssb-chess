@@ -21,8 +21,14 @@ module.exports = (sbot, myIdent) => {
       'myColor': asWhite ? 'white' : 'black'
     }
 
-    sbot.publish(post, function(err, msg) {
-      console.log("Posting invite: " + console.dir(msg));
+    return new Promise( (resolve, reject) => {
+      sbot.publish(post, function(err, msg) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(msg);
+        }
+      });
     });
   }
 
@@ -33,15 +39,15 @@ module.exports = (sbot, myIdent) => {
       'root': gameRootMessage
     }
 
-    sbot.publish(post, function(err, msg) {
-      if (err) {
-        console.log("Error while accepting game invite: ");
-        console.dir(err);
-      } else {
-        console.log("Accepting game invite: ");
-        console.dir(msg);
-      }
-    })
+    return new Promise( (resolve, reject) => {
+      sbot.publish(post, function(err, msg) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(msg);
+        }
+      });
+    });
   }
 
   function pendingChallengesSent() {

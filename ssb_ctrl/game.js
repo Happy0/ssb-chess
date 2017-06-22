@@ -123,7 +123,6 @@ module.exports = (sbot) => {
         if (err) {
           reject(err);
         } else {
-          console.log("Posting move: " + console.dir(msg));
           resolve(msg);
         }
       });
