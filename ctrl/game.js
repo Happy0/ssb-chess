@@ -32,8 +32,11 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getGamesInProgress(playerId) {
-    return gameChallenger.getGamesInProgressIds(playerId).then(gamesInProgress => {
-      return Promise.all(gamesInProgress.map(gameSSBDao.getSmallGameSummary));
+    return gameChallenger.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => {
+      return Promise.all(
+        gamesInProgress.map(gameSSBDao.getSmallGameSummary)
+      ).then(summaries =>
+        summaries.filter(summary => summary.status.status === "started"));
     });
   }
 
@@ -76,9 +79,9 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function swapKeyValues(json){
+  function swapKeyValues(json) {
     var ret = {};
-    for(var key in json){
+    for (var key in json) {
       ret[json[key]] = key;
     }
     return ret;
@@ -107,7 +110,7 @@ module.exports = (sbot, myIdent) => {
 
       var coloursToPlayer = swapKeyValues(players);
 
-      var winnerId = winner ?  coloursToPlayer[winner] : null;
+      var winnerId = winner ? coloursToPlayer[winner] : null;
 
       gameSSBDao.endGame(gameRootMessage, status.name, winnerId, fen, ply,
         originSquare, destinationSquare, pgnMove).then(dc => {

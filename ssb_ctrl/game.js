@@ -45,7 +45,8 @@ module.exports = (sbot) => {
         gameId: gameSituation.gameId,
         fen: gameSituation.fen,
         players: gameSituation.players,
-        toMove: gameSituation.toMove
+        toMove: gameSituation.toMove,
+        status: gameSituation.status
       }
 
       return summary;

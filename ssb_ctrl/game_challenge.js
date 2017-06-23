@@ -21,7 +21,7 @@ module.exports = (sbot, myIdent) => {
       'myColor': asWhite ? 'white' : 'black'
     }
 
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sbot.publish(post, function(err, msg) {
         if (err) {
           reject(err);
@@ -39,7 +39,7 @@ module.exports = (sbot, myIdent) => {
       'root': gameRootMessage
     }
 
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sbot.publish(post, function(err, msg) {
         if (err) {
           reject(err);
@@ -61,7 +61,7 @@ module.exports = (sbot, myIdent) => {
           const acceptedChallenges = challengeMessages.map(challengeMessage =>
             getAcceptMessageIfExists(challengeMessage.key,
               challengeMessage.value.content.inviting)
-            );
+          );
 
           //console.dir(challengeMessages);
 
@@ -71,10 +71,10 @@ module.exports = (sbot, myIdent) => {
             .then(acceptedIds => acceptedIds.filter(a => a != null))
             .then(acceptedIds => {
 
-            const unacceptedChallenges = challengeMessages.filter(challenge => acceptedIds.indexOf(challenge.key) === -1 );
+              const unacceptedChallenges = challengeMessages.filter(challenge => acceptedIds.indexOf(challenge.key) === -1);
 
-            resolve(unacceptedChallenges.map(getInvitationSummary));
-          });
+              resolve(unacceptedChallenges.map(getInvitationSummary));
+            });
 
         }
       }));
@@ -104,7 +104,7 @@ module.exports = (sbot, myIdent) => {
       id: playerId
     });
 
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       pull(feedSource, invitesSentFilter, pull.collect((err, res) => {
         if (err) {
           reject(err);
@@ -116,7 +116,7 @@ module.exports = (sbot, myIdent) => {
     })
   }
 
-  function getGamesInProgressIds(playerId) {
+  function getGamesAgreedToPlayIds(playerId) {
     const feedSource = sbot.createHistoryStream({
       id: playerId
     });
@@ -124,17 +124,17 @@ module.exports = (sbot, myIdent) => {
     return new Promise((resolve, reject) => {
 
       const invitationsPromise = sentInvitations(playerId)
-        .then(sentInvites => Promise.all(sentInvites.map(msg=>
+        .then(sentInvites => Promise.all(sentInvites.map(msg =>
           //console.log("msgarooni");
           //console.dir(msg);
-          getAcceptMessageIfExists(msg.key, msg.value.content.inviting)   )));
+          getAcceptMessageIfExists(msg.key, msg.value.content.inviting))));
 
       const challengesAcceptedThrough = pull(filterByChallengeAcceptedThrough, mapRootGameIdThrough);
 
       invitationsPromise
         .then(acceptMessages => acceptMessages.filter(i => i != null))
         .then(acceptedGameIds => {
-          pull(feedSource, challengesAcceptedThrough , pull.collect((err, res) => resolve(res.concat(acceptedGameIds))));
+          pull(feedSource, challengesAcceptedThrough, pull.collect((err, res) => resolve(res.concat(acceptedGameIds))));
         })
     });
   }
@@ -154,7 +154,7 @@ module.exports = (sbot, myIdent) => {
 
       pull(myFeedSource, pull(filterByChallengeAcceptedThrough, mapRootGameIdThrough), pull.collect((err1, challengesAcceptedIds) => {
 
-        pull(messagesByInviteTypeSource, filterByMeAsInviteeThrough, pull.collect( (err2, invitingMes) => {
+        pull(messagesByInviteTypeSource, filterByMeAsInviteeThrough, pull.collect((err2, invitingMes) => {
 
           if (err1) {
             reject(err1);
@@ -180,15 +180,16 @@ module.exports = (sbot, myIdent) => {
       });
 
       pull(source,
-        pull.find(msg => msg.value.content.type === "ssb_chess_invite_accept" && msg.value.author === inviteSentTo, (err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            // Result is 'null' if no such message
-            var id = result != null ? result.value.content.root : null;
-            resolve(id);
-          }
-        }));
+        pull.find(msg => msg.value.content.type === "ssb_chess_invite_accept" &&
+          msg.value.author === inviteSentTo, (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              // Result is 'null' if no such message
+              var id = result != null ? result.value.content.root : null;
+              resolve(id);
+            }
+          }));
     })
   }
 
@@ -198,6 +199,6 @@ module.exports = (sbot, myIdent) => {
     getInvitationSummary: getInvitationSummary,
     pendingChallengesSent: pendingChallengesSent,
     pendingChallengesReceived: pendingChallengesReceived,
-    getGamesInProgressIds: getGamesInProgressIds
+    getGamesAgreedToPlayIds: getGamesAgreedToPlayIds
   }
 }
