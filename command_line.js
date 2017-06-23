@@ -28,15 +28,16 @@ module.exports = (gameCtrl) => {
         gameIds.forEach(console.dir);
       }).then(() => process.exit(1));
     } else if (args["list_games_finished"]) {
-      gameCtrl.getMyFinishedGames().then(summaries =>
-        console.dir(summaries)).then(() => process.exit(1));
-    } else if (args["list_games_my_move"]) {
       const begin = args["<begin>"];
       const end = args["<end>"];
-
-      gameCtrl.getGamesWhereMyMove(begin, end).then(summaries =>
+      
+      gameCtrl.getMyFinishedGames(begin, end).then(summaries =>
         console.dir(summaries)).then(() => process.exit(1));
-        
+    } else if (args["list_games_my_move"]) {
+
+      gameCtrl.getGamesWhereMyMove().then(summaries =>
+        console.dir(summaries)).then(() => process.exit(1));
+
     } else if (args["situation"]) {
       const situationGameId = args["<game_id>"];
 
