@@ -52,6 +52,29 @@ module.exports = (sbot) => {
     });
   }
 
+  function getGameStatus(gameRootMessage) {
+    const source = sbot.links({
+      dest: gameRootMessage,
+      values: true,
+      keys: false
+    });
+
+    return new Promise((resolve, reject) => {
+      pull(source, pull.find(msg => msg.value.content.type === "ssb_chess_game_end", (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const status = {
+            status: result != null && result.value.content.status ? result.value.content.status : "started",
+            winner: result != null ? result.value.content.winner : null
+          }
+
+          resolve(status);
+        }
+      }));
+    });
+  }
+
   function getSituation(gameRootMessage) {
     //TODO: worra mess, tidy this function up
 
@@ -93,16 +116,19 @@ module.exports = (sbot) => {
 
             var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
-            resolve({
-              gameId: gameRootMessage,
-              pgnMoves: pgnMoves,
-              origDests: msgs.map(msg => ({
-                'orig': msg.value.content.orig,
-                'dest': msg.value.content.dest
-              })),
-              fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-              players: players,
-              toMove: getPlayerToMove(players, pgnMoves.length)
+            getGameStatus(gameRootMessage).then(status => {
+              resolve({
+                gameId: gameRootMessage,
+                pgnMoves: pgnMoves,
+                origDests: msgs.map(msg => ({
+                  'orig': msg.value.content.orig,
+                  'dest': msg.value.content.dest
+                })),
+                fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                players: players,
+                toMove: getPlayerToMove(players, pgnMoves.length),
+                status: status
+              })
             })
           }));
       });
