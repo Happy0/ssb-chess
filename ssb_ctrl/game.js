@@ -34,7 +34,7 @@ module.exports = (sbot) => {
   /*
    * Return just the FEN, players, and who's move it is.
    * This might be used for a miniboard view of a game, for example.
-  */
+   */
   function getSmallGameSummary(gameRootMessage) {
     // For now this just calls through to 'getSituation' - but we could maybe do something
     // more efficient in the future.by just looking at the ply of the last move and the
@@ -64,7 +64,9 @@ module.exports = (sbot) => {
       });
 
       const filterByPlayerMoves = players =>
-        filter(msg => msg.value.content.type === "ssb_chess_move" && players.hasOwnProperty(msg.value.author));
+        filter(msg => players.hasOwnProperty(msg.value.author) &&
+          (msg.value.content.type === "ssb_chess_move" ||
+            (msg.value.content.type === "ssb_chess_game_end" && msg.value.content.orig != null) ));
 
       const getPlayerToMove = (players, numMoves) => {
         const colourToMove = numMoves % 2 === 0 ? "white" : "black";
@@ -87,7 +89,7 @@ module.exports = (sbot) => {
             if (!msgs) msgs = [];
 
             // Sort in ascending ply so that we get a list of moves linearly
-            msgs = msgs.sort((a,b) => a.value.content.ply - b.value.content.ply);
+            msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
             var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
@@ -129,11 +131,47 @@ module.exports = (sbot) => {
     })
   }
 
+  function addPropertyIfNotEmpty(obj, key, value) {
+    if (value) {
+      obj[key] = value
+    }
+  }
+
+  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove) {
+    return new Promise((resolve, reject) => {
+
+      const post = {
+        type: 'ssb_chess_game_end',
+        status: status,
+        fen: fen,
+        root: gameRootMessage
+      };
+
+      // If game aborted or agreed to draw / claimed draw, some of these
+      // properties might not be relevant
+      addPropertyIfNotEmpty(post, "winner", winner);
+      addPropertyIfNotEmpty(post, "ply", ply);
+      addPropertyIfNotEmpty(post, "orig", originSquare);
+      addPropertyIfNotEmpty(post, "dest", destinationSquare);
+      addPropertyIfNotEmpty(post, "pgnMove", pgnMove);
+
+      sbot.publish(post, function(err, msg) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(msg);
+        }
+      });
+
+    });
+  }
+
   return {
     getPlayers: getPlayers,
     getSituation: getSituation,
     getSmallGameSummary: getSmallGameSummary,
-    makeMove: makeMove
+    makeMove: makeMove,
+    endGame: endGame
   }
 
 }

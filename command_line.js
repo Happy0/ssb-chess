@@ -72,6 +72,9 @@ module.exports = (gameCtrl) => {
     } else if (msg === "move_error") {
       console.log("Move error: ");
       console.dir(msg);
+    } else if (msg === "game_end") {
+      console.log("Game over");
+      console.dir(msg);
     } else {
       console.dir("Unexpected message: " + msg);
     }
