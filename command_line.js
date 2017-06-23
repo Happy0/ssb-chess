@@ -14,6 +14,7 @@ module.exports = (gameCtrl) => {
 
         ssb_chess list_games
         ssb_chess list_games_my_move
+        ssb_chess list_games_finished <begin> <end>
         ssb_chess situation <game_id>
 
         ssb_chess move <game_id> <orig_square> <dest_square>
@@ -26,14 +27,21 @@ module.exports = (gameCtrl) => {
       gameCtrl.getMyGamesInProgress().then(gameIds => {
         gameIds.forEach(console.dir);
       }).then(() => process.exit(1));
-    } else if (args["list_games_my_move"]) {
-      gameCtrl.getGamesWhereMyMove().then(summaries =>
+    } else if (args["list_games_finished"]) {
+      gameCtrl.getMyFinishedGames().then(summaries =>
         console.dir(summaries)).then(() => process.exit(1));
+    } else if (args["list_games_my_move"]) {
+      const begin = args["<begin>"];
+      const end = args["<end>"];
+
+      gameCtrl.getGamesWhereMyMove(begin, end).then(summaries =>
+        console.dir(summaries)).then(() => process.exit(1));
+        
     } else if (args["situation"]) {
       const situationGameId = args["<game_id>"];
 
       gameCtrl.getSituation(situationGameId).then(situation =>
-         console.dir(situation)).then(() => process.exit(1));
+        console.dir(situation)).then(() => process.exit(1));
     } else if (args["invite"]) {
       const invitee = args["<invitee_pub_key>"];
       const asColour = args["<as_white>"];
@@ -42,16 +50,16 @@ module.exports = (gameCtrl) => {
         console.error("asWhite must be true or false");
       } else {
         gameCtrl.inviteToPlay(invitee, asColour).then(() =>
-         console.dir("Invite sent.")).then(() => process.exit(1));
+          console.dir("Invite sent.")).then(() => process.exit(1));
       }
     } else if (args["accept_invite"]) {
       const gameId = args["<game_id>"];
 
       gameCtrl.acceptChallenge(gameId).then(() =>
-       console.log("Invite accepted.")).then(() => process.exit(1));
+        console.log("Invite accepted.")).then(() => process.exit(1));
     } else if (args["pending_invites_sent"]) {
       gameCtrl.pendingChallengesSent().then((res) =>
-       console.dir(res)).then(() => process.exit(1));
+        console.dir(res)).then(() => process.exit(1));
     } else if (args["pending_invites_received"]) {
       gameCtrl.pendingChallengesReceived().then(res => {
         console.dir(res);

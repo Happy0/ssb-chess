@@ -31,13 +31,28 @@ module.exports = (sbot, myIdent) => {
     return getGamesInProgress(myIdent);
   }
 
-  function getGamesInProgress(playerId) {
+  function gamesAgreedToPlaySummaries(playerId) {
     return gameChallenger.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => {
       return Promise.all(
         gamesInProgress.map(gameSSBDao.getSmallGameSummary)
-      ).then(summaries =>
-        summaries.filter(summary => summary.status.status === "started"));
+      )
     });
+  }
+
+  function getGamesInProgress(playerId) {
+    return gamesAgreedToPlaySummaries(playerId).then(summaries =>
+       summaries.filter(summary => summary.status.status === "started"));
+  }
+
+  function getMyFinishedGames(start, finish) {
+    return getFinishedGames(myIdent, start, finish);
+  }
+
+  function getFinishedGames(playerId, start, finish) {
+    // In the future, this would now just grab every single game then slice it
+    // but would slice in a database query instead
+    return gamesAgreedToPlaySummaries(playerId).then(summaries =>
+       summaries.filter(summary => summary.status.status !== "started").slice(start, finish));
   }
 
   function getGamesWhereMyMove() {
@@ -144,6 +159,8 @@ module.exports = (sbot, myIdent) => {
     pendingChallengesReceived: pendingChallengesReceived,
     getMyGamesInProgress: getMyGamesInProgress,
     getGamesInProgress: getGamesInProgress,
+    getFinishedGames: getFinishedGames,
+    getMyFinishedGames: getMyFinishedGames,
     getSituation: getSituation,
     makeMove: makeMove
   }
