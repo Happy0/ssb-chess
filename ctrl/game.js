@@ -28,11 +28,10 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getMyGamesInProgress() {
-    return getGamesInProgressIds(myIdent);
+    return getGamesInProgress(myIdent);
   }
 
-  // todo: this returns summaries, not ids: rename.
-  function getGamesInProgressIds(playerId) {
+  function getGamesInProgress(playerId) {
     return gameChallenger.getGamesInProgressIds(playerId).then(gamesInProgress => {
       return Promise.all(gamesInProgress.map(gameSSBDao.getSmallGameSummary));
     });
@@ -141,7 +140,7 @@ module.exports = (sbot, myIdent) => {
     pendingChallengesSent: pendingChallengesSent,
     pendingChallengesReceived: pendingChallengesReceived,
     getMyGamesInProgress: getMyGamesInProgress,
-    getGamesInProgressIds: getGamesInProgressIds,
+    getGamesInProgress: getGamesInProgress,
     getSituation: getSituation,
     makeMove: makeMove
   }
