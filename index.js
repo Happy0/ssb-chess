@@ -3,6 +3,8 @@ var GameCtrl = require('./ctrl/game');
 var CommandLine = require("./command_line");
 var m = require("mithril");
 
+var GamesAwaitingMoveComponent = require('./ui/overview/games_awaiting_move');
+
 module.exports = () => {
 
   ssbClient(
@@ -14,7 +16,11 @@ module.exports = () => {
         sbot.whoami((err,ident) => {
           const gameCtrl = GameCtrl(sbot, ident.id);
 
-          
+          const gamesAwaitingMove = GamesAwaitingMoveComponent(gameCtrl);
+
+          m.mount(document.body, gamesAwaitingMove);
+
+
 
         })
       }
