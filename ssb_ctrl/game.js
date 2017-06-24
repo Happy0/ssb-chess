@@ -3,7 +3,11 @@ const pull = require("pull-stream");
 const map = require("pull-stream/throughs/map");
 const collect = require("pull-stream/sinks/collect");
 
+var SocialCtrl = require("./social");
+
 module.exports = (sbot) => {
+
+  const socialCtrl = SocialCtrl(sbot);
 
   function getEndedGames(playerId) {
     //TODO
@@ -21,10 +25,19 @@ module.exports = (sbot) => {
           const authorColour = result.content.myColor === "white" ? result.content.myColor : "black";
           const players = {};
 
-          players[authorId] = authorColour;
-          players[invited] = authorColour === "white" ? "black" : "white";
+          var names = Promise.all( [authorId, invited].map(socialCtrl.getPlayerDisplayName) );
+          names.then(names => {
+            players[authorId] = {};
+            players[authorId].colour = authorColour;
+            players[authorId].name = names[0];
 
-          resolve(players);
+            players[invited] = {};
+            players[invited].colour = authorColour === "white" ? "black" : "white";
+            players[invited].name = names[1];
+
+            resolve(players);
+
+          });
         }
       });
 
@@ -99,7 +112,7 @@ module.exports = (sbot) => {
         const playerIds = Object.keys(players);
 
         for (var i = 0; i < playerIds.length; i++) {
-          if (players[playerIds[i]] === colourToMove) {
+          if (players[playerIds[i]].colour === colourToMove) {
             return playerIds[i];
           }
         }
