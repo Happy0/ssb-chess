@@ -47,7 +47,7 @@ module.exports = (sbot) => {
         players: gameSituation.players,
         toMove: gameSituation.toMove,
         status: gameSituation.status,
-        lastMove: gameSituation.origDests.length > 0 ? gameSituation.origDests[gameSituation.origDests.length - 1] : null
+        lastMove: gameSituation.lastMove
       }
 
       return summary;
@@ -119,17 +119,20 @@ module.exports = (sbot) => {
             var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
             getGameStatus(gameRootMessage).then(status => {
+              var origDests = msgs.map(msg => ({
+                'orig': msg.value.content.orig,
+                'dest': msg.value.content.dest
+              }));
+
               resolve({
                 gameId: gameRootMessage,
                 pgnMoves: pgnMoves,
-                origDests: msgs.map(msg => ({
-                  'orig': msg.value.content.orig,
-                  'dest': msg.value.content.dest
-                })),
+                origDests: origDests,
                 fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 players: players,
                 toMove: getPlayerToMove(players, pgnMoves.length),
-                status: status
+                status: status,
+                lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null
               })
             })
           }));

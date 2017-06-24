@@ -12,7 +12,7 @@ module.exports = (gameCtrl) => {
   }
 
   function renderSummary(summary) {
-    var vDom = m("div", {id: summary.gameId, class: "cg-board-wrap"} );
+    var vDom = m("div", {id: summary.gameId, class: "cg-board-wrap ssb-chess-miniboard"} );
 
     var config = {fen: summary.fen, viewOnly: true};
 
@@ -35,8 +35,7 @@ module.exports = (gameCtrl) => {
 
   return {
     view: function() {
-      console.log("hihi");
-      return m("div", {class: "blue merida"}, gameSummaries.map(renderSummary));
+      return m("div", {class: "blue merida ssb-chess-miniboards"}, gameSummaries.map(renderSummary));
     }
   }
 }
