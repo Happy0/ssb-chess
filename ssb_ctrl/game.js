@@ -46,7 +46,8 @@ module.exports = (sbot) => {
         fen: gameSituation.fen,
         players: gameSituation.players,
         toMove: gameSituation.toMove,
-        status: gameSituation.status
+        status: gameSituation.status,
+        lastMove: gameSituation.origDests.length > 0 ? gameSituation.origDests[gameSituation.origDests.length - 1] : null
       }
 
       return summary;

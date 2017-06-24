@@ -14,10 +14,16 @@ module.exports = (gameCtrl) => {
   function renderSummary(summary) {
     var vDom = m("div", {id: summary.gameId, class: "cg-board-wrap"} );
 
+    var config = {fen: summary.fen, viewOnly: true};
+
+    if (summary.lastMove) {
+      config.lastMove = [summary.lastMove.orig, summary.lastMove.dest];
+    }
+
     // The dom element isn't available yet
     setTimeout( () => {
       var element = vDom.dom;
-      Chessground(element, {fen: summary.fen} );
+      Chessground(element, config );
     });
 
     return vDom;
