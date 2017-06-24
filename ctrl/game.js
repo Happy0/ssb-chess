@@ -94,10 +94,10 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function swapKeyValues(json) {
+  function coloursToNames(players) {
     var ret = {};
     for (var key in json) {
-      ret[json[key]] = key;
+      ret[json[key].color] = key;
     }
     return ret;
   }
@@ -123,7 +123,7 @@ module.exports = (sbot, myIdent) => {
 
       var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
-      var coloursToPlayer = swapKeyValues(players);
+      var coloursToPlayer = coloursToNames(players);
 
       var winnerId = winner ? coloursToPlayer[winner] : null;
 

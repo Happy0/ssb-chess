@@ -5,6 +5,10 @@
 
 .ssb-chess-miniboard {
   width: 300px;
-  height: 300px;
   margin: 2%;
+}
+
+.ssb-chess-miniboard-name {
+  margin-top: 10px;
+  margin-bottom: 5px;
 }
