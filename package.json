@@ -2,16 +2,19 @@
   "name": "skuttlebutt-chess",
   "version": "1.0.0",
   "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
-  "main": "index.js",
+  "main": "main.js",
   "dependencies": {
-    "chessground": "6.4.23",
     "neodoc": "1.4.0",
     "pull-stream": "3.6.0",
     "scuttlebot": "10.0.7",
     "secure-scuttlebutt": "16.3.3",
     "tiny-worker": "2.1.1",
     "uuid": "3.1.0",
-    "pubsub-js": "1.5.7"
+    "pubsub-js": "1.5.7",
+
+    "electron": "1.6.11",
+    "mithril": "1.1.1",
+    "chessground": "6.4.23"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

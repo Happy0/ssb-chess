@@ -30,7 +30,7 @@ module.exports = (gameCtrl) => {
     } else if (args["list_games_finished"]) {
       const begin = args["<begin>"];
       const end = args["<end>"];
-      
+
       gameCtrl.getMyFinishedGames(begin, end).then(summaries =>
         console.dir(summaries)).then(() => process.exit(1));
     } else if (args["list_games_my_move"]) {
