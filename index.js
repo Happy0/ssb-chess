@@ -12,6 +12,12 @@ module.exports = () => {
     m.render(navBar, NavigationBar.navigationTop());
   }
 
+  function appRouter(mainBody, gameCtrl) {
+    m.route(mainBody, "/my_games", {
+      "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress)
+    })
+  }
+
   ssbClient(
     function (err, sbot) {
       if (err) {
@@ -20,11 +26,11 @@ module.exports = () => {
         console.log("Starting ssb-chess");
         sbot.whoami((err,ident) => {
           const gameCtrl = GameCtrl(sbot, ident.id);
-          const gamesAwaitingMove = MiniboardListComponent(gameCtrl.getMyGamesInProgress);
 
           renderPageTop();
           const mainBody = document.getElementById("ssb-main");
-          m.mount(mainBody, gamesAwaitingMove);
+          appRouter(mainBody, gameCtrl);
+
         })
       }
     });
