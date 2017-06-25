@@ -13,7 +13,7 @@ module.exports = (sbot, myIdent) => {
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot, myIdent);
 
-  function getMyIdent() {PlayerUtils
+  function getMyIdent() {
     return myIdent;
   }
 

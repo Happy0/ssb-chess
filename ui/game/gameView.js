@@ -3,6 +3,8 @@ var Chessground = require('chessground').Chessground;
 
 module.exports = (gameCtrl) => {
 
+  const myIdent = gameCtrl.getMyIdent();
+
   function renderBoard(gameId) {
     var vDom = m('div', {
       class: 'cg-board-wrap ssb-chess-board-large'
@@ -12,8 +14,10 @@ module.exports = (gameCtrl) => {
       var chessGround = Chessground(vDom.dom, {});
 
       gameCtrl.getSituation(gameId).then(situation => {
+
         chessGround.set({
-          fen: situation.fen
+          fen: situation.fen,
+          orientation: situation.players[myIdent].colour
         });
       })
     });
