@@ -16,6 +16,7 @@ module.exports = () => {
   function appRouter(mainBody, gameCtrl) {
     m.route(mainBody, "/my_games", {
       "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress),
+      "/games_my_move": MiniboardListComponent(gameCtrl.getGamesWhereMyMove),
       "/games/:gameId": GameComponent(gameCtrl)
     })
   }

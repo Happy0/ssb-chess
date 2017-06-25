@@ -16,11 +16,19 @@ module.exports = (gameCtrl) => {
       gameCtrl.getSituation(gameId).then(situation => {
         const playerColour = situation.players[myIdent].colour;
 
+        console.dir(situation);
+
         chessGround.set({
           fen: situation.fen,
           orientation: playerColour,
           movable: {
-            color: playerColour
+            color: situation.toMove === myIdent?  playerColour : null,
+            events: {
+              after: (orig, dest, metadata) => {
+                console.log("orig: " + orig);
+                console.log("dest: " + dest);
+              }
+            }
           }
         });
       })
