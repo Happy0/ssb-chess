@@ -29,6 +29,7 @@ module.exports = () => {
         console.log("Starting ssb-chess");
         sbot.whoami((err,ident) => {
           const gameCtrl = GameCtrl(sbot, ident.id);
+          gameCtrl.startPublishingBoardUpdates();
 
           renderPageTop();
           const mainBody = document.getElementById("ssb-main");

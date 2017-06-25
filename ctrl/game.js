@@ -1,5 +1,6 @@
 const GameChallenger = require("../ssb_ctrl/game_challenge");
 const GameSSBDao = require("../ssb_ctrl/game");
+const GameUpdateListener = require("../ssb_ctrl/games_update_listener");
 const uuidV4 = require('uuid/v4');
 const Worker = require("tiny-worker");
 
@@ -13,8 +14,14 @@ module.exports = (sbot, myIdent) => {
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot, myIdent);
 
+  const gameUpdateListener = GameUpdateListener(sbot);
+
   function getMyIdent() {
     return myIdent;
+  }
+
+  function startPublishingBoardUpdates() {
+    gameUpdateListener.listenForBoardUpdates();
   }
 
   function inviteToPlay(playerKey, asWhite) {
@@ -63,7 +70,8 @@ module.exports = (sbot, myIdent) => {
 
   function getGamesWhereMyMove() {
     return getMyGamesInProgress().then(myGamesSummaries =>
-      myGamesSummaries.filter(summary => summary.toMove === myIdent)
+      myGamesSummaries.filter(summary =>
+        summary.toMove === myIdent)
     )
   }
 
@@ -162,7 +170,8 @@ module.exports = (sbot, myIdent) => {
     getFinishedGames: getFinishedGames,
     getMyFinishedGames: getMyFinishedGames,
     getSituation: getSituation,
-    makeMove: makeMove
+    makeMove: makeMove,
+    startPublishingBoardUpdates: startPublishingBoardUpdates
   }
 
 }

@@ -56,6 +56,7 @@ module.exports = (sbot) => {
     // players from the original message, etc.
 
     return getSituation(gameRootMessage).then(gameSituation => {
+
       const summary = {
         gameId: gameSituation.gameId,
         fen: gameSituation.fen,
