@@ -3,8 +3,14 @@ var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
 var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
+var NavigationBar = require('./ui/pageLayout/navigation')();
 
 module.exports = () => {
+
+  function renderPageTop() {
+    const navBar = document.getElementById("ssb-nav");
+    m.render(navBar, NavigationBar.navigationTop());
+  }
 
   ssbClient(
     function (err, sbot) {
@@ -16,7 +22,9 @@ module.exports = () => {
           const gameCtrl = GameCtrl(sbot, ident.id);
           const gamesAwaitingMove = MiniboardListComponent(gameCtrl.getMyGamesInProgress);
 
-          m.mount(document.body, gamesAwaitingMove);
+          renderPageTop();
+          const mainBody = document.getElementById("ssb-main");
+          m.mount(mainBody, gamesAwaitingMove);
         })
       }
     });
