@@ -16,8 +16,6 @@ module.exports = (gameCtrl) => {
       gameCtrl.getSituation(gameId).then(situation => {
         const playerColour = situation.players[myIdent].colour;
 
-        console.dir(situation);
-
         chessGround.set({
           fen: situation.fen,
           orientation: playerColour,
@@ -27,6 +25,9 @@ module.exports = (gameCtrl) => {
               after: (orig, dest, metadata) => {
                 console.log("orig: " + orig);
                 console.log("dest: " + dest);
+              },
+              afterNewPiece: (role, position) => {
+                //TODO: Support promotions
               }
             }
           }
