@@ -6,18 +6,18 @@ module.exports = (gameCtrl) => {
   function usage() {
     return `
       Usage:
-        ssb_chess invite <invitee_pub_key> <as_white>
-        ssb_chess accept_invite <game_id>
+        ssb_chess cli invite <invitee_pub_key> <as_white>
+        ssb_chess cli accept_invite <game_id>
 
-        ssb_chess pending_invites_sent
-        ssb_chess pending_invites_received
+        ssb_chess cli pending_invites_sent
+        ssb_chess cli pending_invites_received
 
-        ssb_chess list_games
-        ssb_chess list_games_my_move
-        ssb_chess list_games_finished <begin> <end>
-        ssb_chess situation <game_id>
+        ssb_chess cli list_games
+        ssb_chess cli list_games_my_move
+        ssb_chess cli list_games_finished <begin> <end>
+        ssb_chess cli situation <game_id>
 
-        ssb_chess move <game_id> <orig_square> <dest_square>
+        ssb_chess cli move <game_id> <orig_square> <dest_square>
       `;
   }
 
@@ -36,7 +36,7 @@ module.exports = (gameCtrl) => {
     } else if (args["list_games_my_move"]) {
 
       gameCtrl.getGamesWhereMyMove().then(summaries =>
-        console.dir(summaries)).then(() => process.exit(1));
+        summaries.forEach(console.dir)).then(() => process.exit(1));
 
     } else if (args["situation"]) {
       const situationGameId = args["<game_id>"];

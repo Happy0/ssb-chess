@@ -1,6 +1,5 @@
 var ssbClient = require('ssb-client');
 var GameCtrl = require('./ctrl/game');
-var CommandLine = require("./command_line");
 var m = require("mithril");
 
 var GamesAwaitingMoveComponent = require('./ui/overview/games_awaiting_move');
@@ -19,9 +18,6 @@ module.exports = () => {
           const gamesAwaitingMove = GamesAwaitingMoveComponent(gameCtrl);
 
           m.mount(document.body, gamesAwaitingMove);
-
-
-
         })
       }
     });

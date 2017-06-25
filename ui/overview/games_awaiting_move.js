@@ -6,7 +6,7 @@ module.exports = (gameCtrl) => {
 
   var gameSummaries = [];
 
-  gameCtrl.getMyGamesInProgress().then(summaries => {
+  gameCtrl.getGamesWhereMyMove().then(summaries => {
     gameSummaries = summaries;
   }).then(e => m.redraw());
 
