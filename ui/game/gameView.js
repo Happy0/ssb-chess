@@ -1,5 +1,6 @@
 var m = require("mithril");
 var Chessground = require('chessground').Chessground;
+var PubSub = require('pubsub-js');
 
 module.exports = (gameCtrl) => {
 
@@ -16,7 +17,7 @@ module.exports = (gameCtrl) => {
       gameCtrl.getSituation(gameId).then(situation => {
         const playerColour = situation.players[myIdent].colour;
 
-        chessGround.set({
+        var config = {
           fen: situation.fen,
           orientation: playerColour,
           movable: {
@@ -30,7 +31,13 @@ module.exports = (gameCtrl) => {
               }
             }
           }
-        });
+        };
+
+        if (situation.lastMove) {
+          config.lastMove = [situation.lastMove.orig, situation.lastMove.dest];
+        }
+
+        chessGround.set(config);
       })
     });
 
@@ -44,6 +51,21 @@ module.exports = (gameCtrl) => {
       return m('div', {
         class: "blue merida"
       }, renderBoard(gameId));
+    },
+    oninit: function(vnode) {
+      const gameId = atob(vnode.attrs.gameId);
+      this.moveListener = PubSub.subscribe("game_update", function(msg, data) {
+        console.log("update handler");
+        console.dir(data);
+        if (data.gameId === gameId && data.author !== myIdent) {
+          console.log("Game update received, redrawing.");
+          m.redraw();
+        }
+      });
+    },
+    onremove: function (vnode) {
+      console.log("unsubscribing from move events");
+      PubSub.unsubscribe(this.moveListener);
     }
   }
 
