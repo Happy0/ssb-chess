@@ -5,11 +5,17 @@ const Worker = require("tiny-worker");
 
 var PubSub = require('pubsub-js');
 
+const PlayerModelUtils = require('./player_model_utils')();
+
 module.exports = (sbot, myIdent) => {
 
   const chessWorker = new Worker('vendor/scalachessjs/scalachess.js');
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot, myIdent);
+
+  function getMyIdent() {PlayerUtils
+    return myIdent;
+  }
 
   function inviteToPlay(playerKey, asWhite) {
     return gameChallenger.inviteToPlay(playerKey, asWhite)
@@ -94,14 +100,6 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function coloursToNames(players) {
-    var ret = {};
-    for (var key in json) {
-      ret[json[key].color] = key;
-    }
-    return ret;
-  }
-
   function handleMoveResponse(e) {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
@@ -123,9 +121,10 @@ module.exports = (sbot, myIdent) => {
 
       var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
-      var coloursToPlayer = coloursToNames(players);
+      var coloursToPlayer = PlayerModelUtils.coloursToPlayers(players);
 
-      var winnerId = winner ? coloursToPlayer[winner] : null;
+      // TODO: test this still works after some refactoring
+      var winnerId = winner ? coloursToPlayer[winner].id : null;
 
       gameSSBDao.endGame(gameRootMessage, status.name, winnerId, fen, ply,
         originSquare, destinationSquare, pgnMove).then(dc => {
@@ -152,6 +151,7 @@ module.exports = (sbot, myIdent) => {
   chessWorker.addEventListener('message', handleMoveResponse);
 
   return {
+    getMyIdent: getMyIdent,
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
     getGamesWhereMyMove: getGamesWhereMyMove,

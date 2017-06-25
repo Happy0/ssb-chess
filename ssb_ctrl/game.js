@@ -30,10 +30,12 @@ module.exports = (sbot) => {
             players[authorId] = {};
             players[authorId].colour = authorColour;
             players[authorId].name = names[0];
+            players[authorId].id = authorId;
 
             players[invited] = {};
             players[invited].colour = authorColour === "white" ? "black" : "white";
             players[invited].name = names[1];
+            players[invited].id = invited;
 
             resolve(players);
 

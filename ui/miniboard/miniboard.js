@@ -1,16 +1,8 @@
 var m = require("mithril");
 var Chessground = require('chessground').Chessground;
+var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 
 module.exports = () => {
-
-  function coloursToNames(players) {
-    var obj = {};
-    for (var key in players) {
-      obj[players[key].colour] = players[key].name;
-    }
-
-    return obj;
-  }
 
   function renderSummary(summary) {
 
@@ -35,7 +27,7 @@ module.exports = () => {
       Chessground(element, config);
     });
 
-    var coloursNames = coloursToNames(summary.players);
+    var coloursNames = PlayerModelUtils.coloursToNames(summary.players);
 
     return m('div', {
         class: "ssb-chess-miniboard blue merida"
