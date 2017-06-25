@@ -14,10 +14,12 @@ module.exports = () => {
 
   function renderSummary(summary) {
 
-    var vDom = m("div", {
-      id: summary.gameId,
-      class: "cg-board-wrap"
-    });
+    var vDom = m('a', {class: 'cgt-board-wrap',
+      href: '#!/games/' + btoa(summary.gameId)},
+      m("div", {
+        id: summary.gameId,
+        class: "cg-board-wrap"
+      }))
 
     var config = {
       fen: summary.fen,

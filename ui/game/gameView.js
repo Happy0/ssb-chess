@@ -1,11 +1,12 @@
+var m = require("mithril");
+
 module.exports = () => {
 
   return {
-    controller: function() {
-      return {id: m.route.param("gameId")};
-    },
+
     view: function(ctrl) {
-      m('div', "gamearooni");
+      const gameId = atob(ctrl.attrs.gameId);
+      return m('div', gameId);
     }
   }
 
