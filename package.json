@@ -17,7 +17,8 @@
     "chessground": "6.4.23"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron main.js"
   },
   "author": "",
   "license": "GPL-2.0"
