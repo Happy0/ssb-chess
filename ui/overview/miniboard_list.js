@@ -2,11 +2,11 @@ var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var Miniboard = require('./miniboard')();
 
-module.exports = (gameCtrl) => {
+module.exports = (getGameSummariesFunc) => {
 
   var gameSummaries = [];
 
-  gameCtrl.getGamesWhereMyMove().then(summaries => {
+  getGameSummariesFunc().then(summaries => {
     gameSummaries = summaries;
   }).then(e => m.redraw());
 

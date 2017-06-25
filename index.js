@@ -2,7 +2,7 @@ var ssbClient = require('ssb-client');
 var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
-var GamesAwaitingMoveComponent = require('./ui/overview/games_awaiting_move');
+var MiniboardListComponent = require('./ui/overview/miniboard_list');
 
 module.exports = () => {
 
@@ -15,7 +15,7 @@ module.exports = () => {
         sbot.whoami((err,ident) => {
           const gameCtrl = GameCtrl(sbot, ident.id);
 
-          const gamesAwaitingMove = GamesAwaitingMoveComponent(gameCtrl);
+          const gamesAwaitingMove = MiniboardListComponent(gameCtrl.getMyGamesInProgress);
 
           m.mount(document.body, gamesAwaitingMove);
         })
