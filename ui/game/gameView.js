@@ -23,8 +23,7 @@ module.exports = (gameCtrl) => {
             color: situation.toMove === myIdent?  playerColour : null,
             events: {
               after: (orig, dest, metadata) => {
-                console.log("orig: " + orig);
-                console.log("dest: " + dest);
+                gameCtrl.makeMove(gameId, orig, dest);
               },
               afterNewPiece: (role, position) => {
                 //TODO: Support promotions
