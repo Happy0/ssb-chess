@@ -14,11 +14,10 @@ module.exports = () => {
 
   function renderSummary(summary) {
 
-    var vDom = m('a', {class: 'cgt-board-wrap',
+    var vDom = m('a', {class: 'cg-board-wrap',
       href: '#!/games/' + btoa(summary.gameId)},
       m("div", {
-        id: summary.gameId,
-        class: "cg-board-wrap"
+        id: summary.gameId
       }))
 
     var config = {
@@ -39,7 +38,7 @@ module.exports = () => {
     var coloursNames = coloursToNames(summary.players);
 
     return m('div', {
-        class: "ssb-chess-miniboard"
+        class: "ssb-chess-miniboard blue merida"
       }, [m('center', {class: "ssb-chess-miniboard-name"}, coloursNames["black"].substring(0, 10)),
       vDom,
       m('center', {class: "ssb-chess-miniboard-name"}, coloursNames["white"].substring(0, 10))]);

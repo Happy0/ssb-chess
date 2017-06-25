@@ -12,7 +12,7 @@ module.exports = (getGameSummariesFunc) => {
 
   return {
     view: function() {
-      return m("div", {class: "blue merida ssb-chess-miniboards"},
+      return m("div", {class: "ssb-chess-miniboards"},
        gameSummaries.map(Miniboard.renderSummary));
     }
   }
