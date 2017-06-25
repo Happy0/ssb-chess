@@ -4,6 +4,7 @@ var m = require("mithril");
 
 var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 var NavigationBar = require('./ui/pageLayout/navigation')();
+var GameComponent = require('./ui/game/gameView')();
 
 module.exports = () => {
 
@@ -14,7 +15,8 @@ module.exports = () => {
 
   function appRouter(mainBody, gameCtrl) {
     m.route(mainBody, "/my_games", {
-      "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress)
+      "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress),
+      "/game/:gameId": GameComponent
     })
   }
 
