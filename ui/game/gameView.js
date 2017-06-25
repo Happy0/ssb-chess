@@ -14,10 +14,14 @@ module.exports = (gameCtrl) => {
       var chessGround = Chessground(vDom.dom, {});
 
       gameCtrl.getSituation(gameId).then(situation => {
+        const playerColour = situation.players[myIdent].colour;
 
         chessGround.set({
           fen: situation.fen,
-          orientation: situation.players[myIdent].colour
+          orientation: playerColour,
+          movable: {
+            color: playerColour
+          }
         });
       })
     });
