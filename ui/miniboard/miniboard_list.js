@@ -2,14 +2,15 @@ var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var Miniboard = require('./miniboard')();
 
-module.exports = (getGameSummariesFunc) => {
-
+module.exports = (getGameSummariesFunc, ident) => {
   var gameSummaries = [];
 
+  this.ident = ident;
+
   return {
-    view: function() {
+    view: () => {
       return m("div", {class: "ssb-chess-miniboards"},
-       gameSummaries.map(Miniboard.renderSummary));
+       gameSummaries.map(a => Miniboard.renderSummary(a, this.ident)));
     },
     oncreate: function(e) {
       getGameSummariesFunc().then(summaries => {

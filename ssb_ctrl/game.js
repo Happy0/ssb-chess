@@ -190,6 +190,7 @@ module.exports = (sbot) => {
       const post = {
         type: 'ssb_chess_game_end',
         status: status,
+        ply: ply,
         fen: fen,
         root: gameRootMessage
       };

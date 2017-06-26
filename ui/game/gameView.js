@@ -5,6 +5,7 @@ var PubSub = require('pubsub-js');
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
+  var chessGround = null;
 
   function renderBoard(gameId) {
     var vDom = m('div', {
@@ -12,7 +13,7 @@ module.exports = (gameCtrl) => {
     });
 
     setTimeout(() => {
-      var chessGround = Chessground(vDom.dom, {});
+      chessGround = Chessground(vDom.dom, {});
 
       gameCtrl.getSituation(gameId).then(situation => {
         const playerColour = situation.players[myIdent].colour;
@@ -39,6 +40,8 @@ module.exports = (gameCtrl) => {
         }
 
         chessGround.set(config);
+
+        console.dir(chessGround.state);
       })
     });
 
@@ -59,8 +62,14 @@ module.exports = (gameCtrl) => {
         console.log("update handler");
         console.dir(data);
         if (data.gameId === gameId && data.author !== myIdent) {
-          console.log("Game update received, redrawing.");
-          m.redraw();
+
+          if (chessGround && data.fen !== chessGround.state.fen) {
+            console.log("Game update received, playing move on board.");
+            chessGround.move(data.orig, data.dest);
+          } else {
+            console.log("null chessground");
+          }
+
         }
       });
     },

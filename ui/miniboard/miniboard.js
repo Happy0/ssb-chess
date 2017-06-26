@@ -4,7 +4,9 @@ var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 
 module.exports = () => {
 
-  function renderSummary(summary) {
+  function renderSummary(summary, identPerspective) {
+    console.dir(summary);
+    const playerColour = summary.players[identPerspective] ? summary.players[identPerspective].colour: "white";
 
     var vDom = m('a', {class: 'cg-board-wrap',
       href: '#!/games/' + btoa(summary.gameId)},
@@ -14,7 +16,8 @@ module.exports = () => {
 
     var config = {
       fen: summary.fen,
-      viewOnly: true
+      viewOnly: true,
+      orientation: playerColour
     };
 
     if (summary.lastMove) {
