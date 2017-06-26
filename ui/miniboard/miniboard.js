@@ -5,10 +5,10 @@ var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 module.exports = () => {
 
   function renderSummary(summary, identPerspective) {
-    console.dir(summary);
+    //console.dir(summary);
     const playerColour = summary.players[identPerspective] ? summary.players[identPerspective].colour: "white";
 
-    var vDom = m('a', {class: 'cg-board-wrap',
+    var vDom = m('a', {class: 'cg-board-wrap', title: summary.gameId,
       href: '#!/games/' + btoa(summary.gameId)},
       m("div", {
         id: summary.gameId
