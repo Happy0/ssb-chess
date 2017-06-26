@@ -20,6 +20,7 @@ module.exports = (gameCtrl) => {
         var config = {
           fen: situation.fen,
           orientation: playerColour,
+          turnColor: playerColour,
           movable: {
             color: situation.toMove === myIdent?  playerColour : null,
             events: {
