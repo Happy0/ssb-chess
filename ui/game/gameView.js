@@ -26,6 +26,7 @@ module.exports = (gameCtrl) => {
             color: situation.toMove === myIdent?  playerColour : null,
             events: {
               after: (orig, dest, metadata) => {
+                console.log("Chessground move event. " + orig + " " + dest);
                 gameCtrl.makeMove(gameId, orig, dest);
               },
               afterNewPiece: (role, position) => {
@@ -74,7 +75,7 @@ module.exports = (gameCtrl) => {
       });
     },
     onremove: function (vnode) {
-      console.log("unsubscribing from move events");
+      console.log("unsubscribing from move events " + this.moveListener);
       PubSub.unsubscribe(this.moveListener);
     }
   }
