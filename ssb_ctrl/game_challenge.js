@@ -73,6 +73,7 @@ module.exports = (sbot, myIdent) => {
 
               const unacceptedChallenges = challengeMessages.filter(challenge => acceptedIds.indexOf(challenge.key) === -1);
 
+
               resolve(unacceptedChallenges.map(getInvitationSummary));
             });
 

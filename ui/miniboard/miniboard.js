@@ -2,9 +2,10 @@ var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 
-module.exports = () => {
+module.exports = (summary, identPerspective) => {
 
-  function renderSummary(summary, identPerspective) {
+  function renderSummary() {
+
     //console.dir(summary);
     const playerColour = summary.players[identPerspective] ? summary.players[identPerspective].colour: "white";
 
@@ -40,7 +41,9 @@ module.exports = () => {
   }
 
   return {
-    renderSummary: renderSummary
+    view: function() {
+      return renderSummary();
+    }
   }
 
 }
