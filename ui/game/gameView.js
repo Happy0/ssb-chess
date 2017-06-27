@@ -7,18 +7,20 @@ module.exports = (gameCtrl) => {
   const myIdent = gameCtrl.getMyIdent();
   var chessGround = null;
 
+  var config = {};
+
   function renderBoard(gameId) {
     var vDom = m('div', {
       class: 'cg-board-wrap ssb-chess-board-large'
     });
 
     setTimeout(() => {
-      chessGround = Chessground(vDom.dom, {});
+      chessGround = Chessground(vDom.dom, config);
 
       gameCtrl.getSituation(gameId).then(situation => {
         const playerColour = situation.players[myIdent].colour;
 
-        var config = {
+        config = {
           fen: situation.fen,
           orientation: playerColour,
           turnColor: playerColour,
@@ -26,7 +28,7 @@ module.exports = (gameCtrl) => {
             color: situation.toMove === myIdent?  playerColour : null,
             events: {
               after: (orig, dest, metadata) => {
-                console.log("Chessground move event. " + orig + " " + dest);
+                console.log("Chessground move event. " + orig + " " );
                 gameCtrl.makeMove(gameId, orig, dest);
               },
               afterNewPiece: (role, position) => {
@@ -42,6 +44,7 @@ module.exports = (gameCtrl) => {
 
         chessGround.set(config);
 
+        console.dir(chessGround);
         console.dir(chessGround.state);
       })
     });
@@ -64,9 +67,20 @@ module.exports = (gameCtrl) => {
         console.dir(data);
         if (data.gameId === gameId && data.author !== myIdent) {
 
+          console.dir(chessground);
           if (chessGround && data.fen !== chessGround.state.fen) {
             console.log("Game update received, playing move on board.");
             chessGround.move(data.orig, data.dest);
+
+            // Tell chessground that it's now us to move. We know we're the opposite
+            // colour because the condition for the 'if' is only true if it wasn't
+            // us who made the move
+            var newTurnColor = (config.turnColor === "white") ? "black":  "white";
+
+            config.turnColor = newTurnColor;
+            config.movable.color = newTurnColor;
+            chessGround.set(config);
+
           } else {
             console.log("null chessground");
           }
