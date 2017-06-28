@@ -67,7 +67,7 @@ module.exports = (gameCtrl) => {
         console.dir(data);
         if (data.gameId === gameId && data.author !== myIdent) {
 
-          console.dir(chessground);
+          console.dir(chessGround);
           if (chessGround && data.fen !== chessGround.state.fen) {
             console.log("Game update received, playing move on board.");
             chessGround.move(data.orig, data.dest);
