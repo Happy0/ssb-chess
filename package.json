@@ -7,14 +7,15 @@
     "neodoc": "1.4.0",
     "pull-stream": "3.6.0",
     "scuttlebot": "10.2.1",
-    "secure-scuttlebutt": "16.3.3",
     "tiny-worker": "2.1.1",
     "uuid": "3.1.0",
     "pubsub-js": "1.5.7",
 
     "electron": "1.6.11",
     "mithril": "1.1.1",
-    "chessground": "6.4.23"
+    "chessground": "6.4.23",
+
+    "sqlite3": "3.1.8"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

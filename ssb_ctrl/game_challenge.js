@@ -197,7 +197,6 @@ module.exports = (sbot, myIdent) => {
   return {
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
-    getInvitationSummary: getInvitationSummary,
     pendingChallengesSent: pendingChallengesSent,
     pendingChallengesReceived: pendingChallengesReceived,
     getGamesAgreedToPlayIds: getGamesAgreedToPlayIds

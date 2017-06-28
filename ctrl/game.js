@@ -4,6 +4,8 @@ const GameUpdateListener = require("../ssb_ctrl/games_update_listener");
 const uuidV4 = require('uuid/v4');
 const Worker = require("tiny-worker");
 
+const GameDb = require("../db/game_db");
+
 var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
@@ -13,6 +15,10 @@ module.exports = (sbot, myIdent) => {
   const chessWorker = new Worker('vendor/scalachessjs/scalachess.js');
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot, myIdent);
+
+  const gameDb = GameDb(sbot);
+  gameDb.connect().then(db =>
+     gameDb.loadGameSummariesIntoDatabase().then(e =>  gameDb.getGamesAgreedToPlayIds(myIdent).then(console.dir) )   );
 
   const gameUpdateListener = GameUpdateListener(sbot);
 

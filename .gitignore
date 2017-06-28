@@ -1,2 +1,3 @@
 node_modules/
 package-lock.json
+games_summary_db.sqlite3
