@@ -215,6 +215,7 @@ module.exports = (sbot) => {
 
   function pendingChallengesSent(playerId) {
     var query = ` select * from ssb_chess_games WHERE inviter="${playerId}" and status="invited" `;
+    console.log(query);
 
     return allStmtAsPromise(query).then(rows => rows.map(getInvitationSummary));
   }
@@ -230,7 +231,7 @@ module.exports = (sbot) => {
     WHERE invitee="${playerId}"
       or inviter="${playerId}" and (status <> "invited");`;
 
-    return allStmtAsPromise(query).then(rows => rows.map(getInvitationSummary));
+    return allStmtAsPromise(query).then(rows => rows.map(row => row.gameId));
   }
 
   return {

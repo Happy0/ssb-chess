@@ -18,7 +18,7 @@ module.exports = (sbot, myIdent) => {
 
   const gameDb = GameDb(sbot);
   gameDb.connect().then(db =>
-     gameDb.loadGameSummariesIntoDatabase().then(e =>  gameDb.getGamesAgreedToPlayIds(myIdent).then(console.dir) )   );
+     gameDb.loadGameSummariesIntoDatabase());
 
   const gameUpdateListener = GameUpdateListener(sbot);
 
@@ -39,11 +39,12 @@ module.exports = (sbot, myIdent) => {
   }
 
   function pendingChallengesSent() {
-    return gameChallenger.pendingChallengesSent();
+    var challenges = gameDb.pendingChallengesSent(myIdent);
+    return challenges;
   }
 
   function pendingChallengesReceived() {
-    return gameChallenger.pendingChallengesReceived();
+    return gameDb.pendingChallengesReceived(myIdent);
   }
 
   function getMyGamesInProgress() {
@@ -51,7 +52,7 @@ module.exports = (sbot, myIdent) => {
   }
 
   function gamesAgreedToPlaySummaries(playerId) {
-    return gameChallenger.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => {
+    return gameDb.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => {
       return Promise.all(
         gamesInProgress.map(gameSSBDao.getSmallGameSummary)
       )
