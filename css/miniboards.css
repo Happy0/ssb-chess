@@ -19,3 +19,7 @@
   display: flex;
   justify-content: center;
 }
+
+.ssb-chess-miniboard-control {
+  margin: 5px;
+}

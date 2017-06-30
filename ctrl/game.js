@@ -35,6 +35,7 @@ module.exports = (sbot, myIdent) => {
   }
 
   function acceptChallenge(rootGameMessage) {
+    console.log("accepting invite " + rootGameMessage);
     return gameChallenger.acceptChallenge(rootGameMessage);
   }
 

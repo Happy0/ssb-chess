@@ -5,10 +5,13 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
   console.log(sentOrReceivedBoolean);
   var invitations = [];
 
-  function renderAcceptOrRejectControls() {
+  function renderAcceptOrRejectControls(gameId) {
+
+    const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
+
     return m('div', {class: "ssb-chess-miniboard-controls"}, [
-      m('button', 'accept'),
-      m('button', 'decline')
+      m('button', { class: 'ssb-chess-miniboard-control', onclick: acceptInvite }, 'accept'),
+      m('button', { class: 'ssb-chess-miniboard-control', disabled: true}, 'decline')
     ]);
   }
 
@@ -18,7 +21,7 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
       class: "ssb-chess-miniboard"
     }, [
       m(Miniboard(gameSummary, gameCtrl.getMyIdent())),
-      renderAcceptOrRejectControls()
+      renderAcceptOrRejectControls(gameSummary.gameId)
     ]);
   }
 
