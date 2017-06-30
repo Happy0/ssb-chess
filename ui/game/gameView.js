@@ -46,7 +46,9 @@ module.exports = (gameCtrl) => {
 
         console.dir(chessGround);
         console.dir(chessGround.state);
-      })
+
+        return situation;
+      }).then(situation => gameCtrl.publishValidMoves(situation));
     });
 
     return vDom;
@@ -62,6 +64,15 @@ module.exports = (gameCtrl) => {
     },
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
+
+      this.validMovesListener = PubSub.subscribe("valid_moves", function(msg, data) {
+        if (data.gameId === gameId && chessGround) {
+          config.movable.dests = data.validMoves;
+
+          chessGround.set(config);
+        }
+      });
+
       this.moveListener = PubSub.subscribe("game_update", function(msg, data) {
         console.log("update handler");
         console.dir(data);

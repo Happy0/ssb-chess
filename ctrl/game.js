@@ -18,7 +18,7 @@ module.exports = (sbot, myIdent) => {
 
   const gameDb = GameDb(sbot);
   gameDb.connect().then(db =>
-     gameDb.loadGameSummariesIntoDatabase());
+    gameDb.loadGameSummariesIntoDatabase());
 
   const gameUpdateListener = GameUpdateListener(sbot);
 
@@ -61,7 +61,7 @@ module.exports = (sbot, myIdent) => {
 
   function getGamesInProgress(playerId) {
     return gamesAgreedToPlaySummaries(playerId).then(summaries =>
-       summaries.filter(summary => summary.status.status === "started"));
+      summaries.filter(summary => summary.status.status === "started"));
   }
 
   function getMyFinishedGames(start, finish) {
@@ -72,7 +72,7 @@ module.exports = (sbot, myIdent) => {
     // In the future, this would now just grab every single game then slice it
     // but would slice in a database query instead
     return gamesAgreedToPlaySummaries(playerId).then(summaries =>
-       summaries.filter(summary => summary.status.status !== "started").slice(start, finish));
+      summaries.filter(summary => summary.status.status !== "started").slice(start, finish));
   }
 
   function getGamesWhereMyMove() {
@@ -115,7 +115,7 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function handleMoveResponse(e) {
+  function handleChessWorkerResponse(e) {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
     const gameRootMessage = e.data.reqid.gameRootMessage;
@@ -126,6 +126,19 @@ module.exports = (sbot, myIdent) => {
       console.log("move error");
       console.dir(e);
       PubSub.publish("move_error", e.data.payload.error);
+    } else if (e.data.topic === 'dests') {
+
+      var gameId = e.data.reqid.gameRootMessage;
+      var validDests = e.data.payload.dests;
+
+      console.log("Publishing valid moves");
+      console.dir(validDests);
+
+      PubSub.publish("valid_moves", {
+        gameId: gameId,
+        validMoves: validDests
+      })
+
     } else if (e.data.payload.situation.end) {
 
       var status = e.data.payload.situation.status;
@@ -163,7 +176,21 @@ module.exports = (sbot, myIdent) => {
     }
   }
 
-  chessWorker.addEventListener('message', handleMoveResponse);
+  function publishValidMoves(situation) {
+    var gameFen = situation.fen;
+
+    chessWorker.postMessage({
+      topic: 'dests',
+      payload: {
+        'fen': gameFen
+      },
+      reqid: {
+        gameRootMessage: situation.gameId
+      }
+    })
+  }
+
+  chessWorker.addEventListener('message', handleChessWorkerResponse);
 
   return {
     getMyIdent: getMyIdent,
@@ -178,7 +205,8 @@ module.exports = (sbot, myIdent) => {
     getMyFinishedGames: getMyFinishedGames,
     getSituation: getSituation,
     makeMove: makeMove,
-    startPublishingBoardUpdates: startPublishingBoardUpdates
+    startPublishingBoardUpdates: startPublishingBoardUpdates,
+    publishValidMoves: publishValidMoves
   }
 
 }
