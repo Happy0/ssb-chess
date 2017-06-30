@@ -1,14 +1,21 @@
 .ssb-chess-miniboards {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .ssb-chess-miniboard {
   width: 300px;
   margin: 2%;
+  justify-content: center;
 }
 
 .ssb-chess-miniboard-name {
   margin-top: 10px;
   margin-bottom: 5px;
+}
+
+.ssb-chess-miniboard-controls {
+  display: flex;
+  justify-content: center;
 }

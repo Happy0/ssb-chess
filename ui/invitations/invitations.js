@@ -5,11 +5,21 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
   console.log(sentOrReceivedBoolean);
   var invitations = [];
 
+  function renderAcceptOrRejectControls() {
+    return m('div', {class: "ssb-chess-miniboard-controls"}, [
+      m('button', 'accept'),
+      m('button', 'decline')
+    ]);
+  }
+
   function renderInvite(gameSummary) {
 
-    return m('div', {class: "ssb-chess-miniboard"},
-      m(Miniboard(gameSummary, gameCtrl.getMyIdent() ))
-    );
+    return m('div', {
+      class: "ssb-chess-miniboard"
+    }, [
+      m(Miniboard(gameSummary, gameCtrl.getMyIdent())),
+      renderAcceptOrRejectControls()
+    ]);
   }
 
   return {
@@ -25,8 +35,10 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
     },
     view: function() {
       console.log("views clicked");
-      return m("div", {class: "ssb-chess-miniboards"},
-       invitations.map(renderInvite));
+      return m("div", {
+          class: "ssb-chess-miniboards"
+        },
+        invitations.map(renderInvite));
     }
   }
 }
