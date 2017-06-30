@@ -5,6 +5,19 @@ module.exports = (sbot) => {
 
   var db = null;
 
+  function myLiveFeedSince(since) {
+    const myFeedSource = sbot.createFeedStream({
+      live: true
+    });
+
+    console.log(since);
+    if (since) {
+      myFeedSource['gte'] = since;
+    }
+
+    return myFeedSource;
+  }
+
   function messagesByType(typeOfMessage, date) {
     var opts = {type: typeOfMessage};
 
@@ -95,8 +108,25 @@ module.exports = (sbot) => {
     db.run(updateStmt, err => {if (err) console.dir(err)});
   }
 
-  function watchForArrivingUpdates(sinceDate) {
+  function watchForArrivingUpdates() {
     console.log("Watching for arriving unseen invites, accepted invites and game ends");
+
+    getLastSeenMessageDate().then(sinceDate => {
+
+      pull(myLiveFeedSince(sinceDate), pull.drain(msg => {
+        const type = msg.value.content.type;
+
+        if (type === "ssb_chess_game_end") {
+          updateEndGame(msg);
+        } else if (type === "ssb_chess_invite") {
+          insertNewGameChallenge(msg);
+        } else if (type === "ssb_chess_invite_accept") {
+          updateWithChallengeAccepted(msg);
+        }
+
+      }));
+
+    });
   }
 
   function catchUpWithUnseenGameEnds(sinceDate) {
@@ -108,7 +138,7 @@ module.exports = (sbot) => {
           console.dir(err);
         } else {
           getLastSeenMessageDate().then(sinceDate =>
-             watchForArrivingUpdates(sinceDate));
+             watchForArrivingUpdates());
         }
       })
     )
