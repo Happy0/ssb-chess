@@ -24,12 +24,6 @@ module.exports = (sbot) => {
     })
   }
 
-  function getDirectFriends() {
-    return new Promise( (resolve, reject) => {
-
-    });
-  }
-
   function getPlayerDisplayName(playerPubKey) {
     //console.log("uwot " + playerPubKey);
 

@@ -10,14 +10,15 @@ var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
 
-module.exports = (sbot, myIdent, db) => {
+module.exports = (sbot, myIdent) => {
 
   const chessWorker = new Worker('vendor/scalachessjs/scalachess.js');
   const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot, myIdent);
 
-  const gameDb = GameDb(sbot, db);
-  gameDb.loadGameSummariesIntoDatabase();
+  const gameDb = GameDb(sbot);
+  gameDb.connect().then(db =>
+    gameDb.loadGameSummariesIntoDatabase());
 
   const gameUpdateListener = GameUpdateListener(sbot);
 

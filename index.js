@@ -2,8 +2,6 @@ var ssbClient = require('ssb-client');
 var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
-var Db = require("./db/init")();
-
 var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 var NavigationBar = require('./ui/pageLayout/navigation')();
 var GameComponent = require('./ui/game/gameView');
@@ -33,14 +31,13 @@ module.exports = () => {
       } else {
         console.log("Starting ssb-chess");
         sbot.whoami((err,ident) => {
-          Db.initDb().then(db => {
-            const gameCtrl = GameCtrl(sbot, ident.id, db);
-            gameCtrl.startPublishingBoardUpdates();
+          const gameCtrl = GameCtrl(sbot, ident.id);
+          gameCtrl.startPublishingBoardUpdates();
 
-            renderPageTop();
-            const mainBody = document.getElementById("ssb-main");
-            appRouter(mainBody, gameCtrl);
-          })
+          renderPageTop();
+          const mainBody = document.getElementById("ssb-main");
+          appRouter(mainBody, gameCtrl);
+
         })
       }
     });

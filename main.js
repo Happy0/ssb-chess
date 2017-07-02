@@ -67,8 +67,6 @@ else {
   var GameCtrl = require('./ctrl/game');
   var CommandLine = require("./command_line");
 
-  var Db = require("./db/init")();
-
   ssbClient(
     function (err, sbot) {
       if (err) {
@@ -76,10 +74,8 @@ else {
       } else {
         console.log("Starting ssb-chess");
         sbot.whoami((err,ident) => {
-          Db.initDb().then(db => {
-              const gameCtrl = GameCtrl(sbot, ident.id, db);
-              const commandLine = CommandLine(gameCtrl);
-          })
+          const gameCtrl = GameCtrl(sbot, ident.id);
+          const commandLine = CommandLine(gameCtrl);
         })
       }
     });
