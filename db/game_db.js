@@ -39,8 +39,7 @@ module.exports = (sbot, db) => {
     return getStmtAsPromise(query).then(result => result ? result.updated: null);
   }
 
-  function insertNewGameChallenge(newGameChallengeMsg, cb) {
-    //console.dir(newGameChallengeMsg);
+  function insertNewGameChallenge(newGameChallengeMsg) {
 
     var insertStmt = `INSERT OR IGNORE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
       VALUES ( '${newGameChallengeMsg.key}',
@@ -50,7 +49,7 @@ module.exports = (sbot, db) => {
     console.log("hm");
     console.log(insertStmt);
 
-    db.run(insertStmt, cb("stuff"));
+    db.run(insertStmt);
   }
 
   function updateWithChallengeAccepted(acceptedGameChallengeMsg) {
@@ -129,14 +128,9 @@ module.exports = (sbot, db) => {
     getLastSeenMessageDate().then(sinceDate => {
       console.log("Catching up with unseen invites since " + sinceDate);
 
-      var cb = (n, data) => {
-        console.dir(n);
-        console.dir(data);
-      }
-
       pull(
         messagesByType("ssb_chess_invite", sinceDate),
-        pull.map(inviteMsg => insertNewGameChallenge(inviteMsg, cb)),
+        pull.map(inviteMsg => insertNewGameChallenge(inviteMsg)),
         pull.onEnd(err => {
           if (err) {
             console.dir(err);
