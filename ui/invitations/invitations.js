@@ -9,10 +9,14 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
 
     const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
 
-    return m('div', {class: "ssb-chess-miniboard-controls"}, [
+    const cancelButton = m('button', {class: 'ssb-chess-miniboard-controls'}, 'cancel' );
+
+    const acceptOrRejectButtons = [
       m('button', { class: 'ssb-chess-miniboard-control', onclick: acceptInvite }, 'accept'),
       m('button', { class: 'ssb-chess-miniboard-control', disabled: true}, 'decline')
-    ]);
+    ];
+
+    return m('div', {class: "ssb-chess-miniboard-controls"}, (sentOrReceivedBoolean ? cancelButton : acceptOrRejectButtons) );
   }
 
   function renderInvite(gameSummary) {
