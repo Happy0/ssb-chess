@@ -1,7 +1,13 @@
 var sqlite3 = require('sqlite3').verbose();
 var pull = require("pull-stream");
 
+var DbPromiseUtils = require("./db_promise_utils");
+
 module.exports = (sbot, db) => {
+
+  var allStmtAsPromise = DbPromiseUtils(db).allStmtAsPromise;
+  var getStmtAsPromise = DbPromiseUtils(db).getStmtAsPromise;
+  var runStmtAsPromise = DbPromiseUtils(db).runStmtAsPromise;
 
   function myLiveFeedSince(since) {
     const myFeedSource = sbot.createFeedStream({
@@ -28,50 +34,12 @@ module.exports = (sbot, db) => {
     return source;
   }
 
-  function allStmtAsPromise(stmt) {
-    return new Promise( (resolve, reject) => {
-      db.all(stmt, function(err, result) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  function getStmtAsPromise(stmt) {
-    return new Promise( (resolve, reject) => {
-      db.get(stmt, function(err, result) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  function runStmtAsPromise(stmt) {
-    return new Promise( (resolve, reject) => {
-      db.run(stmt, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-
-      })
-    });
-  }
-
   function getLastSeenMessageDate() {
     var query = `select updated from ssb_chess_games where rowid = (SELECT max(rowid) from ssb_chess_games);`
     return getStmtAsPromise(query).then(result => result ? result.updated: null);
   }
 
   function insertNewGameChallenge(newGameChallengeMsg) {
-    //console.dir(newGameChallengeMsg);
 
     var insertStmt = `INSERT OR IGNORE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
       VALUES ( '${newGameChallengeMsg.key}',
@@ -81,7 +49,7 @@ module.exports = (sbot, db) => {
     console.log("hm");
     console.log(insertStmt);
 
-    db.run(insertStmt, err => {if (err) console.dir(err)});
+    db.run(insertStmt);
   }
 
   function updateWithChallengeAccepted(acceptedGameChallengeMsg) {
@@ -174,42 +142,8 @@ module.exports = (sbot, db) => {
     })
   }
 
-  function createVersionTable(version) {
-    var stmt = `
-        CREATE TABLE IF NOT EXISTS ssb_chess_version (schema_version integer)
-    `
-    // TODO: Add schema version so we know if we have to rebuild the database as the
-    // schema may change in future versions
-
-    return runStmtAsPromise(stmt);
-  }
-
-  function createGamesTable() {
-    var stmt = `
-    CREATE TABLE IF NOT EXISTS ssb_chess_games (
-       gameId text,
-       inviter text,
-       invitee text,
-       inviterColor text,
-       status text,
-       winner text,
-       updated integer,
-       UNIQUE(gameId)
-     )
-    `;
-
-    return runStmtAsPromise(stmt);
-  }
-
-  function createTablesIfNotExists() {
-    var versionTable = createVersionTable();
-    var gamesTable = createGamesTable();
-
-    return Promise.all([versionTable, gamesTable]).then(z => db);
-  }
-
   function loadGameSummariesIntoDatabase() {
-    return createTablesIfNotExists().then(dc => catchUpWithUnseenInvites());
+    return catchUpWithUnseenInvites();
   }
 
   function getInvitationSummary(row) {
