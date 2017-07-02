@@ -80,6 +80,10 @@ module.exports = (sbot, db) => {
     getLastSeenMessageDate().then(sinceDate => {
 
       pull(myLiveFeedSince(sinceDate), pull.drain(msg => {
+        if (msg.sync) {
+          return;
+        }
+        
         const type = msg.value.content.type;
 
         if (type === "ssb_chess_game_end") {

@@ -6,7 +6,7 @@ module.exports = () => {
 
   function initDb() {
     return new Promise((resolve, reject) => {
-      var db = new sqlite3.Database('./games_summary_db.sqlite3',
+      var db = new sqlite3.Database('./ssb_chess_rebuildable_db.sqlite3',
         sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
         function(err) {
           if (err) {
