@@ -1,9 +1,7 @@
 var sqlite3 = require('sqlite3').verbose();
 var pull = require("pull-stream");
 
-module.exports = (sbot) => {
-
-  var db = null;
+module.exports = (sbot, db) => {
 
   function myLiveFeedSince(since) {
     const myFeedSource = sbot.createFeedStream({
@@ -214,22 +212,6 @@ module.exports = (sbot) => {
     return createTablesIfNotExists().then(dc => catchUpWithUnseenInvites());
   }
 
-  function connect() {
-    return new Promise( (resolve, reject ) => {
-      db = new sqlite3.Database('./games_summary_db.sqlite3',
-        sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function(err) {
-          if (err) {
-            console.dir(err);
-            reject(err);
-          } else {
-            console.log("resolve success");
-            resolve();
-          }
-        });
-
-    });
-  }
-
   function getInvitationSummary(row) {
 
     const invitation = {
@@ -265,7 +247,6 @@ module.exports = (sbot) => {
   }
 
   return {
-      connect: connect,
       loadGameSummariesIntoDatabase: loadGameSummariesIntoDatabase,
       pendingChallengesSent: pendingChallengesSent,
       pendingChallengesReceived: pendingChallengesReceived,
