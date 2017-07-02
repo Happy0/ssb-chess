@@ -39,20 +39,17 @@ module.exports = (sbot, db) => {
     return getStmtAsPromise(query).then(result => result ? result.updated: null);
   }
 
-  function insertNewGameChallenge(newGameChallengeMsg) {
+  function insertNewGameChallenge(newGameChallengeMsg, cb) {
 
     var insertStmt = `INSERT OR IGNORE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
       VALUES ( '${newGameChallengeMsg.key}',
        '${newGameChallengeMsg.value.author}', '${newGameChallengeMsg.value.content.inviting}',
        '${newGameChallengeMsg.value.content.myColor}', 'invited', null, ${Date.now()} )`;
 
-    console.log("hm");
-    console.log(insertStmt);
-
-    db.run(insertStmt);
+    db.run(insertStmt, a => cb(null, "this is just to sync inserts"));
   }
 
-  function updateWithChallengeAccepted(acceptedGameChallengeMsg) {
+  function updateWithChallengeAccepted(acceptedGameChallengeMsg, cb) {
 
     if (!acceptedGameChallengeMsg.value.content.root) {
       console.log("no root message");
@@ -62,7 +59,7 @@ module.exports = (sbot, db) => {
     var updateStmt = `UPDATE ssb_chess_games SET status = 'started', updated=${Date.now()}
       WHERE gameId = '${acceptedGameChallengeMsg.value.content.root}'`;
 
-    db.run(updateStmt, err => {if (err) console.dir(err)});
+    db.run(updateStmt, a => cb(null, "this is just to sync inserts"));
   }
 
   function updateEndGame(endGameMessage) {
@@ -83,15 +80,17 @@ module.exports = (sbot, db) => {
         if (msg.sync) {
           return;
         }
-        
+
+        var noop = (a, b) => {};
+
         const type = msg.value.content.type;
 
         if (type === "ssb_chess_game_end") {
           updateEndGame(msg);
         } else if (type === "ssb_chess_invite") {
-          insertNewGameChallenge(msg);
+          insertNewGameChallenge(msg, noop);
         } else if (type === "ssb_chess_invite_accept") {
-          updateWithChallengeAccepted(msg);
+          updateWithChallengeAccepted(msg, noop);
         }
 
       }));
@@ -117,7 +116,7 @@ module.exports = (sbot, db) => {
   function catchUpWithUnseenAcceptedInvites(sinceDate) {
     console.log("Catching up with unseen accepted invites since " + sinceDate);
     pull(messagesByType("ssb_chess_invite_accept", sinceDate),
-      pull.map(inviteMsg => updateWithChallengeAccepted(inviteMsg)),
+      pull.asyncMap(inviteMsg => updateWithChallengeAccepted(inviteMsg)),
       pull.onEnd(err => {
         if (err) {
           console.dir(err);
@@ -131,10 +130,11 @@ module.exports = (sbot, db) => {
   function catchUpWithUnseenInvites() {
     getLastSeenMessageDate().then(sinceDate => {
       console.log("Catching up with unseen invites since " + sinceDate);
+      console.dir(pull.asyncMap);
 
       pull(
         messagesByType("ssb_chess_invite", sinceDate),
-        pull.map(inviteMsg => insertNewGameChallenge(inviteMsg)),
+        pull.asyncMap(insertNewGameChallenge),
         pull.onEnd(err => {
           if (err) {
             console.dir(err);
