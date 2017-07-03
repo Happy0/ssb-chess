@@ -10,7 +10,8 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
     const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
 
     const cancelButton = m('button', {
-      class: 'ssb-chess-miniboard-controls'
+      class: 'ssb-chess-miniboard-controls',
+      disabled: true
     }, 'cancel');
 
     const acceptOrRejectButtons = [
