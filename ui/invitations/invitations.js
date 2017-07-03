@@ -52,6 +52,16 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
   return {
     oncreate: function() {
       updateInvites();
+
+      this.miniboardUpdatesListener = PubSub.subscribe("chess_games_list_update", (msg, data) => {
+
+        // Eh, maybe one day I'll be more fine grained about it :P
+        if (data == null || data != null) {
+          console.info("Updating miniboards");
+          updateInvites();
+        }
+
+      });
     },
     view: function() {
       console.log("views clicked");
@@ -59,6 +69,10 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
           class: "ssb-chess-miniboards"
         },
         invitations.map(renderInvite));
+    },
+    onremove: function(e) {
+      console.log("remove");
+      PubSub.unsubscribe(this.miniboardUpdatesListener);
     }
   }
 }

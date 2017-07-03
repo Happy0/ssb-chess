@@ -101,7 +101,9 @@ module.exports = (gameCtrl) => {
     },
     onremove: function (vnode) {
       console.log("unsubscribing from move events " + this.moveListener);
+
       PubSub.unsubscribe(this.moveListener);
+      PubSub.unsubscribe(this.validMovesListener);
     }
   }
 
