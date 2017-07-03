@@ -23,20 +23,22 @@ module.exports = (sbot, db) => {
   }
 
   function messagesByType(typeOfMessage, date) {
-    var opts = {type: typeOfMessage};
+    var opts = {
+      type: typeOfMessage
+    };
 
     if (date) {
       opts["gt"] = date;
     }
 
-    var source =  sbot.messagesByType(opts);
+    var source = sbot.messagesByType(opts);
 
     return source;
   }
 
   function getLastSeenMessageDate() {
     var query = `select updated from ssb_chess_games where rowid = (SELECT max(rowid) from ssb_chess_games);`
-    return getStmtAsPromise(query).then(result => result ? result.updated: null);
+    return getStmtAsPromise(query).then(result => result ? result.updated : null);
   }
 
   function insertNewGameChallenge(newGameChallengeMsg, cb) {
@@ -78,7 +80,7 @@ module.exports = (sbot, db) => {
 
     getLastSeenMessageDate().then(sinceDate => {
 
-      pull(myLiveFeedSince(sinceDate), pull.asyncMap( (msg, cb) => {
+      pull(myLiveFeedSince(sinceDate), pull.asyncMap((msg, cb) => {
         if (msg.sync) {
           return;
         }
@@ -93,8 +95,7 @@ module.exports = (sbot, db) => {
           insertNewGameChallenge(msg, cb);
         } else if (type === "ssb_chess_invite_accept") {
           updateWithChallengeAccepted(msg, cb);
-        }
-        else {
+        } else {
           cb(null, "This is just to sync updates.")
         }
 
@@ -112,7 +113,7 @@ module.exports = (sbot, db) => {
           console.dir(err);
         } else {
           getLastSeenMessageDate().then(sinceDate =>
-             watchForArrivingUpdates());
+            watchForArrivingUpdates());
         }
       })
     )
@@ -190,9 +191,9 @@ module.exports = (sbot, db) => {
   }
 
   return {
-      loadGameSummariesIntoDatabase: loadGameSummariesIntoDatabase,
-      pendingChallengesSent: pendingChallengesSent,
-      pendingChallengesReceived: pendingChallengesReceived,
-      getGamesAgreedToPlayIds: getGamesAgreedToPlayIds
+    loadGameSummariesIntoDatabase: loadGameSummariesIntoDatabase,
+    pendingChallengesSent: pendingChallengesSent,
+    pendingChallengesReceived: pendingChallengesReceived,
+    getGamesAgreedToPlayIds: getGamesAgreedToPlayIds
   }
 }
