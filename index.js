@@ -1,9 +1,5 @@
 var ssbClient = require('ssb-client');
 
-var ssbKeys = require('ssb-keys');
-var createSbot = require('scuttlebot')
-  .use(require("ssb-query"));
-
 var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
@@ -30,12 +26,6 @@ module.exports = () => {
       "/invitations_received": InvitationsComponent(gameCtrl, false)
     })
   }
-
-  var sb = createSbot({
-    timeout: 600,
-    temp: 'stuff',
-    keys: ssbKeys.loadOrCreateSync("~/.ssb/secret")
-  });
 
   ssbClient(
     function(err, sbot) {
