@@ -1,4 +1,9 @@
 var ssbClient = require('ssb-client');
+
+var ssbKeys = require('ssb-keys');
+var createSbot = require('scuttlebot')
+  .use(require("ssb-query"));
+
 var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
@@ -26,13 +31,19 @@ module.exports = () => {
     })
   }
 
+  var sb = createSbot({
+    timeout: 600,
+    temp: 'stuff',
+    keys: ssbKeys.loadOrCreateSync("~/.ssb/secret")
+  });
+
   ssbClient(
-    function (err, sbot) {
+    function(err, sbot) {
       if (err) {
         console.log(err);
       } else {
         console.log("Starting ssb-chess");
-        sbot.whoami((err,ident) => {
+        sbot.whoami((err, ident) => {
           Db.initDb().then(db => {
             const gameCtrl = GameCtrl(sbot, ident.id, db);
             gameCtrl.startPublishingBoardUpdates();

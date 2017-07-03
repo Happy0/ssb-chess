@@ -25,7 +25,7 @@ module.exports = (sbot) => {
   }
 
   function getDirectFriends() {
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
     });
   }
@@ -33,16 +33,21 @@ module.exports = (sbot) => {
   function getPlayerDisplayName(playerPubKey) {
     //console.log("uwot " + playerPubKey);
 
-    if (!playerPubKey) {
-      return Promise.resolve("");
+    // TODO: have some way to mark a game as corrupted.
+    if (!playerPubKey || !playerPubKey.startsWith('@')) {
+      return Promise.resolve("<error>");
     }
 
-    const feedStream = sbot.createHistoryStream({
-      id: playerPubKey
+    //console.log("player pub key:" + playerPubKey);
+    const aboutStream = sbot.links({
+      dest: playerPubKey,
+      rel: "about",
+      reverse: true,
+      values: true
     });
 
     return new Promise((resolve, reject) => {
-      pull(feedStream, pull.find(msg => msg.value.content.type === "about" && msg.value.content.name, (err, result) => {
+      pull(aboutStream, pull.find(msg => msg.value.author === playerPubKey && msg.value.content.name, (err, result) => {
         if (err) {
           reject(err);
         } else {
