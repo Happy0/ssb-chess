@@ -3,6 +3,10 @@ var pull = require("pull-stream");
 
 var DbPromiseUtils = require("./db_promise_utils");
 
+var PubSub = require("pubsub-js");
+
+//TODO: Get rid of some of the boiler plate in this file.
+
 module.exports = (sbot, db) => {
 
   var allStmtAsPromise = DbPromiseUtils(db).allStmtAsPromise;
@@ -78,6 +82,8 @@ module.exports = (sbot, db) => {
   function watchForArrivingUpdates() {
     console.log("Watching for arriving unseen invites, accepted invites and game ends");
 
+    PubSub.publish("chess_games_list_update", null);
+
     getLastSeenMessageDate().then(sinceDate => {
 
       pull(myLiveFeedSince(sinceDate), pull.asyncMap((msg, cb) => {
@@ -85,16 +91,20 @@ module.exports = (sbot, db) => {
           return;
         }
 
-        var noop = (a, b) => {};
+        var callbackAndPublish = (gameId) => {
+          console.log("callback");
+          cb(null, "This is just to sync updates.");
+          PubSub.publish("chess_games_list_update", gameId);
+        }
 
         const type = msg.value.content.type;
 
         if (type === "ssb_chess_game_end") {
-          updateEndGame(msg, cb);
+          updateEndGame(msg, callbackAndPublish(msg.value.content.root));
         } else if (type === "ssb_chess_invite") {
-          insertNewGameChallenge(msg, cb);
+          insertNewGameChallenge(msg, callbackAndPublish(msg.key));
         } else if (type === "ssb_chess_invite_accept") {
-          updateWithChallengeAccepted(msg, cb);
+          updateWithChallengeAccepted(msg, callbackAndPublish(msg.value.content.root));
         } else {
           cb(null, "This is just to sync updates.")
         }

@@ -9,14 +9,24 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
 
     const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
 
-    const cancelButton = m('button', {class: 'ssb-chess-miniboard-controls'}, 'cancel' );
+    const cancelButton = m('button', {
+      class: 'ssb-chess-miniboard-controls'
+    }, 'cancel');
 
     const acceptOrRejectButtons = [
-      m('button', { class: 'ssb-chess-miniboard-control', onclick: acceptInvite }, 'accept'),
-      m('button', { class: 'ssb-chess-miniboard-control', disabled: true}, 'decline')
+      m('button', {
+        class: 'ssb-chess-miniboard-control',
+        onclick: acceptInvite
+      }, 'accept'),
+      m('button', {
+        class: 'ssb-chess-miniboard-control',
+        disabled: true
+      }, 'decline')
     ];
 
-    return m('div', {class: "ssb-chess-miniboard-controls"}, (sentOrReceivedBoolean ? cancelButton : acceptOrRejectButtons) );
+    return m('div', {
+      class: "ssb-chess-miniboard-controls"
+    }, (sentOrReceivedBoolean ? cancelButton : acceptOrRejectButtons));
   }
 
   function renderInvite(gameSummary) {
@@ -29,16 +39,19 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
     ]);
   }
 
+  function updateInvites() {
+    const invitesFunction =
+      sentOrReceivedBoolean ? gameCtrl.pendingChallengesSent : gameCtrl.pendingChallengesReceived;
+
+    var inviteSituations = invitesFunction().then(invites => Promise.all(
+      invites.map(invite => gameCtrl.getSituation(invite.gameId))));
+
+    inviteSituations.then(situations => invitations = situations).then(m.redraw);
+  }
+
   return {
     oncreate: function() {
-      const invitesFunction =
-        sentOrReceivedBoolean ? gameCtrl.pendingChallengesSent : gameCtrl.pendingChallengesReceived;
-
-      var inviteSituations = invitesFunction().then(invites => Promise.all(
-        invites.map(invite => gameCtrl.getSituation(invite.gameId))));
-
-      inviteSituations.then(situations => invitations = situations).then(m.redraw);
-
+      updateInvites();
     },
     view: function() {
       console.log("views clicked");
