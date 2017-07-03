@@ -53,22 +53,24 @@ module.exports = (sbot, db) => {
 
     if (!acceptedGameChallengeMsg.value.content.root) {
       console.log("no root message");
-      return;
+      cb(null, "this is just to sync updates");
     }
 
     var updateStmt = `UPDATE ssb_chess_games SET status = 'started', updated=${Date.now()}
       WHERE gameId = '${acceptedGameChallengeMsg.value.content.root}'`;
 
-    db.run(updateStmt, a => cb(null, "this is just to sync inserts"));
+    console.log(updateStmt);
+
+    db.run(updateStmt, a => cb(null, "this is just to sync updates"));
   }
 
-  function updateEndGame(endGameMessage) {
+  function updateEndGame(endGameMessage, cb) {
     console.dir(endGameMessage);
     var updateStmt = `UPDATE ssb_chess_games
       SET status = '${endGameMessage.value.content.status}', winner = '${endGameMessage.value.content.winner}', updated=${Date.now()}
       WHERE gameId = '${endGameMessage.value.content.root}'  `;
 
-    db.run(updateStmt, err => {if (err) console.dir(err)});
+    db.run(updateStmt, cb(null, "this is just to sync updates"));
   }
 
   function watchForArrivingUpdates() {
@@ -76,7 +78,7 @@ module.exports = (sbot, db) => {
 
     getLastSeenMessageDate().then(sinceDate => {
 
-      pull(myLiveFeedSince(sinceDate), pull.drain(msg => {
+      pull(myLiveFeedSince(sinceDate), pull.asyncMap( (msg, cb) => {
         if (msg.sync) {
           return;
         }
@@ -86,11 +88,14 @@ module.exports = (sbot, db) => {
         const type = msg.value.content.type;
 
         if (type === "ssb_chess_game_end") {
-          updateEndGame(msg);
+          updateEndGame(msg, cb);
         } else if (type === "ssb_chess_invite") {
-          insertNewGameChallenge(msg, noop);
+          insertNewGameChallenge(msg, cb);
         } else if (type === "ssb_chess_invite_accept") {
-          updateWithChallengeAccepted(msg, noop);
+          updateWithChallengeAccepted(msg, cb);
+        }
+        else {
+          cb(null, "This is just to sync updates.")
         }
 
       }));
@@ -101,7 +106,7 @@ module.exports = (sbot, db) => {
   function catchUpWithUnseenGameEnds(sinceDate) {
     console.log("Catching up with unseen game ends since " + sinceDate);
     pull(messagesByType("ssb_chess_game_end", sinceDate),
-      pull.map(inviteMsg => updateEndGame(inviteMsg)),
+      pull.asyncMap(updateEndGame),
       pull.onEnd(err => {
         if (err) {
           console.dir(err);
@@ -116,7 +121,7 @@ module.exports = (sbot, db) => {
   function catchUpWithUnseenAcceptedInvites(sinceDate) {
     console.log("Catching up with unseen accepted invites since " + sinceDate);
     pull(messagesByType("ssb_chess_invite_accept", sinceDate),
-      pull.asyncMap(inviteMsg => updateWithChallengeAccepted(inviteMsg)),
+      pull.asyncMap(updateWithChallengeAccepted),
       pull.onEnd(err => {
         if (err) {
           console.dir(err);
