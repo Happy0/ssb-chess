@@ -84,11 +84,12 @@ module.exports = (sbot, myIdent) => {
       dest: playerPubKey,
       rel: "about",
       reverse: true,
-      values: true
+      values: true,
+      source: playerPubKey
     });
 
     return new Promise((resolve, reject) => {
-      pull(aboutStream, pull.find(msg => msg.value.author === playerPubKey && msg.value.content.name, (err, result) => {
+      pull(aboutStream, pull.find(msg => msg.value.content.name, (err, result) => {
         if (err) {
           reject(err);
         } else {
