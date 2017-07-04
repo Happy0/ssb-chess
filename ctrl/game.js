@@ -13,7 +13,7 @@ const PlayerModelUtils = require('./player_model_utils')();
 module.exports = (sbot, myIdent, db) => {
 
   const chessWorker = new Worker('vendor/scalachessjs/scalachess.js');
-  const gameSSBDao = GameSSBDao(sbot);
+  const gameSSBDao = GameSSBDao(sbot, myIdent);
   const gameChallenger = GameChallenger(sbot, myIdent);
 
   const gameDb = GameDb(sbot, db);

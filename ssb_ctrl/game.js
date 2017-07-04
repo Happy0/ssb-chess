@@ -5,7 +5,7 @@ const collect = require("pull-stream/sinks/collect");
 
 var SocialCtrl = require("./social");
 
-module.exports = (sbot) => {
+module.exports = (sbot, myIdent) => {
 
   const socialCtrl = SocialCtrl(sbot);
 

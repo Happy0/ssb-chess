@@ -1,6 +1,6 @@
 const pull = require("pull-stream");
 
-module.exports = (sbot) => {
+module.exports = (sbot, myIdent) => {
 
   // untested
   function followPlayer(playerPubKey) {
@@ -24,10 +24,51 @@ module.exports = (sbot) => {
     })
   }
 
-  function getDirectFriends() {
+  function consumeStreamIntoArrayPromise(source, through) {
     return new Promise((resolve, reject) => {
+      pull(source, through, pull.collect((err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      }));
+    })
 
+  }
+
+  function followedByMe() {
+    var followsMe = sbot.links({
+      source: myIdent,
+      rel: "contact",
+      values: true,
+      reverse: true
     });
+
+    var onlyStillFollowingsThrough = pull(
+      pull.unique('dest'),
+      pull.filter(msg => msg.value.content.following !== false)
+    );
+
+    return consumeStreamIntoArrayPromise(followsMe, onlyStillFollowingsThrough)
+            .then(results => results.map(a => a.dest));
+  }
+
+  function followingMe() {
+    var followsMe = sbot.links({
+      dest: myIdent,
+      rel: "contact",
+      values: true,
+      reverse: true
+    });
+
+    var onlyStillFollowingsThrough = pull(
+      pull.unique('source'),
+      pull.filter(msg => msg.value.content.following !== false)
+    );
+
+    return consumeStreamIntoArrayPromise(followsMe, onlyStillFollowingsThrough)
+      .then(results => results.map(a => a.source));
   }
 
   function getPlayerDisplayName(playerPubKey) {
@@ -59,6 +100,8 @@ module.exports = (sbot) => {
   }
 
   return {
+    followingMe: followingMe,
+    followedByMe: followedByMe,
     followPlayer: followPlayer,
     unfollowPlayer: unfollowPlayer,
     getPlayerDisplayName: getPlayerDisplayName

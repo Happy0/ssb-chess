@@ -66,6 +66,8 @@ else {
   var ssbClient = require('ssb-client');
   var GameCtrl = require('./ctrl/game');
   var CommandLine = require("./command_line");
+  var SocialCtrl = require("./ctrl/social");
+
 
   var Db = require("./db/init")();
 
@@ -78,7 +80,8 @@ else {
         sbot.whoami((err,ident) => {
           Db.initDb().then(db => {
               const gameCtrl = GameCtrl(sbot, ident.id, db);
-              const commandLine = CommandLine(gameCtrl);
+              const socialCtrl = SocialCtrl(sbot, ident.id);
+              const commandLine = CommandLine(gameCtrl, socialCtrl);
           })
         })
       }

@@ -1,7 +1,7 @@
 const neodoc = require('neodoc');
 var PubSub = require('pubsub-js');
 
-module.exports = (gameCtrl) => {
+module.exports = (gameCtrl, socialCtrl) => {
 
   function usage() {
     return `
@@ -18,6 +18,10 @@ module.exports = (gameCtrl) => {
         ssb_chess cli situation <game_id>
 
         ssb_chess cli move <game_id> <orig_square> <dest_square>
+
+        ssb_chess cli followers
+        ssb_chess cli following
+        ssb_chess cli friends
       `;
   }
 
@@ -71,6 +75,12 @@ module.exports = (gameCtrl) => {
       const dest = args["<dest_square>"];
 
       gameCtrl.makeMove(moveInGameId, orig, dest);
+    } else if (args["followers"]) {
+      socialCtrl.followingMe().then(followers => console.dir(followers)).then(() => process.exit(1) );
+    } else if (args["following"]) {
+      socialCtrl.followedByMe().then(followedByMe => console.dir(followedByMe)).then(() => process.exit(1) );
+    } else if (args["friends"]) {
+      socialCtrl.friends().then(friends => console.dir(friends)).then(() => process.exit(1) ).catch(err => console.dir(err.stack));
     }
   }
 
