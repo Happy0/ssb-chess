@@ -21,7 +21,7 @@ module.exports = (sbot) => {
     }
   }
 
-  function listenForBoardUpdates() {
+  function listenForSSBChessMessageUpdates() {
 
     var moveOptions = {
       type: "ssb_chess_move",
@@ -48,6 +48,6 @@ module.exports = (sbot) => {
   }
 
   return {
-    listenForBoardUpdates: listenForBoardUpdates
+    listenForSSBChessMessageUpdates: listenForSSBChessMessageUpdates
   }
 }

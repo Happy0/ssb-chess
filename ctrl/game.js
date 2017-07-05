@@ -1,6 +1,6 @@
 const GameChallenger = require("../ssb_ctrl/game_challenge");
 const GameSSBDao = require("../ssb_ctrl/game");
-const GameUpdateListener = require("../ssb_ctrl/games_update_listener");
+const LiveUpdateBroadcaster = require("../ssb_ctrl/live_update_broadcaster");
 const uuidV4 = require('uuid/v4');
 const Worker = require("tiny-worker");
 
@@ -19,14 +19,14 @@ module.exports = (sbot, myIdent, db) => {
   const gameDb = GameDb(sbot, db);
   gameDb.loadGameSummariesIntoDatabase();
 
-  const gameUpdateListener = GameUpdateListener(sbot);
+  const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
 
   function getMyIdent() {
     return myIdent;
   }
 
   function startPublishingBoardUpdates() {
-    gameUpdateListener.listenForBoardUpdates();
+    liveUpdateBroadcaster.listenForSSBChessMessageUpdates();
   }
 
   function inviteToPlay(playerKey, asWhite) {
