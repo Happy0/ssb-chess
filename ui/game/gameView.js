@@ -24,6 +24,7 @@ module.exports = (gameCtrl) => {
           fen: situation.fen,
           orientation: playerColour,
           turnColor: playerColour,
+          ply: situation.ply,
           movable: {
             color: situation.toMove === myIdent?  playerColour : null,
             events: {
@@ -78,10 +79,8 @@ module.exports = (gameCtrl) => {
         console.dir(data);
         if (data.gameId === gameId && data.author !== myIdent) {
 
-          console.dir(chessGround);
-          if (chessGround && data.fen !== chessGround.state.fen) {
+          if (chessGround && (data.ply > config.ply) ) {
             console.log("Game update received, playing move on board.");
-            chessGround.move(data.orig, data.dest);
 
             // Tell chessground that it's now us to move. We know we're the opposite
             // colour because the condition for the 'if' is only true if it wasn't
@@ -90,7 +89,10 @@ module.exports = (gameCtrl) => {
 
             config.turnColor = newTurnColor;
             config.movable.color = newTurnColor;
+            config.ply = data.ply;
             chessGround.set(config);
+
+            chessGround.move(data.orig, data.dest);
 
           } else {
             console.log("null chessground");

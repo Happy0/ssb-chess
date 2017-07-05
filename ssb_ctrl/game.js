@@ -143,6 +143,7 @@ module.exports = (sbot, myIdent) => {
               resolve({
                 gameId: gameRootMessage,
                 pgnMoves: pgnMoves,
+                ply: pgnMoves.length,
                 origDests: origDests,
                 fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 players: players,
