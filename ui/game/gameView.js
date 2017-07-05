@@ -23,14 +23,21 @@ module.exports = (gameCtrl) => {
         config = {
           fen: situation.fen,
           orientation: playerColour,
-          turnColor: playerColour,
+          turnColor: situation.players[situation.toMove].colour,
           ply: situation.ply,
           movable: {
-            color: situation.toMove === myIdent?  playerColour : null,
+            color: situation.toMove === myIdent ? playerColour : null,
             events: {
               after: (orig, dest, metadata) => {
-                console.log("Chessground move event. " + orig + " " );
                 gameCtrl.makeMove(gameId, orig, dest);
+
+                var notMovable = {
+                  movable: {
+                    color: null
+                  }
+                };
+
+                chessGround.set(notMovable);
               },
               afterNewPiece: (role, position) => {
                 //TODO: Support promotions
@@ -45,15 +52,18 @@ module.exports = (gameCtrl) => {
 
         chessGround.set(config);
 
-        console.dir(chessGround);
-        console.dir(chessGround.state);
-
         return situation;
-      }).then(situation => gameCtrl.publishValidMoves(situation));
+      }).then(situation => gameCtrl.publishValidMoves(gameId));
     });
 
     return vDom;
   }
+
+  function switchToViewerTurn() {
+    config.turnColor = config.orientation;
+    config.movable.color = config.orientation;
+  }
+
 
   return {
 
@@ -68,9 +78,14 @@ module.exports = (gameCtrl) => {
 
       this.validMovesListener = PubSub.subscribe("valid_moves", function(msg, data) {
         if (data.gameId === gameId && chessGround) {
-          config.movable.dests = data.validMoves;
 
-          chessGround.set(config);
+          var dests = {
+            movable: {
+              dests: data.validMoves
+            }
+          }
+
+          chessGround.set(dests);
         }
       });
 
@@ -79,21 +94,16 @@ module.exports = (gameCtrl) => {
         console.dir(data);
         if (data.gameId === gameId && data.author !== myIdent) {
 
-          if (chessGround && (data.ply > config.ply) ) {
+          if (chessGround && (data.ply > config.ply)) {
             console.log("Game update received, playing move on board.");
 
-            // Tell chessground that it's now us to move. We know we're the opposite
-            // colour because the condition for the 'if' is only true if it wasn't
-            // us who made the move
-            var newTurnColor = (config.turnColor === "white") ? "black":  "white";
-
-            config.turnColor = newTurnColor;
-            config.movable.color = newTurnColor;
+            config.fen = data.fen;
             config.ply = data.ply;
+            config.lastMove = [data.orig, data.dest];
+            switchToViewerTurn(config);
             chessGround.set(config);
 
-            chessGround.move(data.orig, data.dest);
-
+            gameCtrl.publishValidMoves(gameId);
           } else {
             console.log("null chessground");
           }
@@ -101,7 +111,7 @@ module.exports = (gameCtrl) => {
         }
       });
     },
-    onremove: function (vnode) {
+    onremove: function(vnode) {
       console.log("unsubscribing from move events " + this.moveListener);
 
       PubSub.unsubscribe(this.moveListener);

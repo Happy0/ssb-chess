@@ -176,18 +176,23 @@ module.exports = (sbot, myIdent, db) => {
     }
   }
 
-  function publishValidMoves(situation) {
-    var gameFen = situation.fen;
+  function publishValidMoves(gameId) {
 
-    chessWorker.postMessage({
-      topic: 'dests',
-      payload: {
-        'fen': gameFen
-      },
-      reqid: {
-        gameRootMessage: situation.gameId
-      }
-    })
+    getSituation(gameId).then(situation => {
+
+      var gameFen = situation.fen;
+
+      chessWorker.postMessage({
+        topic: 'dests',
+        payload: {
+          'fen': gameFen
+        },
+        reqid: {
+          gameRootMessage: situation.gameId
+        }
+      })
+
+    });
   }
 
   chessWorker.addEventListener('message', handleChessWorkerResponse);
