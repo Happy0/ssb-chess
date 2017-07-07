@@ -2,13 +2,14 @@ const Miniboard = require('../miniboard/miniboard');
 const m = require("mithril");
 const ChallengeComponent = require('../challenge/challenge_control');
 
-module.exports = (gameCtrl, sentOrReceivedBoolean) => {
-  console.log(sentOrReceivedBoolean);
-  var invitations = [];
+module.exports = (gameCtrl) => {
+
+  var invitationsReceived = [];
+  var invitationsSent = [];
 
   var challengeComponent = ChallengeComponent(gameCtrl);
 
-  function renderAcceptOrRejectControls(gameId) {
+  function renderAcceptOrRejectControls(gameId, inviteSent) {
 
     const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
 
@@ -30,27 +31,48 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
 
     return m('div', {
       class: "ssb-chess-miniboard-controls"
-    }, (sentOrReceivedBoolean ? cancelButton : acceptOrRejectButtons));
+    }, (inviteSent ? cancelButton : acceptOrRejectButtons));
   }
 
-  function renderInvite(gameSummary) {
+  function renderInvite(gameSummary, sent) {
 
     return m('div', {
       class: "ssb-chess-miniboard"
     }, [
       m(Miniboard(gameSummary, gameCtrl.getMyIdent())),
-      renderAcceptOrRejectControls(gameSummary.gameId)
+      renderAcceptOrRejectControls(gameSummary.gameId, sent)
     ]);
   }
 
+  function invitesToSituations(invites) {
+    return Promise.all(
+      invites.map(invite => gameCtrl.getSituation(invite.gameId)));
+  }
+
   function updateInvites() {
-    const invitesFunction =
-      sentOrReceivedBoolean ? gameCtrl.pendingChallengesSent : gameCtrl.pendingChallengesReceived;
+    var invitesReceived = gameCtrl.pendingChallengesReceived();
+    var invitesSent = gameCtrl.pendingChallengesSent();
 
-    var inviteSituations = invitesFunction().then(invites => Promise.all(
-      invites.map(invite => gameCtrl.getSituation(invite.gameId))));
+    invitesReceived.then(invitesToSituations).then(received =>
+      invitationsReceived = received).then(m.redraw);
 
-    inviteSituations.then(situations => invitations = situations).then(m.redraw);
+    invitesSent.then(invitesToSituations).then(sent =>
+      invitationsSent = sent).then(m.redraw);
+
+  }
+
+  function renderMiniboards(invites, sent, title) {
+
+    var title = m('div', title);
+
+    return m("div", {
+        class: "ssb-chess-miniboards"
+      },
+      [
+        title,
+      invites.map(invite => renderInvite(invite, sent))
+      ]
+  )
   }
 
   return {
@@ -68,14 +90,17 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
       });
     },
     view: function() {
-      var miniboards = m("div", {
-          class: "ssb-chess-miniboards"
-        },
-        invitations.map(renderInvite));
+
+      var invitationsReceivedMiniboards = renderMiniboards(invitationsReceived, false, "Received");
+      var invitationsSentMiniboards = renderMiniboards(invitationsSent, true, "Sent");
 
       var challengeCtrl = m(challengeComponent);
 
-      return m('div', [challengeCtrl, miniboards]);
+      return m('div', [
+        challengeCtrl,
+        invitationsReceivedMiniboards,
+        invitationsSentMiniboards
+      ]);
     },
     onremove: function(e) {
       PubSub.unsubscribe(this.miniboardUpdatesListener);

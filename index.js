@@ -22,8 +22,7 @@ module.exports = () => {
       "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
       "/games/:gameId": GameComponent(gameCtrl),
-      "/invitations_sent": InvitationsComponent(gameCtrl, true),
-      "/invitations_received": InvitationsComponent(gameCtrl, false)
+      "/invitations": InvitationsComponent(gameCtrl)
     })
   }
 
