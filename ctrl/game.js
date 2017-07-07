@@ -5,6 +5,8 @@ const uuidV4 = require('uuid/v4');
 const Worker = require("tiny-worker");
 
 const GameDb = require("../db/game_db");
+const SocialCtrl = require("./social");
+
 
 var PubSub = require('pubsub-js');
 
@@ -15,6 +17,8 @@ module.exports = (sbot, myIdent, db) => {
   const chessWorker = new Worker('vendor/scalachessjs/scalachess.js');
   const gameSSBDao = GameSSBDao(sbot, myIdent);
   const gameChallenger = GameChallenger(sbot, myIdent);
+
+  const socialCtrl = SocialCtrl(sbot, myIdent);
 
   const gameDb = GameDb(sbot, db);
   gameDb.loadGameSummariesIntoDatabase();
@@ -195,6 +199,10 @@ module.exports = (sbot, myIdent, db) => {
     });
   }
 
+  function getSocialCtrl() {
+    return socialCtrl;
+  }
+
   chessWorker.addEventListener('message', handleChessWorkerResponse);
 
   return {
@@ -211,7 +219,8 @@ module.exports = (sbot, myIdent, db) => {
     getSituation: getSituation,
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,
-    publishValidMoves: publishValidMoves
+    publishValidMoves: publishValidMoves,
+    getSocialCtrl: getSocialCtrl
   }
 
 }

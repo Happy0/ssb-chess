@@ -1,5 +1,6 @@
 const Miniboard = require('../miniboard/miniboard');
 const m = require("mithril");
+const ChallengeComponent = require('../challenge/challenge_control');
 
 module.exports = (gameCtrl, sentOrReceivedBoolean) => {
   console.log(sentOrReceivedBoolean);
@@ -66,10 +67,14 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
     },
     view: function() {
       console.log("views clicked");
-      return m("div", {
+      var miniboards = m("div", {
           class: "ssb-chess-miniboards"
         },
         invitations.map(renderInvite));
+
+      var challengeCtrl = m(ChallengeComponent(gameCtrl));
+
+      return m('div', [challengeCtrl, miniboards]);
     },
     onremove: function(e) {
       console.log("remove");
