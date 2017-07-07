@@ -16,7 +16,7 @@ module.exports = (gameCtrl) => {
   function renderChallengeControl() {
     const challengeButton = m('button', 'challenge');
 
-    return m('div', [renderFriendsdropDown(), challengeButton]);
+    return m('div', {class: "ssb-chess-challenge-control"}, [renderFriendsdropDown(), challengeButton]);
   }
 
   return {

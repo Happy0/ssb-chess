@@ -63,16 +63,17 @@ module.exports = (gameCtrl) => {
 
   function renderMiniboards(invites, sent, title) {
 
-    var title = m('div', title);
+    var title = m('div', {class: "ssb-chess-invites-section-title"}, title);
 
-    return m("div", {
+    var miniboards = m("div", {
         class: "ssb-chess-miniboards"
       },
-      [
-        title,
+
       invites.map(invite => renderInvite(invite, sent))
-      ]
+
   )
+
+  return m('div', {}, [title, miniboards]);
   }
 
   return {
