@@ -12,11 +12,18 @@ module.exports = (sbot, myIdent) => {
     return socialCtrl.followedByMe();
   }
 
+  function identWithDisplayName(ident) {
+    return socialCtrl.getPlayerDisplayName(ident).then(name => ({
+      'ident': ident,
+      'displayName': name
+    }));
+  }
+
   function friends() {
-    var followedByMe = this.followedByMe();
-    var followingMe = this.followingMe();
-    
-    return Promise.all([followedByMe, followingMe]).then(results => {
+    var iFollow = followedByMe();
+    var followsMe = followingMe();
+
+    return Promise.all([iFollow, followsMe]).then(results => {
       var following = results[0];
       var followedBy = results[1];
 
@@ -27,10 +34,19 @@ module.exports = (sbot, myIdent) => {
 
   }
 
+  function friendsWithNames() {
+    return friends().then(palaroonis => {
+      var namesWithIdents = palaroonis.map(identWithDisplayName);
+
+      return Promise.all(namesWithIdents)
+    });
+  }
+
   return {
     followingMe: followingMe,
     followedByMe: followedByMe,
-    friends: friends
+    friends: friends,
+    friendsWithNames: friendsWithNames
   }
 
 }

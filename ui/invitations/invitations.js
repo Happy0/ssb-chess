@@ -6,6 +6,8 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
   console.log(sentOrReceivedBoolean);
   var invitations = [];
 
+  var challengeComponent = ChallengeComponent(gameCtrl);
+
   function renderAcceptOrRejectControls(gameId) {
 
     const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
@@ -66,18 +68,16 @@ module.exports = (gameCtrl, sentOrReceivedBoolean) => {
       });
     },
     view: function() {
-      console.log("views clicked");
       var miniboards = m("div", {
           class: "ssb-chess-miniboards"
         },
         invitations.map(renderInvite));
 
-      var challengeCtrl = m(ChallengeComponent(gameCtrl));
+      var challengeCtrl = m(challengeComponent);
 
       return m('div', [challengeCtrl, miniboards]);
     },
     onremove: function(e) {
-      console.log("remove");
       PubSub.unsubscribe(this.miniboardUpdatesListener);
     }
   }
