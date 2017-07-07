@@ -10,11 +10,18 @@ module.exports = (gameCtrl) => {
 
   function renderFriendsdropDown() {
     console.log(challengableFriends);
-    return m('select', {name: 'friends'}, challengableFriends.map(renderFriendOption) );
+    return m('select', {id: "ssb-chess-challenge-control", name: 'friends'}, challengableFriends.map(renderFriendOption) );
   }
 
   function renderChallengeControl() {
-    const challengeButton = m('button', 'challenge');
+    const invitePlayer = () => {
+      var inviteDropdown = document.getElementById("ssb-chess-challenge-control");
+      var friendId = inviteDropdown.options[inviteDropdown.selectedIndex].value;
+
+      gameCtrl.inviteToPlay(friendId).then(m.redraw);
+    }
+
+    const challengeButton = m('button', {onclick: invitePlayer}, 'Challenge');
 
     return m('div', {class: "ssb-chess-challenge-control"}, [renderFriendsdropDown(), challengeButton]);
   }
