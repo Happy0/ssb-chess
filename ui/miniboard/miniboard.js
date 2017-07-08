@@ -6,8 +6,10 @@ module.exports = (summary, identPerspective) => {
 
   function renderSummary() {
 
-    //console.dir(summary);
-    const playerColour = summary.players[identPerspective] ? summary.players[identPerspective].colour: "white";
+    // An observer might not be in the 'players' list so we need a default
+    // perspective of white for them.
+    const playerColour = (summary.players[identPerspective] &&
+       summary.players[identPerspective].colour) ? summary.players[identPerspective].colour: "white";
 
     var vDom = m('a', {class: 'cg-board-wrap', title: summary.gameId,
       href: '#!/games/' + btoa(summary.gameId)},
@@ -32,12 +34,13 @@ module.exports = (summary, identPerspective) => {
     });
 
     var coloursNames = PlayerModelUtils.coloursToNames(summary.players);
+    var otherPlayerColour = playerColour == "white" ? "black" : "white";
 
     return m('div', {
         class: "ssb-chess-miniboard blue merida"
-      }, [m('center', {class: "ssb-chess-miniboard-name"}, coloursNames["black"].substring(0, 10)),
+      }, [m('center', {class: "ssb-chess-miniboard-name"}, coloursNames[otherPlayerColour].substring(0, 10)),
       vDom,
-      m('center', {class: "ssb-chess-miniboard-name"}, coloursNames["white"].substring(0, 10))]);
+      m('center', {class: "ssb-chess-miniboard-name"}, coloursNames[playerColour].substring(0, 10))]);
   }
 
   return {
