@@ -30,13 +30,11 @@ module.exports = (getGameSummariesFunc, ident) => {
     oncreate: function(e) {
       updateMiniboards();
 
-      this.miniboardUpdatesListener = PubSub.subscribe("chess_games_list_update", (msg, data) => {
+      this.miniboardUpdatesListener = PubSub.subscribe("catch_up_with_games", (msg, data) => {
 
         // Eh, maybe one day I'll be more fine grained about it :P
-        if (data == null || data != null) {
-          console.info("Updating miniboards");
-          updateMiniboards();
-        }
+        console.info("Updating miniboards");
+        updateMiniboards();
 
       });
 

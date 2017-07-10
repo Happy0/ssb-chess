@@ -13,157 +13,22 @@ module.exports = (sbot, db) => {
   var getStmtAsPromise = DbPromiseUtils(db).getStmtAsPromise;
   var runStmtAsPromise = DbPromiseUtils(db).runStmtAsPromise;
 
+  var ssb_chess_type_messages = [
+    "ssb_chess_invite",
+     "ssb_chess_invite_accept",
+     "ssb_chess_game_end"
+   ];
+
   function myLiveFeedSince(since) {
     const myFeedSource = sbot.createFeedStream({
       live: true
     });
 
-    console.log(since);
     if (since) {
       myFeedSource['gte'] = since;
     }
 
     return myFeedSource;
-  }
-
-  function messagesByType(typeOfMessage, date) {
-    var opts = {
-      type: typeOfMessage
-    };
-
-    if (date) {
-      opts["gt"] = date;
-    }
-
-    var source = sbot.messagesByType(opts);
-
-    return source;
-  }
-
-  function getLastSeenMessageDate() {
-    var query = `select updated from ssb_chess_games where rowid = (SELECT max(rowid) from ssb_chess_games);`
-    return getStmtAsPromise(query).then(result => result ? result.updated : null);
-  }
-
-  function insertNewGameChallenge(newGameChallengeMsg, cb) {
-
-    var insertStmt = `INSERT OR IGNORE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
-      VALUES ( '${newGameChallengeMsg.key}',
-       '${newGameChallengeMsg.value.author}', '${newGameChallengeMsg.value.content.inviting}',
-       '${newGameChallengeMsg.value.content.myColor}', 'invited', null, ${Date.now()} )`;
-
-    db.run(insertStmt, a => cb(null, "this is just to sync inserts"));
-  }
-
-  function updateWithChallengeAccepted(acceptedGameChallengeMsg, cb) {
-
-    if (!acceptedGameChallengeMsg.value.content.root) {
-      console.log("no root message");
-      cb(null, "this is just to sync updates");
-    }
-
-    var updateStmt = `UPDATE ssb_chess_games SET status = 'started', updated=${Date.now()}
-      WHERE gameId = '${acceptedGameChallengeMsg.value.content.root}'`;
-
-    console.log(updateStmt);
-
-    db.run(updateStmt, a => cb(null, "this is just to sync updates"));
-  }
-
-  function updateEndGame(endGameMessage, cb) {
-    console.dir(endGameMessage);
-    var updateStmt = `UPDATE ssb_chess_games
-      SET status = '${endGameMessage.value.content.status}', winner = '${endGameMessage.value.content.winner}', updated=${Date.now()}
-      WHERE gameId = '${endGameMessage.value.content.root}'  `;
-
-    db.run(updateStmt, cb(null, "this is just to sync updates"));
-  }
-
-  function watchForArrivingUpdates() {
-    console.log("Watching for arriving unseen invites, accepted invites and game ends");
-
-    PubSub.publish("chess_games_list_update", null);
-
-    getLastSeenMessageDate().then(sinceDate => {
-
-      pull(myLiveFeedSince(sinceDate), pull.asyncMap((msg, cb) => {
-        if (msg.sync) {
-          return;
-        }
-
-        var callbackAndPublish = (gameId) => {
-          console.log("callback");
-          cb(null, "This is just to sync updates.");
-          PubSub.publish("chess_games_list_update", gameId);
-        }
-
-        const type = msg.value.content.type;
-
-        if (type === "ssb_chess_game_end") {
-          updateEndGame(msg, callbackAndPublish(msg.value.content.root));
-        } else if (type === "ssb_chess_invite") {
-          insertNewGameChallenge(msg, callbackAndPublish(msg.key));
-        } else if (type === "ssb_chess_invite_accept") {
-          updateWithChallengeAccepted(msg, callbackAndPublish(msg.value.content.root));
-        } else {
-          cb(null, "This is just to sync updates.")
-        }
-
-      }));
-
-    });
-  }
-
-  function catchUpWithUnseenGameEnds(sinceDate) {
-    console.log("Catching up with unseen game ends since " + sinceDate);
-    pull(messagesByType("ssb_chess_game_end", sinceDate),
-      pull.asyncMap(updateEndGame),
-      pull.onEnd(err => {
-        if (err) {
-          console.dir(err);
-        } else {
-          getLastSeenMessageDate().then(sinceDate =>
-            watchForArrivingUpdates());
-        }
-      })
-    )
-  }
-
-  function catchUpWithUnseenAcceptedInvites(sinceDate) {
-    console.log("Catching up with unseen accepted invites since " + sinceDate);
-    pull(messagesByType("ssb_chess_invite_accept", sinceDate),
-      pull.asyncMap(updateWithChallengeAccepted),
-      pull.onEnd(err => {
-        if (err) {
-          console.dir(err);
-        } else {
-          catchUpWithUnseenGameEnds(sinceDate);
-        }
-      })
-    )
-  }
-
-  function catchUpWithUnseenInvites() {
-    getLastSeenMessageDate().then(sinceDate => {
-      console.log("Catching up with unseen invites since " + sinceDate);
-      console.dir(pull.asyncMap);
-
-      pull(
-        messagesByType("ssb_chess_invite", sinceDate),
-        pull.asyncMap(insertNewGameChallenge),
-        pull.onEnd(err => {
-          if (err) {
-            console.dir(err);
-          } else {
-            catchUpWithUnseenAcceptedInvites(sinceDate);
-          }
-        })
-      )
-    })
-  }
-
-  function loadGameSummariesIntoDatabase() {
-    return catchUpWithUnseenInvites();
   }
 
   function getInvitationSummary(row) {
@@ -198,6 +63,123 @@ module.exports = (sbot, db) => {
       or inviter="${playerId}" and (status <> "invited");`;
 
     return allStmtAsPromise(query).then(rows => rows.map(row => row.gameId));
+  }
+
+  function getRelatedMessages(gameInvite, cb) {
+    sbot.relatedMessages({
+      id: gameInvite.key
+    }, function(err, msg) {
+
+      var relatedMessages = msg.related ? msg.related : [];
+
+      var result = {
+        invite: gameInvite,
+        gameMessages: relatedMessages
+      }
+
+      cb(null, result);
+    });
+  }
+
+  function getGameStatus(maybeAcceptMsg, maybeGameEndMsg) {
+    if (maybeGameEndMsg) {
+      return maybeGameEndMsg.value.content.status;
+    } else if (maybeAcceptMsg) {
+      return "started";
+    } else {
+      return "invited";
+    }
+  }
+
+  function getUpdatedTime(maybeAcceptMsg, maybeGameEndMsg, orDefault) {
+    if (maybeGameEndMsg) {
+      return maybeGameEndMsg.value.timestamp;
+    } else if (maybeAcceptMsg) {
+      return maybeAcceptMsg.value.timestamp;
+    } else {
+      return orDefault;
+    }
+  }
+
+  function storeGameHistoryIntoView(gameHistory, optionalSyncCallback) {
+    var invite = gameHistory.invite;
+    var inviter = invite.value.author;
+
+    var acceptInviteMsg = gameHistory.gameMessages.find(msg =>
+       msg.value.content
+        && msg.value.content.type === "ssb_chess_invite_accept"
+        && msg.value.author === invite.value.content.inviting);
+
+    var gameEndMsg = gameHistory.gameMessages.find(msg =>
+       msg.value.content && msg.value.content.type === "ssb_chess_game_end");
+
+    var status = getGameStatus(acceptInviteMsg, gameEndMsg);
+    var updateTime = getUpdatedTime(acceptInviteMsg, gameEndMsg, invite.value.timestamp);
+
+    var winner = gameEndMsg ? gameEndMsg.value.content.winner : null;
+
+    var insertStmt = `INSERT OR REPLACE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
+      VALUES ( '${invite.key}',
+       '${inviter}', '${invite.value.content.inviting}',
+       '${invite.value.content.myColor}', '${status}', '${winner}', ${Date.now()} )`;
+
+    db.run(insertStmt, function(err) {
+
+      if (err) {
+        console.dir(err);
+        console.log("Error inserting game status view");
+      }
+
+      if (optionalSyncCallback) {
+        optionalSyncCallback(null, "db insert finished");
+      }
+
+    });
+
+  }
+
+  function getGameInvite(id, cb) {
+    sbot.get(id, function(err, inviteMsg) {
+      // happy0? h4cky0 moar like
+      inviteMsg.value = inviteMsg;
+
+      inviteMsg.key = id;
+      //console.dir(id);
+      //console.dir(inviteMsg);
+      cb(null, inviteMsg);
+    });
+  }
+
+  function keepUpToDateWithGames() {
+    var isChessMsgFilter = (msg) => !msg.sync === true && ssb_chess_type_messages.indexOf(msg.value.content.type) !== -1;
+    var fiveMinutes = 300000;
+
+    var gameIdUpdateThrough = pull(pull.filter(isChessMsgFilter),
+      pull.map(msg => msg.value.content.root ? msg.value.content.root : msg.key ));
+
+    var originalGameInvites = pull(gameIdUpdateThrough, pull.asyncMap(getGameInvite));
+
+    var storeGamesSync = pull(originalGameInvites, pull(pull.asyncMap(getRelatedMessages), pull.asyncMap(storeGameHistoryIntoView)));
+
+    pull(myLiveFeedSince(Date.now() - fiveMinutes ), storeGamesSync, pull.drain(e => PubSub.publish("catch_up_with_games")));
+  }
+
+  function signalAppReady() {
+    PubSub.publish("catch_up_with_games", Date.now());
+  }
+
+  function loadGameSummariesIntoDatabase() {
+    var inviteMsgs = sbot.messagesByType({
+      "type": "ssb_chess_invite"
+    });
+
+    pull(inviteMsgs,
+      pull.asyncMap(getRelatedMessages),
+      pull.drain(storeGameHistoryIntoView, () => {
+        console.log("blah blah");
+        signalAppReady();
+        keepUpToDateWithGames();
+      }));
   }
 
   return {

@@ -14,11 +14,22 @@ module.exports = () => {
             reject(err);
           } else {
             console.log("Successfully opened connection to sqlite.");
+
             resolve(db);
           }
         })
 
-    }).then(db => createVersionTable(db, 1)).then(db => createGamesTable(db));
+    }).then(db => createVersionTable(db, 1)).then(db =>
+      createUpdateStateTrackingTable(db)).then(db =>
+      createGamesTable(db));
+  }
+
+  function createUpdateStateTrackingTable(db) {
+    var runStmtAsPromise = DbPromiseUtils(db).runStmtAsPromise;
+
+    var stmt = ` CREATE TABLE IF NOT EXISTS ssb_chess_last_seen (key ingeger, last_seen_msg_date integer)`;
+
+    return runStmtAsPromise(stmt).then(e => db);
   }
 
   function createVersionTable(db, version) {
@@ -27,10 +38,6 @@ module.exports = () => {
     var stmt = `
           CREATE TABLE IF NOT EXISTS ssb_chess_version (schema_version integer)
       `
-    // TODO: Add schema version so we know if we have to rebuild the database as the
-    // schema may change in future versions
-
-    console.dir(runStmtAsPromise);
 
     return runStmtAsPromise(stmt).then(e => db);
   }
