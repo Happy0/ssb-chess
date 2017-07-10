@@ -80,13 +80,11 @@ module.exports = (gameCtrl) => {
     oncreate: function() {
       updateInvites();
 
-      this.miniboardUpdatesListener = PubSub.subscribe("chess_games_list_update", (msg, data) => {
+      this.miniboardUpdatesListener = PubSub.subscribe("catch_up_with_games", (msg, data) => {
 
         // Eh, maybe one day I'll be more fine grained about it :P
-        if (data == null || data != null) {
-          console.info("Updating miniboards");
-          updateInvites();
-        }
+        console.info("Updating miniboards");
+        updateInvites();
 
       });
     },

@@ -20,13 +20,16 @@ module.exports = (sbot, db) => {
    ];
 
   function myLiveFeedSince(since) {
-    const myFeedSource = sbot.createFeedStream({
+
+    var opts = {
       live: true
-    });
+    }
 
     if (since) {
-      myFeedSource['gte'] = since;
+      opts['gte'] = since;
     }
+
+    const myFeedSource = sbot.createFeedStream(opts);
 
     return myFeedSource;
   }
@@ -121,7 +124,7 @@ module.exports = (sbot, db) => {
     var insertStmt = `INSERT OR REPLACE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
       VALUES ( '${invite.key}',
        '${inviter}', '${invite.value.content.inviting}',
-       '${invite.value.content.myColor}', '${status}', '${winner}', ${Date.now()} )`;
+       '${invite.value.content.myColor}', '${status}', '${winner}', ${Date.now() / 1000} )`;
 
     db.run(insertStmt, function(err) {
 
@@ -152,7 +155,7 @@ module.exports = (sbot, db) => {
 
   function keepUpToDateWithGames() {
     var isChessMsgFilter = (msg) => !msg.sync === true && ssb_chess_type_messages.indexOf(msg.value.content.type) !== -1;
-    var fiveMinutes = 300000;
+    var fiveMinutes = 300 * 1000;
 
     var gameIdUpdateThrough = pull(pull.filter(isChessMsgFilter),
       pull.map(msg => msg.value.content.root ? msg.value.content.root : msg.key ));
@@ -161,7 +164,10 @@ module.exports = (sbot, db) => {
 
     var storeGamesSync = pull(originalGameInvites, pull(pull.asyncMap(getRelatedMessages), pull.asyncMap(storeGameHistoryIntoView)));
 
-    pull(myLiveFeedSince(Date.now() - fiveMinutes ), storeGamesSync, pull.drain(e => PubSub.publish("catch_up_with_games")));
+    pull(myLiveFeedSince( Date.now() - fiveMinutes ), storeGamesSync, pull.drain(e => {
+      console.log("Game update");
+      PubSub.publish("catch_up_with_games");
+    }));
   }
 
   function signalAppReady() {
