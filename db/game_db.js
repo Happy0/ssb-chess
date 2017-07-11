@@ -15,9 +15,9 @@ module.exports = (sbot, db) => {
 
   var ssb_chess_type_messages = [
     "ssb_chess_invite",
-     "ssb_chess_invite_accept",
-     "ssb_chess_game_end"
-   ];
+    "ssb_chess_invite_accept",
+    "ssb_chess_game_end"
+  ];
 
   function myLiveFeedSince(since) {
 
@@ -109,12 +109,12 @@ module.exports = (sbot, db) => {
     var inviter = invite.value.author;
 
     var acceptInviteMsg = gameHistory.gameMessages.find(msg =>
-       msg.value.content
-        && msg.value.content.type === "ssb_chess_invite_accept"
-        && msg.value.author === invite.value.content.inviting);
+      msg.value.content &&
+      msg.value.content.type === "ssb_chess_invite_accept" &&
+      msg.value.author === invite.value.content.inviting);
 
     var gameEndMsg = gameHistory.gameMessages.find(msg =>
-       msg.value.content && msg.value.content.type === "ssb_chess_game_end");
+      msg.value.content && msg.value.content.type === "ssb_chess_game_end");
 
     var status = getGameStatus(acceptInviteMsg, gameEndMsg);
     var updateTime = getUpdatedTime(acceptInviteMsg, gameEndMsg, invite.value.timestamp);
@@ -134,6 +134,9 @@ module.exports = (sbot, db) => {
       }
 
       if (optionalSyncCallback) {
+        // This can be used to run insert statements 1 after another if
+        // ordering is important (as it is for as we want to refresh the
+        //  page only when we're completely caught up)
         optionalSyncCallback(null, "db insert finished");
       }
 
@@ -158,13 +161,13 @@ module.exports = (sbot, db) => {
     var fiveMinutes = 300 * 1000;
 
     var gameIdUpdateThrough = pull(pull.filter(isChessMsgFilter),
-      pull.map(msg => msg.value.content.root ? msg.value.content.root : msg.key ));
+      pull.map(msg => msg.value.content.root ? msg.value.content.root : msg.key));
 
     var originalGameInvites = pull(gameIdUpdateThrough, pull.asyncMap(getGameInvite));
 
     var storeGamesSync = pull(originalGameInvites, pull(pull.asyncMap(getRelatedMessages), pull.asyncMap(storeGameHistoryIntoView)));
 
-    pull(myLiveFeedSince( Date.now() - fiveMinutes ), storeGamesSync, pull.drain(e => {
+    pull(myLiveFeedSince(Date.now() - fiveMinutes), storeGamesSync, pull.drain(e => {
       console.log("Game update");
       PubSub.publish("catch_up_with_games");
     }));
@@ -179,10 +182,15 @@ module.exports = (sbot, db) => {
       "type": "ssb_chess_invite"
     });
 
-    pull(inviteMsgs,
+    var insertGamesThrough = pull(
       pull.asyncMap(getRelatedMessages),
-      pull.drain(storeGameHistoryIntoView, () => {
-        console.log("blah blah");
+      pull.asyncMap(storeGameHistoryIntoView)
+    );
+
+    pull(inviteMsgs,
+      insertGamesThrough,
+      pull.onEnd(() => {
+        console.log("Caught up with game statuses so far. Watching for new updates.");
         signalAppReady();
         keepUpToDateWithGames();
       }));
