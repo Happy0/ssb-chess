@@ -80,6 +80,7 @@ module.exports = (gameCtrl) => {
         if (data.gameId === gameId && chessGround) {
 
           var dests = {
+            check: data.check,
             movable: {
               dests: data.validMoves
             }

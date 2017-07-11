@@ -130,17 +130,16 @@ module.exports = (sbot, myIdent, db) => {
       console.log("move error");
       console.dir(e);
       PubSub.publish("move_error", e.data.payload.error);
-    } else if (e.data.topic === 'dests') {
+    } else if (e.data.topic === 'init') {
 
       var gameId = e.data.reqid.gameRootMessage;
-      var validDests = e.data.payload.dests;
-
-      console.log("Publishing valid moves");
-      console.dir(validDests);
+      var validDests = e.data.payload.setup.dests;
+      var isCheck = e.data.payload.setup.check;
 
       PubSub.publish("valid_moves", {
         gameId: gameId,
-        validMoves: validDests
+        validMoves: validDests,
+        check: isCheck
       })
 
     } else if (e.data.payload.situation.end) {
@@ -187,7 +186,7 @@ module.exports = (sbot, myIdent, db) => {
       var gameFen = situation.fen;
 
       chessWorker.postMessage({
-        topic: 'dests',
+        topic: 'init',
         payload: {
           'fen': gameFen
         },

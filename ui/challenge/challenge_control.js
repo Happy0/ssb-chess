@@ -26,15 +26,19 @@ module.exports = (gameCtrl) => {
     return m('div', {class: "ssb-chess-challenge-control"}, [renderFriendsdropDown(), challengeButton]);
   }
 
+  function updateFriends() {
+    // Using palaroonis as a variable name because it's my project and
+    // nobody can stop me >=D #madlad
+    gameCtrl.getSocialCtrl().friendsWithNames().then(palaroonis => {
+       challengableFriends = palaroonis;
+     }).then(m.redraw);
+  }
+
   return {
     view : renderChallengeControl,
 
     oncreate: () => {
-      // Using palaroonis as a variable name because it's my project and
-      // nobody can stop me >=D #madlad
-      gameCtrl.getSocialCtrl().friendsWithNames().then(palaroonis => {
-         challengableFriends = palaroonis;
-       }).then(m.redraw);
+      updateFriends();
     }
   }
 

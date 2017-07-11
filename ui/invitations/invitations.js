@@ -78,15 +78,15 @@ module.exports = (gameCtrl) => {
 
   return {
     oncreate: function() {
-      updateInvites();
 
       this.miniboardUpdatesListener = PubSub.subscribe("catch_up_with_games", (msg, data) => {
 
         // Eh, maybe one day I'll be more fine grained about it :P
         console.info("Updating miniboards");
         updateInvites();
-
       });
+
+      updateInvites();
     },
     view: function() {
 
