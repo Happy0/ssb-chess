@@ -4,6 +4,8 @@ var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 
 module.exports = (summary, identPerspective) => {
 
+  var chessground = null;
+
   function renderSummary() {
 
     // An observer might not be in the 'players' list so we need a default
@@ -30,7 +32,7 @@ module.exports = (summary, identPerspective) => {
     // The dom element isn't available yet
     setTimeout(() => {
       var element = vDom.dom;
-      Chessground(element, config);
+      chessground = Chessground(element, config);
     });
 
     var coloursNames = PlayerModelUtils.coloursToNames(summary.players);
@@ -46,6 +48,24 @@ module.exports = (summary, identPerspective) => {
   return {
     view: function() {
       return renderSummary();
+    },
+    oninit: function() {
+      this.moveListener = PubSub.subscribe("game_update", function(msg, data) {
+        if (data.gameId === summary.gameId) {
+          var config = {
+            fen: data.fen,
+            lastMove: [data.orig, data.dest]
+          }
+
+          if (chessground) {
+              chessground.set(config);
+          }
+        }
+      });
+
+    },
+    onremove: function() {
+      PubSub.unsubscribe(this.moveListener);
     }
   }
 
