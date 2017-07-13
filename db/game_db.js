@@ -10,8 +10,6 @@ var PubSub = require("pubsub-js");
 module.exports = (sbot, db) => {
 
   var allStmtAsPromise = DbPromiseUtils(db).allStmtAsPromise;
-  var getStmtAsPromise = DbPromiseUtils(db).getStmtAsPromise;
-  var runStmtAsPromise = DbPromiseUtils(db).runStmtAsPromise;
 
   var ssb_chess_type_messages = [
     "ssb_chess_invite",
@@ -49,7 +47,6 @@ module.exports = (sbot, db) => {
 
   function pendingChallengesSent(playerId) {
     var query = ` select * from ssb_chess_games WHERE inviter="${playerId}" and status="invited" `;
-    console.log(query);
 
     return allStmtAsPromise(query).then(rows => rows.map(getInvitationSummary));
   }
@@ -156,9 +153,9 @@ module.exports = (sbot, db) => {
     });
   }
 
-  function keepUpToDateWithGames() {
+  function keepUpToDateWithGames(since) {
+
     var isChessMsgFilter = (msg) => !msg.sync === true && ssb_chess_type_messages.indexOf(msg.value.content.type) !== -1;
-    var fiveMinutes = 300 * 1000;
 
     var gameIdUpdateThrough = pull(pull.filter(isChessMsgFilter),
       pull.map(msg => msg.value.content.root ? msg.value.content.root : msg.key));
@@ -167,7 +164,7 @@ module.exports = (sbot, db) => {
 
     var storeGamesSync = pull(originalGameInvites, pull(pull.asyncMap(getRelatedMessages), pull.asyncMap(storeGameHistoryIntoView)));
 
-    pull(myLiveFeedSince(Date.now() - fiveMinutes), storeGamesSync, pull.drain(e => {
+    pull(myLiveFeedSince(since), storeGamesSync, pull.drain(e => {
       console.log("Game update");
       PubSub.publish("catch_up_with_games");
     }));
@@ -187,12 +184,21 @@ module.exports = (sbot, db) => {
       pull.asyncMap(storeGameHistoryIntoView)
     );
 
+    var startedCatchingUpAt = Date.now();
+
     pull(inviteMsgs,
       insertGamesThrough,
       pull.onEnd(() => {
         console.log("Caught up with game statuses so far. Watching for new updates.");
         signalAppReady();
-        keepUpToDateWithGames();
+
+        var timeSpentCatchingUp = Date.now() - startedCatchingUpAt;
+
+        // Catch up since now - (time we spent catching up with old messages + 2 minutes in milliseconds)
+        // * 1000 to put it into unix time
+        var since = (Date.now() - (timeSpentCatchingUp + (120 * 1000) ));
+
+        keepUpToDateWithGames(since);
       }));
   }
 

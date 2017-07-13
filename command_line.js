@@ -80,7 +80,7 @@ module.exports = (gameCtrl, socialCtrl) => {
     } else if (args["following"]) {
       socialCtrl.followedByMe().then(followedByMe => console.dir(followedByMe)).then(() => process.exit(1) );
     } else if (args["friends"]) {
-      socialCtrl.friends().then(friends => console.dir(friends)).then(() => process.exit(1) ).catch(err => console.dir(err.stack));
+      socialCtrl.friendsWithNames().then(friends => console.dir(friends)).then(() => process.exit(1) ).catch(err => console.dir(err.stack));
     }
   }
 
