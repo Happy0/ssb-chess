@@ -11,7 +11,9 @@ module.exports = (gameCtrl) => {
 
   function renderAcceptOrRejectControls(gameId, inviteSent) {
 
-    const acceptInvite = () => gameCtrl.acceptChallenge(gameId).then(e => m.redraw());
+    const acceptInvite = () => {
+      gameCtrl.acceptChallenge(gameId).then(e => m.redraw())
+    }
 
     const cancelButton = m('button', {
       class: 'ssb-chess-miniboard-controls',
@@ -63,7 +65,9 @@ module.exports = (gameCtrl) => {
 
   function renderMiniboards(invites, sent, title) {
 
-    var title = m('div', {class: "ssb-chess-invites-section-title"}, title);
+    var title = m('div', {
+      class: "ssb-chess-invites-section-title"
+    }, title);
 
     var miniboards = m("div", {
         class: "ssb-chess-miniboards"
@@ -71,9 +75,9 @@ module.exports = (gameCtrl) => {
 
       invites.map(invite => renderInvite(invite, sent))
 
-  )
+    )
 
-  return m('div', {}, [title, miniboards]);
+    return m('div', {}, [title, miniboards]);
   }
 
   return {

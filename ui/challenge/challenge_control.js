@@ -14,11 +14,16 @@ module.exports = (gameCtrl) => {
   }
 
   function renderChallengeControl() {
-    const invitePlayer = () => {
+    const invitePlayer = (e) => {
+      var buttonElement = e.srcElement;
+      buttonElement.disabled = true
+
       var inviteDropdown = document.getElementById("ssb-chess-challenge-control");
       var friendId = inviteDropdown.options[inviteDropdown.selectedIndex].value;
 
-      gameCtrl.inviteToPlay(friendId).then(m.redraw);
+      gameCtrl.inviteToPlay(friendId)
+        .then(m.redraw)
+        .then(() => buttonElement.disabled = false);
     }
 
     const challengeButton = m('button', {onclick: invitePlayer}, 'Challenge');
