@@ -17,7 +17,7 @@ module.exports = (sbot, db) => {
     "ssb_chess_game_end"
   ];
 
-  function myLiveFeedSince(since) {
+  function liveLogStreamSince(since) {
 
     var opts = {
       live: true
@@ -27,7 +27,7 @@ module.exports = (sbot, db) => {
       opts['gte'] = since;
     }
 
-    const myFeedSource = sbot.createFeedStream(opts);
+    const myFeedSource = sbot.createLogStream(opts);
 
     return myFeedSource;
   }
@@ -164,10 +164,10 @@ module.exports = (sbot, db) => {
 
     var storeGamesSync = pull(originalGameInvites, pull(pull.asyncMap(getRelatedMessages), pull.asyncMap(storeGameHistoryIntoView)));
 
-    pull(myLiveFeedSince(since), storeGamesSync, pull.drain(e => {
+    pull(liveLogStreamSince(since), storeGamesSync, pull.drain(e => {
       console.log("Game update");
       PubSub.publish("catch_up_with_games");
-    }));
+    }, () => console.log("unexpected end of game invitations stream")));
   }
 
   function signalAppReady() {
