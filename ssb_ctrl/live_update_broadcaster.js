@@ -5,8 +5,6 @@ module.exports = (sbot) => {
 
   function handleUpdate(res) {
 
-    // dunno what that sync message is all about, so let's ignore it
-    // and brush it away
     if (!res.sync) {
       var content = {
         gameId: res.value.content.root,
@@ -27,24 +25,14 @@ module.exports = (sbot) => {
       type: "ssb_chess_move",
       live: true,
       gt: Date.now()
-    }
-
-    var gameEndOptions = {
-      type: "ssb_chess_game_end",
-      live: true,
-      gt: Date.now()
-    }
+    };
 
     const moveTypeSource = sbot.messagesByType(moveOptions);
-    const gameEndSource = sbot.messagesByType(gameEndOptions);
 
     pull(moveTypeSource, pull.drain((res) => {
       handleUpdate(res);
     }, done => console.dir("Debug: Live move game updates stream ended.")));
 
-    pull(gameEndSource, pull.drain((res) => {
-      handleUpdate(res);
-    }, done => console.dir("Debug: Live move game updates stream ended.")));
   }
 
   return {
