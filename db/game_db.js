@@ -171,6 +171,7 @@ module.exports = (sbot, db) => {
   }
 
   function signalAppReady() {
+    PubSub.publish("ssb_chess_games_loaded");
     PubSub.publish("catch_up_with_games", Date.now());
   }
 

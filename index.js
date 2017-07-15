@@ -7,11 +7,18 @@ var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 var NavigationBar = require('./ui/pageLayout/navigation')();
 var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
+var StatusBar = require('./ui/pageLayout/status_bar');
 
 module.exports = (attachToElement, sbot) => {
 
   function renderPageTop(parent) {
-    m.render(parent, NavigationBar.navigationTop());
+
+    var statusBar = m(StatusBar());
+
+    m.render(parent, [
+      statusBar,
+      NavigationBar.navigationTop()
+    ]);
   }
 
   function appRouter(mainBody, gameCtrl) {
@@ -22,7 +29,7 @@ module.exports = (attachToElement, sbot) => {
       "/invitations": InvitationsComponent(gameCtrl)
     })
   }
-  
+
   sbot.whoami((err, ident) => {
     Db.initDb().then(db => {
       const gameCtrl = GameCtrl(sbot, ident.id, db);
