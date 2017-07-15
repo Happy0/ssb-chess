@@ -1,22 +1,39 @@
 <html>
-  <head>
-    <link rel="stylesheet" type="text/css" href="css/global.css">
-    <link rel="stylesheet" type="text/css" href="css/chessground/assets/chessground.css">
-    <link rel="stylesheet" type="text/css" href="css/chessground/assets/theme.css">
-    <link rel="stylesheet" type="text/css" href="css/miniboards.css">
-    <link rel="stylesheet" type="text/css" href="css/largeBoard.css">
-    <link rel="stylesheet" type="text/css" href="css/invites.css">
-  </head>
-  <body>
-    <nav id="ssb-nav">
 
-    </nav>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/global.css">
+  <link rel="stylesheet" type="text/css" href="css/chessground/assets/chessground.css">
+  <link rel="stylesheet" type="text/css" href="css/chessground/assets/theme.css">
+  <link rel="stylesheet" type="text/css" href="css/miniboards.css">
+  <link rel="stylesheet" type="text/css" href="css/largeBoard.css">
+  <link rel="stylesheet" type="text/css" href="css/invites.css">
+</head>
 
-    <main id="ssb-main">
-    </main>
+<body>
+  <nav id="ssb-nav">
 
-  </body>
-  <script>
-    require('./index.js')();
-  </script>
+  </nav>
+
+  <main id="ssb-main">
+  </main>
+
+</body>
+<script>
+  var ssbClient = require('ssb-client');
+
+  console.log("Starting ssb-chess");
+
+  ssbClient(
+    function(err, sbot) {
+
+      if (err) {
+        console.log(err);
+      } else {
+        var attachToElement = document.getElementById("ssb-main");
+        require('./index.js')(attachToElement, sbot);
+      }
+
+    });
+</script>
+
 </html>

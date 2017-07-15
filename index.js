@@ -1,5 +1,3 @@
-var ssbClient = require('ssb-client');
-
 var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
@@ -10,11 +8,10 @@ var NavigationBar = require('./ui/pageLayout/navigation')();
 var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
 
-module.exports = () => {
+module.exports = (attachToElement, sbot) => {
 
-  function renderPageTop() {
-    const navBar = document.getElementById("ssb-nav");
-    m.render(navBar, NavigationBar.navigationTop());
+  function renderPageTop(parent) {
+    m.render(parent, NavigationBar.navigationTop());
   }
 
   function appRouter(mainBody, gameCtrl) {
@@ -25,25 +22,23 @@ module.exports = () => {
       "/invitations": InvitationsComponent(gameCtrl)
     })
   }
+  
+  sbot.whoami((err, ident) => {
+    Db.initDb().then(db => {
+      const gameCtrl = GameCtrl(sbot, ident.id, db);
+      gameCtrl.startPublishingBoardUpdates();
 
-  ssbClient(
-    function(err, sbot) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Starting ssb-chess");
-        sbot.whoami((err, ident) => {
-          Db.initDb().then(db => {
-            const gameCtrl = GameCtrl(sbot, ident.id, db);
-            gameCtrl.startPublishingBoardUpdates();
+      const mainBody = attachToElement;
+      const navDiv = document.createElement("div");
+      navDiv.id = "ssb-nav";
+      const bodyDiv = document.createElement("div");
 
-            renderPageTop();
-            const mainBody = document.getElementById("ssb-main");
-            appRouter(mainBody, gameCtrl);
-          })
-        })
-      }
-    });
+      mainBody.appendChild(navDiv);
+      mainBody.appendChild(bodyDiv);
 
+      renderPageTop(navDiv);
 
+      appRouter(bodyDiv, gameCtrl);
+    })
+  });
 }
