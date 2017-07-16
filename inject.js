@@ -4,18 +4,15 @@ const {
   h
 } = require('mutant');
 
-export.gives = nest({
+exports.gives = nest({
   'app.html': {
     page: true,
     menuItem: true
   }
 })
 
-export.needs = nest({
-  'sbot': 'first'
-});
 
-export.create = function(api) {
+exports.create = function(api) {
   const route = '/chess'
 
   return nest({
