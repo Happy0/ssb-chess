@@ -1,8 +1,8 @@
 {
-  "name": "skuttlebutt-chess",
+  "name": "ssb-chess",
   "version": "1.0.0",
   "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
-  "main": "main.js",
+  "main": "inject.js",
   "dependencies": {
     "neodoc": "1.4.0",
     "pull-stream": "3.6.0",
@@ -14,11 +14,14 @@
     "uuid": "3.1.0",
     "pubsub-js": "1.5.7",
 
-    "electron": "1.6.11",
     "mithril": "1.1.1",
     "chessground": "6.4.23",
 
-    "sqlite3": "3.1.8"
+    "sqlite3": "3.1.8",
+
+    "depject": "4.1.0",
+    "depnest": "1.3.0",
+    "mutant": "3.19.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
