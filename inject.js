@@ -4,6 +4,8 @@ const {
   h
 } = require('mutant');
 
+var onceTrue = require('mutant/once-true');
+
 exports.gives = nest({
   'app.html': {
     page: true,
@@ -11,9 +13,15 @@ exports.gives = nest({
   }
 })
 
+exports.needs = nest({
+  'api.sbot.obs.connection': 'first'
+});
+
 
 exports.create = function(api) {
   const route = '/chess'
+
+  const topLevelDomElement = document.createElement('div');
 
   return nest({
     'app.html': {
@@ -31,15 +39,15 @@ exports.create = function(api) {
     }, route)
   }
 
+  function chessPage() {
+    return topLevelDomElement;
+  }
 
-  function chessPage(path) {
+  onceTrue(api.sbot.obs.connection(), (sbot) => {
     if (path !== route) return
 
-    // todo: build required scuttlebot functions from patchcore into this object
-    // and structure the sbot object as though it was 'sbot' from just plain
-    // scuttlebot. (i.e. not sbot.async.get but sbot.get)
-    var sbot = {};
+    index(sbot, topLevelDomElement);
 
-    return index(sbot, document.createElement('div'));
-  }
+    return topLevelDomElement;
+  });
 }
