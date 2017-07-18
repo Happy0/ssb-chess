@@ -9,8 +9,6 @@ var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
 
-const path = require('path');
-
 module.exports = (attachToElement, sbot) => {
 
   var cssFiles = [
@@ -25,7 +23,6 @@ module.exports = (attachToElement, sbot) => {
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
   function cssFilesToStyleTag(dom) {
-    var path = require("path");
     var rootDir = __dirname + "/";
 
     var styles = m('div', {}, cssFiles.map(file => m('link', {rel: 'stylesheet', 'href': rootDir + file})))
