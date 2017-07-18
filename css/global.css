@@ -1,3 +1,9 @@
 .ssb-chess-nav-item {
   margin: 10px;
 }
+
+#ssb-chess-container {
+  height: 100%;
+  width: 100%;
+  overflow: scroll;
+}
