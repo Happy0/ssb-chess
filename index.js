@@ -9,7 +9,29 @@ var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
 
+const path = require('path');
+
 module.exports = (attachToElement, sbot) => {
+
+  var cssFiles = [
+    "./css/global.css",
+    "./css/chessground/assets/chessground.css",
+    "./css/chessground/assets/theme.css",
+    "./css/miniboards.css",
+    "./css/largeBoard.css",
+    "./css/invites.css",
+    "./css/loading.css"
+  ];
+
+  // h4cky0 strikes again? mebbe there's a better way? ;x
+  function cssFilesToStyleTag(dom) {
+    var path = require("path");
+    var rootDir = __dirname + "/";
+
+    var styles = m('div', {}, cssFiles.map(file => m('link', {rel: 'stylesheet', 'href': rootDir + file})))
+
+    m.render(dom, styles);
+  }
 
   function renderPageTop(parent) {
 
@@ -40,6 +62,10 @@ module.exports = (attachToElement, sbot) => {
       navDiv.id = "ssb-nav";
       const bodyDiv = document.createElement("div");
 
+      const cssDiv = document.createElement("div");
+      cssFilesToStyleTag(cssDiv);
+
+      mainBody.appendChild(cssDiv);
       mainBody.appendChild(navDiv);
       mainBody.appendChild(bodyDiv);
 
