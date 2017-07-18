@@ -69,7 +69,8 @@
     "style-resolve": "^1.0.1",
     "suggest-box": "^2.2.3",
     "text-node-searcher": "^1.1.1",
-    "xtend": "^4.0.1"
+    "xtend": "^4.0.1",
+    "ssb-chess": "1.0.2"
   },
   "devDependencies": {
     "standard": "^8.6.0"
