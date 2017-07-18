@@ -13,8 +13,7 @@ module.exports = (summary, identPerspective) => {
     const playerColour = (summary.players[identPerspective] &&
        summary.players[identPerspective].colour) ? summary.players[identPerspective].colour: "white";
 
-    var vDom = m('a', {class: 'cg-board-wrap', title: summary.gameId,
-      href: '#!/games/' + btoa(summary.gameId)},
+    var vDom = m('a[href=' + '/games/' + btoa(summary.gameId) +']', {class: 'cg-board-wrap', title: summary.gameId, oncreate: m.route.link},
       m("div", {
         id: summary.gameId
       }))
