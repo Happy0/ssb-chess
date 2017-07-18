@@ -14,7 +14,7 @@ exports.gives = nest({
 })
 
 exports.needs = nest({
-  'api.sbot.obs.connection': 'first'
+  'sbot.obs.connection': 'first'
 });
 
 
@@ -39,15 +39,15 @@ exports.create = function(api) {
     }, route)
   }
 
-  function chessPage() {
-    return topLevelDomElement;
+  function chessPage(path) {
+    if (path !== route) {
+      return
+    } else {
+      onceTrue(api.sbot.obs.connection(), (sbot) => {
+        index(topLevelDomElement, sbot);
+      });
+
+      return topLevelDomElement;
+    }
   }
-
-  onceTrue(api.sbot.obs.connection(), (sbot) => {
-    if (path !== route) return
-
-    index(sbot, topLevelDomElement);
-
-    return topLevelDomElement;
-  });
 }
