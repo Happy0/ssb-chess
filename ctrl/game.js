@@ -111,7 +111,7 @@ module.exports = (sbot, myIdent, db) => {
             gameRootMessage: gameRootMessage,
             originSquare: originSquare,
             destinationSquare: destinationSquare,
-            previousSituation: situation
+            players: situation.players
           }
 
         });
@@ -149,7 +149,7 @@ module.exports = (sbot, myIdent, db) => {
       var winner = e.data.payload.situation.winner;
       var ply = e.data.payload.situation.ply;
       var fen = e.data.payload.situation.fen;
-      var players = e.data.reqid.previousSituation.players;
+      var players = e.data.reqid.players;
 
       var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
