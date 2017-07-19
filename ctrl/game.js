@@ -153,7 +153,7 @@ module.exports = (sbot, myIdent, db) => {
 
       var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
-      var coloursToPlayer = PlayerModelUtils.coloursToPlayers(players);
+      var coloursToPlayer = PlayerModelUtils.coloursToPlayer(players);
 
       // TODO: test this still works after some refactoring
       var winnerId = winner ? coloursToPlayer[winner].id : null;
