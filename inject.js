@@ -22,7 +22,12 @@ exports.create = function(api) {
   const route = '/chess'
 
   const topLevelDomElement = document.createElement('div');
-  topLevelDomElement.id = "ssb-chess-container";
+
+  var mainDomElement = document.createElement('div');
+
+  // Setting an id for the top level element interferes with the title of the tab
+  mainDomElement.id="ssb-chess-container";
+  topLevelDomElement.appendChild(mainDomElement);
 
   return nest({
     'app.html': {
@@ -45,7 +50,7 @@ exports.create = function(api) {
       return
     } else {
       onceTrue(api.sbot.obs.connection(), (sbot) => {
-        index(topLevelDomElement, sbot);
+        index(mainDomElement, sbot);
       });
 
       return topLevelDomElement;
