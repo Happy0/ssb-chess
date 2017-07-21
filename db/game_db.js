@@ -66,19 +66,26 @@ module.exports = (sbot, db) => {
   }
 
   function getRelatedMessages(gameInvite, cb) {
-    sbot.relatedMessages({
-      id: gameInvite.key
-    }, function(err, msg) {
+    const linksToInvite = sbot.links({
+      dest: gameInvite.key,
+      values: true
+    });
 
-      var relatedMessages = msg.related ? msg.related : [];
+    pull(linksToInvite, pull.collect((err, res) => {
 
-      var result = {
-        invite: gameInvite,
-        gameMessages: relatedMessages
+      if (err) {
+        cb(err, null);
+      } else {
+        msgs = res === null ? [] : res;
+        var result = {
+          invite: gameInvite,
+          gameMessages: msgs
+        }
+
+        cb(null, result);
       }
 
-      cb(null, result);
-    });
+    }))
   }
 
   function getGameStatus(maybeAcceptMsg, maybeGameEndMsg) {
@@ -197,7 +204,7 @@ module.exports = (sbot, db) => {
 
         // Catch up since now - (time we spent catching up with old messages + 2 minutes in milliseconds)
         // * 1000 to put it into unix time
-        var since = (Date.now() - (timeSpentCatchingUp + (120 * 1000) ));
+        var since = (Date.now() - (timeSpentCatchingUp + (120 * 1000)));
 
         keepUpToDateWithGames(since);
       }));
