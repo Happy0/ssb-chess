@@ -82,7 +82,8 @@ module.exports = (gameCtrl) => {
           var dests = {
             check: data.check,
             movable: {
-              dests: data.validMoves
+              dests: data.validMoves,
+              free: false
             }
           }
 
