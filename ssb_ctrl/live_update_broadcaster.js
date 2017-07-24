@@ -22,7 +22,7 @@ module.exports = (sbot) => {
   function listenForSSBChessMessageUpdates() {
 
     var moveOptions = {
-      type: "ssb_chess_move",
+      type: "chess_move",
       live: true,
       gt: Date.now()
     };

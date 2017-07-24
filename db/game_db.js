@@ -12,9 +12,9 @@ module.exports = (sbot, db) => {
   var allStmtAsPromise = DbPromiseUtils(db).allStmtAsPromise;
 
   var ssb_chess_type_messages = [
-    "ssb_chess_invite",
-    "ssb_chess_invite_accept",
-    "ssb_chess_game_end"
+    "chess_invite",
+    "chess_invite_accept",
+    "chess_game_end"
   ];
 
   function liveLogStreamSince(since) {
@@ -114,11 +114,11 @@ module.exports = (sbot, db) => {
 
     var acceptInviteMsg = gameHistory.gameMessages.find(msg =>
       msg.value.content &&
-      msg.value.content.type === "ssb_chess_invite_accept" &&
+      msg.value.content.type === "chess_invite_accept" &&
       msg.value.author === invite.value.content.inviting);
 
     var gameEndMsg = gameHistory.gameMessages.find(msg =>
-      msg.value.content && msg.value.content.type === "ssb_chess_game_end");
+      msg.value.content && msg.value.content.type === "chess_game_end");
 
     var status = getGameStatus(acceptInviteMsg, gameEndMsg);
     var updateTime = getUpdatedTime(acceptInviteMsg, gameEndMsg, invite.value.timestamp);
@@ -184,7 +184,7 @@ module.exports = (sbot, db) => {
 
   function loadGameSummariesIntoDatabase() {
     var inviteMsgs = sbot.messagesByType({
-      "type": "ssb_chess_invite"
+      "type": "chess_invite"
     });
 
     var insertGamesThrough = pull(

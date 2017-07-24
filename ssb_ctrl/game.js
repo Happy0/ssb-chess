@@ -78,7 +78,7 @@ module.exports = (sbot, myIdent) => {
     });
 
     return new Promise((resolve, reject) => {
-      pull(source, pull.find(msg => msg.value.content.type === "ssb_chess_game_end", (err, result) => {
+      pull(source, pull.find(msg => msg.value.content.type === "chess_game_end", (err, result) => {
         if (err) {
           reject(err);
         } else {
@@ -106,8 +106,8 @@ module.exports = (sbot, myIdent) => {
 
       const filterByPlayerMoves = players =>
         filter(msg => players.hasOwnProperty(msg.value.author) &&
-          (msg.value.content.type === "ssb_chess_move" ||
-            (msg.value.content.type === "ssb_chess_game_end" && msg.value.content.orig != null) ));
+          (msg.value.content.type === "chess_move" ||
+            (msg.value.content.type === "chess_game_end" && msg.value.content.orig != null) ));
 
       const getPlayerToMove = (players, numMoves) => {
         const colourToMove = numMoves % 2 === 0 ? "white" : "black";
@@ -159,7 +159,7 @@ module.exports = (sbot, myIdent) => {
 
   function makeMove(gameRootMessage, ply, originSquare, destinationSquare, pgnMove, fen) {
     const post = {
-      type: 'ssb_chess_move',
+      type: 'chess_move',
       ply: ply,
       root: gameRootMessage,
       orig: originSquare,
@@ -189,7 +189,7 @@ module.exports = (sbot, myIdent) => {
     return new Promise((resolve, reject) => {
 
       const post = {
-        type: 'ssb_chess_game_end',
+        type: 'chess_game_end',
         status: status,
         ply: ply,
         fen: fen,

@@ -5,7 +5,7 @@ module.exports = (sbot, myIdent) => {
   function inviteToPlay(invitingPubKey, asWhite) {
 
     const post = {
-      'type': 'ssb_chess_invite',
+      'type': 'chess_invite',
       'inviting': invitingPubKey,
       'myColor': asWhite ? 'white' : 'black'
     }
@@ -24,7 +24,7 @@ module.exports = (sbot, myIdent) => {
   function acceptChallenge(gameRootMessage) {
     console.log("Accepting challenge. Root game message is: " + gameRootMessage);
     const post = {
-      'type': 'ssb_chess_invite_accept',
+      'type': 'chess_invite_accept',
       'root': gameRootMessage
     }
 
