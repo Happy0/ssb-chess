@@ -1,6 +1,6 @@
 const m = require('mithril');
 
-module.exports = (colour, onPromotionChoice, onCancel) => {
+module.exports = (colour, onPromotionChoice) => {
 
   const roles = ["queen", "rook", "knight", "bishop"];
 
@@ -21,27 +21,7 @@ module.exports = (colour, onPromotionChoice, onCancel) => {
     ]);
   }
 
-  function detectClicksOutsidePromotionBox(event) {
-    var promotionBox = document.getElementById("ssb-promotion-box");
-
-    var isClickInside = promotionBox.contains(event.target);
-
-    if (!isClickInside) {
-      onCancel();
-    }
-  }
-
-  function wholeAppArea() {
-    return document.getElementById('ssb-chess-container');
-  }
-
   return {
-    view: renderPromotionMenu,
-    oncreate: (vNode) => {
-      wholeAppArea().addEventListener('click', detectClicksOutsidePromotionBox);
-    },
-    onremove: () => {
-      wholeAppArea().removeEventListener('click', detectClicksOutsidePromotionBox);
-    }
+    view: renderPromotionMenu
   }
 }
