@@ -22,7 +22,6 @@ module.exports = (sbot, myIdent, db) => {
   const socialCtrl = SocialCtrl(sbot, myIdent);
 
   const gameDb = GameDb(sbot, db);
-  gameDb.loadGameSummariesIntoDatabase();
 
   const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
 
@@ -203,9 +202,14 @@ module.exports = (sbot, myIdent, db) => {
     return socialCtrl;
   }
 
+  function loadGameSummariesIntoDatabase() {
+      gameDb.loadGameSummariesIntoDatabase();
+  }
+
   chessWorker.addEventListener('message', handleChessWorkerResponse);
 
   return {
+    loadGameSummariesIntoDatabase: loadGameSummariesIntoDatabase,
     getMyIdent: getMyIdent,
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,

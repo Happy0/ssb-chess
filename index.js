@@ -52,6 +52,7 @@ module.exports = (attachToElement, sbot) => {
   sbot.whoami((err, ident) => {
     Db.initDb().then(db => {
       const gameCtrl = GameCtrl(sbot, ident.id, db);
+      gameCtrl.loadGameSummariesIntoDatabase();
       gameCtrl.startPublishingBoardUpdates();
 
       const mainBody = attachToElement;

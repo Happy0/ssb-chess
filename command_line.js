@@ -76,11 +76,11 @@ module.exports = (gameCtrl, socialCtrl) => {
 
       gameCtrl.makeMove(moveInGameId, orig, dest);
     } else if (args["followers"]) {
-      socialCtrl.followingMe().then(followers => console.dir(followers)).then(() => process.exit(1) );
+      socialCtrl.followingMe().then(followers => console.dir(followers)).then(() => process.exit(1));
     } else if (args["following"]) {
-      socialCtrl.followedByMe().then(followedByMe => console.dir(followedByMe)).then(() => process.exit(1) );
+      socialCtrl.followedByMe().then(followedByMe => console.dir(followedByMe)).then(() => process.exit(1));
     } else if (args["friends"]) {
-      socialCtrl.friendsWithNames().then(friends => console.dir(friends)).then(() => process.exit(1) ).catch(err => console.dir(err.stack));
+      socialCtrl.friendsWithNames().then(friends => console.dir(friends)).then(() => process.exit(1)).catch(err => console.dir(err.stack));
     }
   }
 
@@ -101,8 +101,12 @@ module.exports = (gameCtrl, socialCtrl) => {
     process.exit(1);
   })
 
-  const args = neodoc.run(usage());
-  runCommand(args);
+  PubSub.subscribe("ssb_chess_games_loaded", function() {
+    const args = neodoc.run(usage());
+    runCommand(args);
+  });
+
+  gameCtrl.loadGameSummariesIntoDatabase();
 
   return "stuff";
 

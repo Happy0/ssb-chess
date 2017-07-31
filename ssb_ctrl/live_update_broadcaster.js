@@ -29,9 +29,10 @@ module.exports = (sbot) => {
 
     const moveTypeSource = sbot.messagesByType(moveOptions);
 
-    pull(moveTypeSource, pull.drain((res) => {
-      handleUpdate(res);
-    }, done => console.dir("Debug: Live move game updates stream ended.")));
+    pull(moveTypeSource,
+      pull.drain(handleUpdate,
+        done => console.dir("Debug: Live move game updates stream ended.")
+      ));
 
   }
 

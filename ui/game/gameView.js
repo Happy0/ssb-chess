@@ -5,9 +5,15 @@ var PubSub = require('pubsub-js');
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
+  const observing = m.route.param("observing") ? m.route.param("observing") : false;
+
   var chessGround = null;
 
   var config = {};
+
+  function plyToColourToPlay(ply) {
+    return ply % 2 === 0 ? "white" : "black";
+  }
 
   function renderBoard(gameId) {
     var vDom = m('div', {
@@ -23,7 +29,7 @@ module.exports = (gameCtrl) => {
         config = {
           fen: situation.fen,
           orientation: playerColour,
-          turnColor: situation.players[situation.toMove].colour,
+          turnColor: plyToColourToPlay(situation.ply),
           ply: situation.ply,
           movable: {
             color: situation.toMove === myIdent ? playerColour : null,
@@ -59,9 +65,9 @@ module.exports = (gameCtrl) => {
     return vDom;
   }
 
-  function switchToViewerTurn() {
-    config.turnColor = config.orientation;
-    config.movable.color = config.orientation;
+  function switchToPlayerTurnByPly(conf, ply) {
+    conf.turnColor = plyToColourToPlay(ply);
+    conf.movable.color = plyToColourToPlay(ply);
   }
 
 
@@ -102,7 +108,11 @@ module.exports = (gameCtrl) => {
             config.fen = data.fen;
             config.ply = data.ply;
             config.lastMove = [data.orig, data.dest];
-            switchToViewerTurn(config);
+
+            if (!observing) {
+                switchToPlayerTurnByPly(config, data.ply);
+            }
+
             chessGround.set(config);
 
             gameCtrl.publishValidMoves(gameId);
