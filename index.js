@@ -18,7 +18,8 @@ module.exports = (attachToElement, sbot) => {
     "./css/miniboards.css",
     "./css/largeBoard.css",
     "./css/invites.css",
-    "./css/loading.css"
+    "./css/loading.css",
+    "./css/promote.css"
   ];
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
@@ -45,7 +46,8 @@ module.exports = (attachToElement, sbot) => {
       "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
       "/games/:gameId": GameComponent(gameCtrl),
-      "/invitations": InvitationsComponent(gameCtrl)
+      "/invitations": InvitationsComponent(gameCtrl),
+      "/testarooni": require("./ui/game/promote")('black', (p) => console.log(":o! " + p), () => console.log("o:"))
     })
   }
 

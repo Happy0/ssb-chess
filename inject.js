@@ -22,7 +22,7 @@ exports.create = function(api) {
   const route = '/chess'
 
   const topLevelDomElement = document.createElement('div');
-  topLevelDomElement.className="ssb-chess-container";
+  topLevelDomElement.id="ssb-chess-container";
 
   return nest({
     'app.html': {

@@ -2,7 +2,7 @@
   margin: 10px;
 }
 
-.ssb-chess-container {
+#ssb-chess-container {
   height: 100%;
   width: 100%;
   overflow: scroll;
