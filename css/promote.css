@@ -1,0 +1,52 @@
+.ssb-promotion-box {
+  width: 280px;
+}
+
+.ssb-promotion-box-pieces {
+  display: flex;
+}
+
+.ssb-promotion-box piece {
+  background-size: 64px 64px;
+  width: 64px;
+  height: 64px;
+  display: block;
+  margin: 4px;
+}
+
+.ssb-promotion-box piece:hover {
+  background-color: lightcyan;
+}
+
+.ssb-promotion-box piece.white.queen {
+  background-image: url('chessground/assets/images/pieces/merida/wQ.svg');
+}
+
+.ssb-promotion-box piece.white.knight {
+  background-image: url('chessground/assets/images/pieces/merida/wN.svg');
+}
+
+.ssb-promotion-box piece.white.bishop {
+  background-image: url('chessground/assets/images/pieces/merida/wB.svg');
+}
+
+.ssb-promotion-box piece.white.rook {
+  background-image: url('chessground/assets/images/pieces/merida/wR.svg');
+}
+
+
+.ssb-promotion-box piece.black.queen {
+  background-image: url('chessground/assets/images/pieces/merida/bQ.svg');
+}
+
+.ssb-promotion-box piece.black.knight {
+  background-image: url('chessground/assets/images/pieces/merida/bN.svg');
+}
+
+.ssb-promotion-box piece.black.bishop {
+  background-image: url('chessground/assets/images/pieces/merida/bB.svg');
+}
+
+.ssb-promotion-box piece.black.rook {
+  background-image: url('chessground/assets/images/pieces/merida/bR.svg');
+}
