@@ -6,25 +6,30 @@ module.exports = (gameCtrl) => {
   const gamesInProgress = {
     name: "Games",
     link: "/my_games",
-    count: 0
+    count: 0,
+    countHoverText: () => `You have ${gamesInProgress.count} games in progress.`
   };
   const gamesMyMove = {
     name: "My Move",
     link: "/games_my_move",
     count: 0,
-    countUpdateFn: gameCtrl.getGamesWhereMyMove
+    countUpdateFn: gameCtrl.getGamesWhereMyMove,
+    countHoverText: () => `${gamesMyMove.count} games awaiting your move.`
   };
   const invitations = {
     name: 'Invitations',
     link: "/invitations",
     count: 0,
-    countUpdateFn: gameCtrl.pendingChallengesReceived
+    countUpdateFn: gameCtrl.pendingChallengesReceived,
+    countHoverText: () => `${invitations.count} pending invitations received.`
   };
   const observable = {
     name: 'Observe',
     link: "/observable",
     count: 0,
-    countUpdateFn: gameCtrl.getFriendsObservableGames
+    countUpdateFn: gameCtrl.getFriendsObservableGames,
+    countOnHoverOnly: true,
+    countHoverText: () => `${observable.count} observable games.`
   };
 
   var navItems = [gamesInProgress, gamesMyMove, invitations, observable];
@@ -33,12 +38,13 @@ module.exports = (gameCtrl) => {
     return m('span', {
       class: 'ssb-chess-nav-item'
     }, m("a[href=" + navItem.link + "]", {
-        oncreate: m.route.link
+        oncreate: m.route.link,
+        title: navItem.countHoverText()
       },
 
       [m('span', navItem.name),
         m('span', {
-          style: navItem.count === 0 ? 'display: none' : '',
+          style: (navItem.countOnHoverOnly || navItem.count === 0) ? 'display: none' : '',
           class: 'ssb-chess-nav-count'
         }, `(${navItem.count})`)
       ]));
