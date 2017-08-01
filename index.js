@@ -4,7 +4,7 @@ var m = require("mithril");
 var Db = require("./db/init")();
 
 var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
-var NavigationBar = require('./ui/pageLayout/navigation')();
+var NavigationBar = require('./ui/pageLayout/navigation');
 var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
@@ -31,14 +31,19 @@ module.exports = (attachToElement, sbot) => {
     m.render(dom, styles);
   }
 
-  function renderPageTop(parent) {
+  function renderPageTop(parent, gameCtrl) {
 
+    var navBar = NavigationBar(gameCtrl);
     var statusBar = m(StatusBar());
 
-    m.render(parent, [
-      statusBar,
-      NavigationBar.navigationTop()
-    ]);
+    var TopComponent = {
+      view: () => m('div',[
+        statusBar,
+        m(navBar)
+      ])
+    };
+
+    m.mount(parent, TopComponent);
   }
 
   function appRouter(mainBody, gameCtrl) {
@@ -54,8 +59,6 @@ module.exports = (attachToElement, sbot) => {
   sbot.whoami((err, ident) => {
     Db.initDb().then(db => {
       const gameCtrl = GameCtrl(sbot, ident.id, db);
-      gameCtrl.loadGameSummariesIntoDatabase();
-      gameCtrl.startPublishingBoardUpdates();
 
       const mainBody = attachToElement;
       const navDiv = document.createElement("div");
@@ -69,9 +72,12 @@ module.exports = (attachToElement, sbot) => {
       mainBody.appendChild(navDiv);
       mainBody.appendChild(bodyDiv);
 
-      renderPageTop(navDiv);
+      renderPageTop(navDiv, gameCtrl);
 
       appRouter(bodyDiv, gameCtrl);
+
+      gameCtrl.loadGameSummariesIntoDatabase();
+      gameCtrl.startPublishingBoardUpdates();
     })
   });
 }

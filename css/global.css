@@ -1,5 +1,10 @@
 .ssb-chess-nav-item {
   margin: 10px;
+  text-transform: uppercase;
+}
+
+.ssb-chess-nav-count {
+  margin-left: 2px;
 }
 
 .ssb-chess-container {

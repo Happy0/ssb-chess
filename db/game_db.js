@@ -13,6 +13,7 @@ module.exports = (sbot, db) => {
 
   var ssb_chess_type_messages = [
     "chess_invite",
+    "chess_move",
     "chess_invite_accept",
     "chess_game_end"
   ];
