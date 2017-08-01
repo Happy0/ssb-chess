@@ -1,6 +1,7 @@
 var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PubSub = require('pubsub-js');
+var PromotionBox = require('./promote');
 
 module.exports = (gameCtrl) => {
 
@@ -13,6 +14,32 @@ module.exports = (gameCtrl) => {
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
+  }
+
+  function columnLetterToNumberFromZero(columnLetter) {
+    return columnLetter.codePointAt(0) - 97;
+  }
+
+  function renderPromotionOptionsOverlay(colour, column, onChoice) {
+    var chessBoard = document.getElementsByClassName("cg-board-wrap")[0];
+
+    var prom = document.createElement('div');
+
+    var promoteCallback = (selectedPiece) => {
+      console.log("yoyoyo " + selectedPiece);
+      chessBoard.removeChild(prom);
+    }
+
+    var box = PromotionBox(colour, promoteCallback);
+
+    var left = 75 * columnLetterToNumberFromZero('b');
+    var promotionBox = m('div', {style: 'z-index: 100; position: absolute; left: '+ left +'px; top: 0px;'}, m(box));
+
+    chessBoard.appendChild(prom);
+
+
+    m.render(prom, promotionBox);
+
   }
 
   function renderBoard(gameId) {
@@ -61,6 +88,8 @@ module.exports = (gameCtrl) => {
         return situation;
       }).then(situation => gameCtrl.publishValidMoves(gameId));
     });
+
+    setTimeout(() => renderPromotionOptionsOverlay('white', 2));
 
     return vDom;
   }
