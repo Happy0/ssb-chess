@@ -65,6 +65,16 @@ module.exports = (sbot, db) => {
     return allStmtAsPromise(query).then(rows => rows.map(row => row.gameId));
   }
 
+  function getObservableGames(playerId, start, end) {
+    var query = `select * from ssb_chess_games
+    WHERE (invitee <> "${playerId}")
+      and (inviter <> "${playerId}") and (status = "started")
+       ORDER BY updated DESC
+        LIMIT ${start},${end};`;
+
+    return allStmtAsPromise(query).then(rows => rows.map(row => row.gameId));
+  }
+
   function getRelatedMessages(gameInvite, cb) {
     const linksToInvite = sbot.links({
       dest: gameInvite.key,
@@ -214,6 +224,7 @@ module.exports = (sbot, db) => {
     loadGameSummariesIntoDatabase: loadGameSummariesIntoDatabase,
     pendingChallengesSent: pendingChallengesSent,
     pendingChallengesReceived: pendingChallengesReceived,
-    getGamesAgreedToPlayIds: getGamesAgreedToPlayIds
+    getGamesAgreedToPlayIds: getGamesAgreedToPlayIds,
+    getObservableGames: getObservableGames
   }
 }

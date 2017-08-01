@@ -79,6 +79,15 @@ module.exports = (sbot, myIdent, db) => {
       summaries.filter(summary => summary.status.status !== "started").slice(start, finish));
   }
 
+  function getFriendsObservableGames(start, end) {
+    var start = start? start : 0;
+    var end = end? end : 20
+
+    return gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
+      gameIds.map(gameSSBDao.getSmallGameSummary)
+    ))
+  }
+
   function getGamesWhereMyMove() {
     return getMyGamesInProgress().then(myGamesSummaries =>
       myGamesSummaries.filter(summary =>
@@ -225,6 +234,7 @@ module.exports = (sbot, myIdent, db) => {
     getGamesInProgress: getGamesInProgress,
     getFinishedGames: getFinishedGames,
     getMyFinishedGames: getMyFinishedGames,
+    getFriendsObservableGames: getFriendsObservableGames,
     getSituation: getSituation,
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,

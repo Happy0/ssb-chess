@@ -46,7 +46,8 @@ module.exports = (attachToElement, sbot) => {
       "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
       "/games/:gameId": GameComponent(gameCtrl),
-      "/invitations": InvitationsComponent(gameCtrl)
+      "/invitations": InvitationsComponent(gameCtrl),
+      "/observable": MiniboardListComponent(gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent())
     })
   }
 

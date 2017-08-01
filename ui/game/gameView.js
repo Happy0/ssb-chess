@@ -57,7 +57,7 @@ module.exports = (gameCtrl) => {
       chessGround = Chessground(vDom.dom, config);
 
       gameCtrl.getSituation(gameId).then(situation => {
-        const playerColour = situation.players[myIdent].colour;
+        const playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
 
         const colourToPlay = plyToColourToPlay(situation.ply);
 
