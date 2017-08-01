@@ -26,20 +26,26 @@ module.exports = (gameCtrl) => {
     var prom = document.createElement('div');
 
     var promoteCallback = (selectedPiece) => {
-      console.log("yoyoyo " + selectedPiece);
       chessBoard.removeChild(prom);
+      onChoice(selectedPiece);
     }
 
     var box = PromotionBox(colour, promoteCallback);
 
-    var left = 75 * columnLetterToNumberFromZero('b');
-    var promotionBox = m('div', {style: 'z-index: 100; position: absolute; left: '+ left +'px; top: 0px;'}, m(box));
+    var left = colour === "white" ? 75 * columnLetterToNumberFromZero(column) : ((75 * 7) - (75 * columnLetterToNumberFromZero(column)));
+    var promotionBox = m('div', {
+      style: 'z-index: 100; position: absolute; left: ' + left + 'px; top: 0px;'
+    }, m(box));
 
     chessBoard.appendChild(prom);
 
-
     m.render(prom, promotionBox);
 
+  }
+
+  function isPromotionMove(chessGround, dest) {
+    return dest[1] === '8' || (dest[1] === '1' &&
+      chessGround.state.pieces[dest].role === 'pawn');
   }
 
   function renderBoard(gameId) {
@@ -53,16 +59,28 @@ module.exports = (gameCtrl) => {
       gameCtrl.getSituation(gameId).then(situation => {
         const playerColour = situation.players[myIdent].colour;
 
+        const colourToPlay = plyToColourToPlay(situation.ply);
+
         config = {
           fen: situation.fen,
           orientation: playerColour,
-          turnColor: plyToColourToPlay(situation.ply),
+          turnColor: colourToPlay,
           ply: situation.ply,
           movable: {
             color: situation.toMove === myIdent ? playerColour : null,
             events: {
               after: (orig, dest, metadata) => {
-                gameCtrl.makeMove(gameId, orig, dest);
+
+                if (isPromotionMove(chessGround, dest)) {
+
+                  renderPromotionOptionsOverlay(colourToPlay, dest[0],
+                    (promotingToPiece) => {
+                      gameCtrl.makeMove(gameId, orig, dest, promotingToPiece);
+                    });
+
+                } else {
+                  gameCtrl.makeMove(gameId, orig, dest);
+                }
 
                 var notMovable = {
                   movable: {
@@ -88,8 +106,6 @@ module.exports = (gameCtrl) => {
         return situation;
       }).then(situation => gameCtrl.publishValidMoves(gameId));
     });
-
-    setTimeout(() => renderPromotionOptionsOverlay('white', 2));
 
     return vDom;
   }
@@ -129,7 +145,7 @@ module.exports = (gameCtrl) => {
       this.moveListener = PubSub.subscribe("game_update", function(msg, data) {
         console.log("update handler");
         console.dir(data);
-        if (data.gameId === gameId && data.author !== myIdent) {
+        if (data.gameId === gameId) {
 
           if (chessGround && (data.ply > config.ply)) {
             console.log("Game update received, playing move on board.");
@@ -139,7 +155,7 @@ module.exports = (gameCtrl) => {
             config.lastMove = [data.orig, data.dest];
 
             if (!observing) {
-                switchToPlayerTurnByPly(config, data.ply);
+              switchToPlayerTurnByPly(config, data.ply);
             }
 
             chessGround.set(config);

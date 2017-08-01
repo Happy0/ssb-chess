@@ -157,7 +157,7 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, pgnMove, fen) {
+  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen) {
     const post = {
       type: 'chess_move',
       ply: ply,
@@ -168,7 +168,12 @@ module.exports = (sbot, myIdent) => {
       fen: fen
     }
 
+    if (promotion) {
+      post['promotion'] = promotion;
+    }
+
     return new Promise((resolve, reject) => {
+
       sbot.publish(post, function(err, msg) {
         if (err) {
           reject(err);

@@ -90,7 +90,10 @@ module.exports = (sbot, myIdent, db) => {
     return gameSSBDao.getSituation(gameId);
   }
 
-  function makeMove(gameRootMessage, originSquare, destinationSquare) {
+  function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
+    console.log(originSquare);
+    console.log(destinationSquare);
+    console.log(promoteTo);
 
     gameSSBDao.getSituation(gameRootMessage).then(situation => {
       if (situation.toMove !== myIdent) {
@@ -104,7 +107,8 @@ module.exports = (sbot, myIdent, db) => {
             'fen': situation.fen,
             'pgnMoves': pgnMoves,
             'orig': originSquare,
-            'dest': destinationSquare
+            'dest': destinationSquare,
+            'promotion': promoteTo
           },
           reqid: {
             gameRootMessage: gameRootMessage,
@@ -171,6 +175,7 @@ module.exports = (sbot, myIdent, db) => {
         e.data.payload.situation.ply,
         originSquare,
         destinationSquare,
+        e.data.payload.situation.promotion,
         e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
         e.data.payload.situation.fen
       ).then(dc => {
