@@ -16,12 +16,14 @@ module.exports = (summary, identPerspective) => {
     var coloursNames = PlayerModelUtils.coloursToNames(summary.players);
     var otherPlayerColour = playerColour == "white" ? "black" : "white";
 
+    var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
+
     return m('div', {
       class: "ssb-chess-miniboard blue merida"
     }, [m('center', {
         class: "ssb-chess-miniboard-name"
       }, coloursNames[otherPlayerColour].substring(0, 10)),
-      m('a[href=' + '/games/' + btoa(summary.gameId) + ']', {
+      m('a[href=' + '/games/' + btoa(summary.gameId) + "?observing=" + observing + ']', {
         class: "ssb-chessground-container",
         title: summary.gameId,
         id: summary.gameId,

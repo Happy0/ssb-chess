@@ -6,7 +6,6 @@ var PromotionBox = require('./promote');
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
-  const observing = m.route.param("observing") ? m.route.param("observing") : false;
 
   var chessGround = null;
 
@@ -84,15 +83,13 @@ module.exports = (gameCtrl) => {
                 }
 
                 var notMovable = {
+                  check: false,
                   movable: {
                     color: null
                   }
                 };
 
                 chessGround.set(notMovable);
-              },
-              afterNewPiece: (role, position) => {
-                //TODO: Support promotions
               }
             }
           }
@@ -154,6 +151,8 @@ module.exports = (gameCtrl) => {
             config.fen = data.fen;
             config.ply = data.ply;
             config.lastMove = [data.orig, data.dest];
+
+            const observing = m.route.param("observing") ? m.route.param("observing") : false;
 
             if (!observing) {
               switchToPlayerTurnByPly(config, data.ply);
