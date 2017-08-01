@@ -46,8 +46,7 @@ module.exports = (attachToElement, sbot) => {
       "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
       "/games/:gameId": GameComponent(gameCtrl),
-      "/invitations": InvitationsComponent(gameCtrl),
-      "/testarooni": require("./ui/game/promote")('black', (p) => console.log(":o! " + p), () => console.log("o:"))
+      "/invitations": InvitationsComponent(gameCtrl)
     })
   }
 
