@@ -66,6 +66,7 @@ module.exports = (gameCtrl) => {
           orientation: playerColour,
           turnColor: colourToPlay,
           ply: situation.ply,
+          check: situation.check,
           movable: {
             color: situation.toMove === myIdent ? playerColour : null,
             events: {

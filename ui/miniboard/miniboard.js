@@ -61,7 +61,8 @@ module.exports = (summary, identPerspective) => {
       var config = {
         fen: summary.fen,
         viewOnly: true,
-        orientation: playerColour
+        orientation: playerColour,
+        check: summary.check
       };
 
       if (summary.lastMove) {

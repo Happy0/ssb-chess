@@ -63,7 +63,8 @@ module.exports = (sbot, myIdent) => {
         players: gameSituation.players,
         toMove: gameSituation.toMove,
         status: gameSituation.status,
-        lastMove: gameSituation.lastMove
+        lastMove: gameSituation.lastMove,
+        check: gameSituation.check
       }
 
       return summary;
@@ -140,11 +141,14 @@ module.exports = (sbot, myIdent) => {
                 'dest': msg.value.content.dest
               }));
 
+              var isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
+
               resolve({
                 gameId: gameRootMessage,
                 pgnMoves: pgnMoves,
                 ply: pgnMoves.length,
                 origDests: origDests,
+                check: isCheck,
                 fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 players: players,
                 toMove: getPlayerToMove(players, pgnMoves.length),
