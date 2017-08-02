@@ -19,7 +19,7 @@ module.exports = (summary, identPerspective) => {
     var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
 
     return m('div', {
-      class: "ssb-chess-miniboard blue merida"
+      class: "ssb-chess-miniboard ssb-chess-board-background-blue3 merida"
     }, [m('center', {
         class: "ssb-chess-miniboard-name"
       }, coloursNames[otherPlayerColour].substring(0, 10)),

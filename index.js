@@ -15,6 +15,7 @@ module.exports = (attachToElement, sbot) => {
     "./css/global.css",
     "./css/chessground/assets/chessground.css",
     "./css/chessground/assets/theme.css",
+    "./css/board-theme.css",
     "./css/miniboards.css",
     "./css/largeBoard.css",
     "./css/invites.css",
