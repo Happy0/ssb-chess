@@ -11,28 +11,34 @@ module.exports = (summary, identPerspective) => {
   const playerColour = (summary.players[identPerspective] &&
     summary.players[identPerspective].colour) ? summary.players[identPerspective].colour : "white";
 
-  function renderSummary() {
+  function renderSummaryBottom() {
 
     var coloursNames = PlayerModelUtils.coloursToNames(summary.players);
     var otherPlayerColour = playerColour == "white" ? "black" : "white";
 
-    var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
-
-    return m('div', {
-      class: "ssb-chess-miniboard ssb-chess-board-background-blue3 merida"
-    }, [m('center', {
+    return m('div', {class: 'ssb-chess-miniboard-bottom'}, [m('center', {
         class: "ssb-chess-miniboard-name"
-      }, coloursNames[otherPlayerColour].substring(0, 10)),
+      }, coloursNames[playerColour].substring(0, 10)),
+
+      m('center', {
+        class: "ssb-chess-miniboard-name"
+      }, coloursNames[otherPlayerColour].substring(0, 10))
+    ])
+}
+
+function renderSummary() {
+
+  var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
+
+  return m('div', {
+      class: "ssb-chess-miniboard ssb-chess-board-background-blue3 merida"
+    }, [
       m('a[href=' + '/games/' + btoa(summary.gameId) + "?observing=" + observing + ']', {
         class: "ssb-chessground-container",
         title: summary.gameId,
         id: summary.gameId,
         oncreate: m.route.link
-      }),
-      m('center', {
-        class: "ssb-chess-miniboard-name"
-      }, coloursNames[playerColour].substring(0, 10))
-    ]);
+      }), renderSummaryBottom()]);
   }
 
   function listenForLiveGameUpdates() {
@@ -64,7 +70,8 @@ module.exports = (summary, identPerspective) => {
         fen: summary.fen,
         viewOnly: true,
         orientation: playerColour,
-        check: summary.check
+        check: summary.check,
+        coordinates: false
       };
 
       if (summary.lastMove) {

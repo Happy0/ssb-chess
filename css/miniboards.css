@@ -5,14 +5,15 @@
 }
 
 .ssb-chess-miniboard {
-  width: 300px;
+  width: 320px;
   margin: 2%;
   justify-content: center;
 }
 
 .ssb-chess-miniboard-name {
-  margin-top: 10px;
-  margin-bottom: 5px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
 }
 
 .ssb-chess-miniboard-controls {
@@ -22,4 +23,10 @@
 
 .ssb-chess-miniboard-control {
   margin: 5px;
+}
+
+.ssb-chess-miniboard-bottom {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid grey;
 }
