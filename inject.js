@@ -45,7 +45,10 @@ exports.create = function(api) {
       return
     } else {
       onceTrue(api.sbot.obs.connection(), (sbot) => {
-        index(topLevelDomElement, sbot);
+        var injectedApi = {
+           backlinks: api.backlinks.obs.for
+        }
+        index(topLevelDomElement, sbot, injectedApi);
       });
 
       return topLevelDomElement;

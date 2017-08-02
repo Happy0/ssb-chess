@@ -9,7 +9,7 @@ var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
 
-module.exports = (attachToElement, sbot) => {
+module.exports = (attachToElement, sbot, injectedApi) => {
 
   var cssFiles = [
     "./css/global.css",
@@ -59,7 +59,7 @@ module.exports = (attachToElement, sbot) => {
 
   sbot.whoami((err, ident) => {
     Db.initDb().then(db => {
-      const gameCtrl = GameCtrl(sbot, ident.id, db);
+      const gameCtrl = GameCtrl(sbot, ident.id, db, injectedApi);
 
       const mainBody = attachToElement;
       const navDiv = document.createElement("div");

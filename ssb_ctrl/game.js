@@ -5,9 +5,11 @@ const collect = require("pull-stream/sinks/collect");
 
 const nest = require('depnest');
 
+const computed = require("mutant/computed");
+
 var SocialCtrl = require("./social");
 
-module.exports = (sbot, myIdent) => {
+module.exports = (sbot, myIdent, injectedApi) => {
 
   const socialCtrl = SocialCtrl(sbot);
 
@@ -94,6 +96,12 @@ module.exports = (sbot, myIdent) => {
         }
       }));
     });
+  }
+
+  function getSituationObservable(gameRootMessage) {
+    const gameMessages = injectedApi.backlinks(gameRootMessage);
+
+
   }
 
   function getSituation(gameRootMessage) {

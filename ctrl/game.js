@@ -12,11 +12,11 @@ var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
 
-module.exports = (sbot, myIdent, db) => {
+module.exports = (sbot, myIdent, db, injectedApi) => {
   var rootDir = __dirname.replace("ctrl","") + "/";
 
   const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
-  const gameSSBDao = GameSSBDao(sbot, myIdent);
+  const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
   const gameChallenger = GameChallenger(sbot, myIdent);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
