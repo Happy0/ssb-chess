@@ -14,7 +14,8 @@ exports.gives = nest({
 })
 
 exports.needs = nest({
-  'sbot.obs.connection': 'first'
+  'sbot.obs.connection': 'first',
+  'backlinks.obs.for': 'first'
 });
 
 

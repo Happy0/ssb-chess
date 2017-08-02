@@ -3,6 +3,8 @@ const pull = require("pull-stream");
 const map = require("pull-stream/throughs/map");
 const collect = require("pull-stream/sinks/collect");
 
+const nest = require('depnest');
+
 var SocialCtrl = require("./social");
 
 module.exports = (sbot, myIdent) => {

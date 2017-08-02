@@ -49,60 +49,8 @@ module.exports = (gameCtrl) => {
 
   function renderBoard(gameId) {
     var vDom = m('div', {
-      class: 'cg-board-wrap ssb-chess-board-large'
-    });
-
-    setTimeout(() => {
-      chessGround = Chessground(vDom.dom, config);
-
-      gameCtrl.getSituation(gameId).then(situation => {
-        const playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
-
-        const colourToPlay = plyToColourToPlay(situation.ply);
-
-        config = {
-          fen: situation.fen,
-          orientation: playerColour,
-          turnColor: colourToPlay,
-          ply: situation.ply,
-          check: situation.check,
-          movable: {
-            color: situation.toMove === myIdent ? playerColour : null,
-            events: {
-              after: (orig, dest, metadata) => {
-
-                if (isPromotionMove(chessGround, dest)) {
-
-                  renderPromotionOptionsOverlay(colourToPlay, dest[0],
-                    (promotingToPiece) => {
-                      gameCtrl.makeMove(gameId, orig, dest, promotingToPiece);
-                    });
-
-                } else {
-                  gameCtrl.makeMove(gameId, orig, dest);
-                }
-
-                var notMovable = {
-                  check: false,
-                  movable: {
-                    color: null
-                  }
-                };
-
-                chessGround.set(notMovable);
-              }
-            }
-          }
-        };
-
-        if (situation.lastMove) {
-          config.lastMove = [situation.lastMove.orig, situation.lastMove.dest];
-        }
-
-        chessGround.set(config);
-
-        return situation;
-      }).then(situation => gameCtrl.publishValidMoves(gameId));
+      class: 'cg-board-wrap ssb-chess-board-large',
+      id: gameId
     });
 
     return vDom;
@@ -113,6 +61,52 @@ module.exports = (gameCtrl) => {
     conf.movable.color = plyToColourToPlay(ply);
   }
 
+  function situationToChessgroundConfig(situation) {
+    const playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
+
+    const colourToPlay = plyToColourToPlay(situation.ply);
+
+    var config = {
+      fen: situation.fen,
+      orientation: playerColour,
+      turnColor: colourToPlay,
+      ply: situation.ply,
+      check: situation.check,
+      movable: {
+        color: situation.toMove === myIdent ? playerColour : null,
+        events: {
+          after: (orig, dest, metadata) => {
+
+            if (isPromotionMove(chessGround, dest)) {
+
+              renderPromotionOptionsOverlay(colourToPlay, dest[0],
+                (promotingToPiece) => {
+                  gameCtrl.makeMove(situation.gameId, orig, dest, promotingToPiece);
+                });
+
+            } else {
+              gameCtrl.makeMove(situation.gameId, orig, dest);
+            }
+
+            var notMovable = {
+              check: false,
+              movable: {
+                color: null
+              }
+            };
+
+            chessGround.set(notMovable);
+          }
+        }
+      }
+    };
+
+    if (situation.lastMove) {
+      config.lastMove = [situation.lastMove.orig, situation.lastMove.dest];
+    }
+
+    return config;
+  }
 
   return {
 
@@ -167,6 +161,17 @@ module.exports = (gameCtrl) => {
 
         }
       });
+    },
+    oncreate: function(vNode) {
+      const gameId = atob(vNode.attrs.gameId);
+      var dom = document.getElementById(gameId);
+
+      gameCtrl.getSituation(gameId).then(situation => {
+        config = situationToChessgroundConfig(situation);
+        chessGround = Chessground(dom, config);
+
+        return situation;
+      }).then(situation => gameCtrl.publishValidMoves(situation.gameId));
     },
     onremove: function(vnode) {
       console.log("unsubscribing from move events " + this.moveListener);
