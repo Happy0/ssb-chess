@@ -18,7 +18,6 @@ exports.needs = nest({
   'backlinks.obs.for': 'first'
 });
 
-
 exports.create = function(api) {
   const route = '/chess'
 

@@ -15,33 +15,6 @@ module.exports = (gameCtrl) => {
     return ply % 2 === 0 ? "white" : "black";
   }
 
-  function columnLetterToNumberFromZero(columnLetter) {
-    return columnLetter.codePointAt(0) - 97;
-  }
-
-  function renderPromotionOptionsOverlay(colour, column, onChoice) {
-    var chessBoard = document.getElementsByClassName("cg-board-wrap")[0];
-
-    var prom = document.createElement('div');
-
-    var promoteCallback = (selectedPiece) => {
-      chessBoard.removeChild(prom);
-      onChoice(selectedPiece);
-    }
-
-    var box = PromotionBox(colour, promoteCallback);
-
-    var left = colour === "white" ? 75 * columnLetterToNumberFromZero(column) : ((75 * 7) - (75 * columnLetterToNumberFromZero(column)));
-    var promotionBox = m('div', {
-      style: 'z-index: 100; position: absolute; left: ' + left + 'px; top: 0px;'
-    }, m(box));
-
-    chessBoard.appendChild(prom);
-
-    m.render(prom, promotionBox);
-
-  }
-
   function isPromotionMove(chessGround, dest) {
     return dest[1] === '8' || (dest[1] === '1' &&
       chessGround.state.pieces[dest].role === 'pawn');
@@ -78,11 +51,12 @@ module.exports = (gameCtrl) => {
           after: (orig, dest, metadata) => {
 
             if (isPromotionMove(chessGround, dest)) {
+              var chessboardDom = document.getElementsByClassName("cg-board-wrap")[0];
 
-              renderPromotionOptionsOverlay(colourToPlay, dest[0],
+              PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
                   gameCtrl.makeMove(situation.gameId, orig, dest, promotingToPiece);
-                });
+                }).renderPromotionOptionsOverlay();
 
             } else {
               gameCtrl.makeMove(situation.gameId, orig, dest);
@@ -169,6 +143,8 @@ module.exports = (gameCtrl) => {
       gameCtrl.getSituation(gameId).then(situation => {
         config = situationToChessgroundConfig(situation);
         chessGround = Chessground(dom, config);
+
+        var chessboardDom = document.getElementsByClassName("cg-board-wrap")[0];
 
         return situation;
       }).then(situation => gameCtrl.publishValidMoves(situation.gameId));
