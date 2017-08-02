@@ -24,6 +24,8 @@ exports.create = function(api) {
   const topLevelDomElement = document.createElement('div');
   topLevelDomElement.className="ssb-chess-container";
 
+  var pageLoaded = false;
+
   return nest({
     'app.html': {
       menuItem: menuItem,
@@ -45,7 +47,10 @@ exports.create = function(api) {
       return
     } else {
       onceTrue(api.sbot.obs.connection(), (sbot) => {
-        index(topLevelDomElement, sbot);
+        if (!pageLoaded) {
+            index(topLevelDomElement, sbot);
+            pageLoaded = true;
+        }
       });
 
       return topLevelDomElement;
