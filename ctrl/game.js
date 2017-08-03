@@ -7,7 +7,6 @@ const Worker = require("tiny-worker");
 const GameDb = require("../db/game_db");
 const SocialCtrl = require("./social");
 
-
 var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
@@ -24,13 +23,6 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
   const gameDb = GameDb(sbot, db);
 
   const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
-
-  var obs = gameSSBDao.getSituationObservable("%WbzP0UxevK8j4g6CdLmgFnsjblnW0EVp/u6phVD5Y/4=.sha256");
-
-  obs(val => {
-    console.log("observable");
-    console.dir(val);
-  })
 
   function getMyIdent() {
     return myIdent;
@@ -104,6 +96,10 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
 
   function getSituation(gameId) {
     return gameSSBDao.getSituation(gameId);
+  }
+
+  function getSituationObservable(gameId) {
+    return gameSSBDao.getSituationObservable(gameId);
   }
 
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
@@ -243,6 +239,7 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     getMyFinishedGames: getMyFinishedGames,
     getFriendsObservableGames: getFriendsObservableGames,
     getSituation: getSituation,
+    getSituationObservable: getSituationObservable,
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,
     publishValidMoves: publishValidMoves,

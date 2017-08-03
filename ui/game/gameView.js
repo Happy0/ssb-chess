@@ -3,6 +3,8 @@ var Chessground = require('chessground').Chessground;
 var PubSub = require('pubsub-js');
 var PromotionBox = require('./promote');
 
+var onceTrue = require("mutant/once-true");
+
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
@@ -93,6 +95,8 @@ module.exports = (gameCtrl) => {
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
 
+      this.gameSituationObs = gameCtrl.getSituationObservable(gameId);
+
       this.validMovesListener = PubSub.subscribe("valid_moves", function(msg, data) {
         if (data.gameId === gameId && chessGround) {
 
@@ -107,52 +111,22 @@ module.exports = (gameCtrl) => {
           chessGround.set(dests);
         }
       });
-
-      this.moveListener = PubSub.subscribe("game_update", function(msg, data) {
-        console.log("update handler");
-        console.dir(data);
-        if (data.gameId === gameId) {
-
-          if (chessGround && (data.ply > config.ply)) {
-            console.log("Game update received, playing move on board.");
-
-            config.fen = data.fen;
-            config.ply = data.ply;
-            config.lastMove = [data.orig, data.dest];
-
-            const observing = m.route.param("observing") ? m.route.param("observing") : false;
-
-            if (!observing) {
-              switchToPlayerTurnByPly(config, data.ply);
-            }
-
-            chessGround.set(config);
-
-            gameCtrl.publishValidMoves(gameId);
-          } else {
-            console.log("null chessground");
-          }
-
-        }
-      });
     },
     oncreate: function(vNode) {
       const gameId = atob(vNode.attrs.gameId);
       var dom = document.getElementById(gameId);
 
-      gameCtrl.getSituation(gameId).then(situation => {
-        config = situationToChessgroundConfig(situation);
-        chessGround = Chessground(dom, config);
+      chessGround = Chessground(dom, {});
+
+      this.gameSituationObs(situation => {
+        var config = situationToChessgroundConfig(situation);
+        chessGround.set(config);
 
         var chessboardDom = document.getElementsByClassName("cg-board-wrap")[0];
-
-        return situation;
-      }).then(situation => gameCtrl.publishValidMoves(situation.gameId));
+        gameCtrl.publishValidMoves(situation.gameId);
+      })
     },
     onremove: function(vnode) {
-      console.log("unsubscribing from move events " + this.moveListener);
-
-      PubSub.unsubscribe(this.moveListener);
       PubSub.unsubscribe(this.validMovesListener);
     }
   }
