@@ -25,6 +25,13 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
 
   const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
 
+  var obs = gameSSBDao.getSituationObservable("%WbzP0UxevK8j4g6CdLmgFnsjblnW0EVp/u6phVD5Y/4=.sha256");
+
+  obs(val => {
+    console.log("observable");
+    console.dir(val);
+  })
+
   function getMyIdent() {
     return myIdent;
   }
