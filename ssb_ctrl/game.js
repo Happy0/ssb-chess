@@ -7,6 +7,8 @@ const nest = require('depnest');
 
 const computed = require("mutant/computed");
 const when = require("mutant/when");
+var Value = require('mutant/value')
+const onceTrue = require("mutant/once-true")
 
 var SocialCtrl = require("./social");
 const MutantUtils = require("./mutant_utils")();
@@ -137,7 +139,9 @@ module.exports = (sbot, myIdent, injectedApi) => {
     const gameMessages = injectedApi.backlinks(gameRootMessage);
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
-    return when(players, computed([players, gameMessages], (players, messages) => {
+    return computed([players, gameMessages.sync, gameMessages], (players, synced, messages) => {
+      if (!players || !synced) return null;
+
       var msgs = filterByPlayerMoves(players, messages);
       if (!msgs) msgs = [];
 
@@ -167,7 +171,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
         status: status,
         lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null
       }
-    }));
+    });
   }
 
   function getSituation(gameRootMessage) {
