@@ -95,8 +95,6 @@ module.exports = (gameCtrl) => {
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
 
-      this.gameSituationObs = gameCtrl.getSituationObservable(gameId);
-
       this.validMovesListener = PubSub.subscribe("valid_moves", function(msg, data) {
         if (data.gameId === gameId && chessGround) {
 
@@ -118,7 +116,9 @@ module.exports = (gameCtrl) => {
 
       chessGround = Chessground(dom, {});
 
-      this.gameSituationObs(situation => {
+      var gameSituationObs = gameCtrl.getSituationObservable(gameId);
+
+      gameSituationObs(situation => {
         var config = situationToChessgroundConfig(situation);
         chessGround.set(config);
         gameCtrl.publishValidMoves(situation.gameId);
