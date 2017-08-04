@@ -61,7 +61,7 @@ module.exports = (sbot, db) => {
   function getGamesAgreedToPlayIds(playerId) {
     var query = `select * from ssb_chess_games
     WHERE invitee="${playerId}"
-      or inviter="${playerId}" and (status <> "invited");`;
+      or inviter="${playerId}" and (status = "started");`;
 
     return allStmtAsPromise(query).then(rows => rows.map(row => row.gameId));
   }

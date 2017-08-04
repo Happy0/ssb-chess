@@ -102,6 +102,10 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     return gameSSBDao.getSituationObservable(gameId);
   }
 
+  function getSituationSummaryObservable(gameId) {
+    return gameSSBDao.getSituationSummaryObservable(gameId);
+  }
+
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
     console.log(originSquare);
     console.log(destinationSquare);
@@ -240,6 +244,7 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     getFriendsObservableGames: getFriendsObservableGames,
     getSituation: getSituation,
     getSituationObservable: getSituationObservable,
+    getSituationSummaryObservable: getSituationSummaryObservable,
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,
     publishValidMoves: publishValidMoves,

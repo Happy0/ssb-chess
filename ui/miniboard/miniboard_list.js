@@ -9,7 +9,7 @@ var PubSub = require("pubsub-js");
  * returns a list of game summaries that should be rendered into a list of
  * miniboards.
  */
-module.exports = (getGameSummariesFunc, ident) => {
+module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
   var gameSummaries = [];
 
   this.ident = ident;
@@ -25,7 +25,7 @@ module.exports = (getGameSummariesFunc, ident) => {
       return m("div", {
           class: "ssb-chess-miniboards"
         },
-        gameSummaries.map(a => m(Miniboard(a, this.ident))));
+        gameSummaries.map(summary => m(Miniboard(gameCtrl, summary, this.ident))));
     },
     oncreate: function(e) {
       updateMiniboards();
