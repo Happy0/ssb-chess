@@ -41,7 +41,7 @@ module.exports = (gameCtrl) => {
     return m('div', {
       class: "ssb-chess-miniboard"
     }, [
-      m(Miniboard(gameSummary, gameCtrl.getMyIdent())),
+      m(Miniboard(gameCtrl, gameSummary, gameCtrl.getMyIdent())),
       renderAcceptOrRejectControls(gameSummary.gameId, sent)
     ]);
   }
