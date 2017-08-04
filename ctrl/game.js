@@ -7,16 +7,15 @@ const Worker = require("tiny-worker");
 const GameDb = require("../db/game_db");
 const SocialCtrl = require("./social");
 
-
 var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
 
-module.exports = (sbot, myIdent, db) => {
+module.exports = (sbot, myIdent, db, injectedApi) => {
   var rootDir = __dirname.replace("ctrl","") + "/";
 
   const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
-  const gameSSBDao = GameSSBDao(sbot, myIdent);
+  const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
   const gameChallenger = GameChallenger(sbot, myIdent);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
@@ -97,6 +96,14 @@ module.exports = (sbot, myIdent, db) => {
 
   function getSituation(gameId) {
     return gameSSBDao.getSituation(gameId);
+  }
+
+  function getSituationObservable(gameId) {
+    return gameSSBDao.getSituationObservable(gameId);
+  }
+
+  function getSituationSummaryObservable(gameId) {
+    return gameSSBDao.getSituationSummaryObservable(gameId);
   }
 
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
@@ -236,6 +243,8 @@ module.exports = (sbot, myIdent, db) => {
     getMyFinishedGames: getMyFinishedGames,
     getFriendsObservableGames: getFriendsObservableGames,
     getSituation: getSituation,
+    getSituationObservable: getSituationObservable,
+    getSituationSummaryObservable: getSituationSummaryObservable,
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,
     publishValidMoves: publishValidMoves,

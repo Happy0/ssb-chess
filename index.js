@@ -9,7 +9,7 @@ var GameComponent = require('./ui/game/gameView');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
 
-module.exports = (attachToElement, sbot) => {
+module.exports = (attachToElement, sbot, injectedApi) => {
 
   var cssFiles = [
     "./css/global.css",
@@ -49,17 +49,17 @@ module.exports = (attachToElement, sbot) => {
 
   function appRouter(mainBody, gameCtrl) {
     m.route(mainBody, "/my_games", {
-      "/my_games": MiniboardListComponent(gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
-      "/games_my_move": MiniboardListComponent(gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
+      "/my_games": MiniboardListComponent(gameCtrl, gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
+      "/games_my_move": MiniboardListComponent(gameCtrl, gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
       "/games/:gameId": GameComponent(gameCtrl),
       "/invitations": InvitationsComponent(gameCtrl),
-      "/observable": MiniboardListComponent(gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent())
+      "/observable": MiniboardListComponent(gameCtrl, gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent())
     })
   }
 
   sbot.whoami((err, ident) => {
     Db.initDb().then(db => {
-      const gameCtrl = GameCtrl(sbot, ident.id, db);
+      const gameCtrl = GameCtrl(sbot, ident.id, db, injectedApi);
 
       const mainBody = attachToElement;
       const navDiv = document.createElement("div");
