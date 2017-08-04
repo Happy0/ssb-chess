@@ -121,8 +121,6 @@ module.exports = (gameCtrl) => {
       this.gameSituationObs(situation => {
         var config = situationToChessgroundConfig(situation);
         chessGround.set(config);
-
-        var chessboardDom = document.getElementsByClassName("cg-board-wrap")[0];
         gameCtrl.publishValidMoves(situation.gameId);
       })
     },
