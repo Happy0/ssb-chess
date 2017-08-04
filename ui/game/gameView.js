@@ -18,8 +18,8 @@ module.exports = (gameCtrl) => {
   }
 
   function isPromotionMove(chessGround, dest) {
-    return dest[1] === '8' || (dest[1] === '1' &&
-      chessGround.state.pieces[dest].role === 'pawn');
+    return (dest[1] === '8' || dest[1] === '1') &&
+      chessGround.state.pieces[dest].role === 'pawn';
   }
 
   function renderBoard(gameId) {
