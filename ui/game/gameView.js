@@ -126,6 +126,7 @@ module.exports = (gameCtrl) => {
     },
     onremove: function(vnode) {
       PubSub.unsubscribe(this.validMovesListener);
+      chessGround.destroy();
     }
   }
 

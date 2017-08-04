@@ -88,6 +88,7 @@ function renderSummary() {
     },
     onremove: function() {
       PubSub.unsubscribe(this.moveListener);
+      chessground.destroy();
     }
   }
 
