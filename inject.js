@@ -14,9 +14,9 @@ exports.gives = nest({
 })
 
 exports.needs = nest({
-  'sbot.obs.connection': 'first'
+  'sbot.obs.connection': 'first',
+  'backlinks.obs.for': 'first'
 });
-
 
 exports.create = function(api) {
   const route = '/chess'
@@ -45,7 +45,10 @@ exports.create = function(api) {
       return
     } else {
       onceTrue(api.sbot.obs.connection(), (sbot) => {
-        index(topLevelDomElement, sbot);
+        var injectedApi = {
+           backlinks: api.backlinks.obs.for
+        }
+        index(topLevelDomElement, sbot, injectedApi);
       });
 
       return topLevelDomElement;

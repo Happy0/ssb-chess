@@ -2,7 +2,7 @@ var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 
-module.exports = (summary, identPerspective) => {
+module.exports = (gameCtrl, summary, identPerspective) => {
 
   var chessground = null;
 
@@ -41,19 +41,20 @@ function renderSummary() {
       }), renderSummaryBottom()]);
   }
 
-  function listenForLiveGameUpdates() {
-    this.moveListener = PubSub.subscribe("game_update", function(msg, data) {
-      if (data.gameId === summary.gameId) {
-        var config = {
-          fen: data.fen,
-          lastMove: [data.orig, data.dest]
-        }
+  function summaryToChessgroundConfig(summary) {
+    var config = {
+      fen: summary.fen,
+      viewOnly: true,
+      orientation: playerColour,
+      check: summary.check,
+      coordinates: false
+    };
 
-        if (chessground) {
-          chessground.set(config);
-        }
-      }
-    });
+    if (summary.lastMove) {
+      config.lastMove = [summary.lastMove.orig, summary.lastMove.dest];
+    }
+
+    return config;
   }
 
   return {
@@ -66,28 +67,21 @@ function renderSummary() {
       // can attach chessground to our chessground container element that was
       // prepared for it during the 'view' lifecycle method.
 
-      var config = {
-        fen: summary.fen,
-        viewOnly: true,
-        orientation: playerColour,
-        check: summary.check,
-        coordinates: false
-      };
-
-      if (summary.lastMove) {
-        config.lastMove = [summary.lastMove.orig, summary.lastMove.dest];
-      }
+      var config = summaryToChessgroundConfig(summary);
 
       var dom = vNode.dom;
       var chessGroundParent = dom.querySelector(".ssb-chessground-container");
       chessground = Chessground(chessGroundParent, config);
 
-    },
-    oninit: function() {
-      listenForLiveGameUpdates();
+      // Listen for game updates
+      var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
+      gameSummaryObservable(newSummary => {
+        var newConfig = summaryToChessgroundConfig(newSummary);
+        chessground.set(newConfig);
+      });
     },
     onremove: function() {
-      PubSub.unsubscribe(this.moveListener);
+      chessground.destroy();
     }
   }
 

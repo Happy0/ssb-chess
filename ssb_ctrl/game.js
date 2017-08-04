@@ -3,9 +3,17 @@ const pull = require("pull-stream");
 const map = require("pull-stream/throughs/map");
 const collect = require("pull-stream/sinks/collect");
 
-var SocialCtrl = require("./social");
+const nest = require('depnest');
 
-module.exports = (sbot, myIdent) => {
+const computed = require("mutant/computed");
+const when = require("mutant/when");
+var Value = require('mutant/value')
+const onceTrue = require("mutant/once-true")
+
+var SocialCtrl = require("./social");
+const MutantUtils = require("./mutant_utils")();
+
+module.exports = (sbot, myIdent, injectedApi) => {
 
   const socialCtrl = SocialCtrl(sbot);
 
@@ -25,7 +33,7 @@ module.exports = (sbot, myIdent) => {
           const authorColour = result.content.myColor === "white" ? result.content.myColor : "black";
           const players = {};
 
-          var names = Promise.all( [authorId, invited].map(socialCtrl.getPlayerDisplayName) );
+          var names = Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName));
           names.then(names => {
             players[authorId] = {};
             players[authorId].colour = authorColour;
@@ -46,31 +54,43 @@ module.exports = (sbot, myIdent) => {
     })
   }
 
+  function situationToSummary(gameSituation) {
+
+    const summary = {
+      gameId: gameSituation.gameId,
+      fen: gameSituation.fen,
+      players: gameSituation.players,
+      toMove: gameSituation.toMove,
+      status: gameSituation.status,
+      lastMove: gameSituation.lastMove,
+      check: gameSituation.check
+    }
+
+    return summary;
+  }
+
   /*
    * Return just the FEN, players, and who's move it is.
    * This might be used for a miniboard view of a game, for example.
    */
   function getSmallGameSummary(gameRootMessage) {
-    // For now this just calls through to 'getSituation' - but we could maybe do something
-    // more efficient in the future.by just looking at the ply of the last move and the
-    // players from the original message, etc.
-
-    return getSituation(gameRootMessage).then(gameSituation => {
-
-      const summary = {
-        gameId: gameSituation.gameId,
-        fen: gameSituation.fen,
-        players: gameSituation.players,
-        toMove: gameSituation.toMove,
-        status: gameSituation.status,
-        lastMove: gameSituation.lastMove,
-        check: gameSituation.check
-      }
-
-      return summary;
-    });
+    return MutantUtils.mutantToPromise(getSituationSummaryObservable(gameRootMessage));
   }
 
+  function findGameStatus(gameMessages) {
+    var result = gameMessages.find(msg => {
+      return msg.value.content.type === "chess_game_end"
+    });
+
+    const status = {
+      status: result != null && result.value.content.status ? result.value.content.status : "started",
+      winner: result != null ? result.value.content.winner : null
+    }
+
+    return status;
+  }
+
+  //TODO: REMOVE
   function getGameStatus(gameRootMessage) {
     const source = sbot.links({
       dest: gameRootMessage,
@@ -94,71 +114,76 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function getSituation(gameRootMessage) {
-    //TODO: worra mess, tidy this function up
+  function filterByPlayerMoves(players, messages) {
+    return messages.filter(msg => players.hasOwnProperty(msg.value.author) &&
+      (msg.value.content.type === "chess_move" ||
+        (msg.value.content.type === "chess_game_end" && msg.value.content.orig != null)));
+  }
 
-    return new Promise((resolve, reject) => {
+  function getPlayerToMove(players, numMoves) {
+    const colourToMove = numMoves % 2 === 0 ? "white" : "black";
 
-      const source = sbot.links({
-        dest: gameRootMessage,
-        values: true,
-        keys: false
-      });
+    const playerIds = Object.keys(players);
 
-      const filterByPlayerMoves = players =>
-        filter(msg => players.hasOwnProperty(msg.value.author) &&
-          (msg.value.content.type === "chess_move" ||
-            (msg.value.content.type === "chess_game_end" && msg.value.content.orig != null) ));
+    for (var i = 0; i < playerIds.length; i++) {
+      if (players[playerIds[i]].colour === colourToMove) {
+        return playerIds[i];
+      }
+    }
 
-      const getPlayerToMove = (players, numMoves) => {
-        const colourToMove = numMoves % 2 === 0 ? "white" : "black";
+  };
 
-        const playerIds = Object.keys(players);
+  function getSituationObservable(gameRootMessage) {
+    const gameMessages = injectedApi.backlinks(gameRootMessage);
+    const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
-        for (var i = 0; i < playerIds.length; i++) {
-          if (players[playerIds[i]].colour === colourToMove) {
-            return playerIds[i];
-          }
-        }
+    return computed([players, gameMessages.sync, gameMessages], (players, synced, messages) => {
+      if (!players || !synced) return null;
 
-      };
+      var msgs = filterByPlayerMoves(players, messages);
+      if (!msgs) msgs = [];
 
-      getPlayers(gameRootMessage).then(players => {
+      // Sort in ascending ply so that we get a list of moves linearly
+      msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
-        pull(source,
-          filterByPlayerMoves(players),
-          collect((err, msgs) => {
-            if (!msgs) msgs = [];
+      var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
 
-            // Sort in ascending ply so that we get a list of moves linearly
-            msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
+      var status = findGameStatus(msgs);
 
-            var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
+      var origDests = msgs.map(msg => ({
+        'orig': msg.value.content.orig,
+        'dest': msg.value.content.dest
+      }));
 
-            getGameStatus(gameRootMessage).then(status => {
-              var origDests = msgs.map(msg => ({
-                'orig': msg.value.content.orig,
-                'dest': msg.value.content.dest
-              }));
+      var isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
 
-              var isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
-
-              resolve({
-                gameId: gameRootMessage,
-                pgnMoves: pgnMoves,
-                ply: pgnMoves.length,
-                origDests: origDests,
-                check: isCheck,
-                fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                players: players,
-                toMove: getPlayerToMove(players, pgnMoves.length),
-                status: status,
-                lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null
-              })
-            })
-          }));
-      });
+      return {
+        gameId: gameRootMessage,
+        pgnMoves: pgnMoves,
+        ply: pgnMoves.length,
+        origDests: origDests,
+        check: isCheck,
+        fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        players: players,
+        toMove: getPlayerToMove(players, pgnMoves.length),
+        status: status,
+        lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null
+      }
     });
+  }
+
+  function getSituationSummaryObservable(gameRootMessage) {
+    return computed([getSituationObservable(gameRootMessage)], situation => {
+      if (situation == null) {
+        return null;
+      } else {
+        return situationToSummary(situation);
+      }
+    })
+  }
+
+  function getSituation(gameRootMessage) {
+    return MutantUtils.mutantToPromise(getSituationObservable(gameRootMessage));
   }
 
   function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen) {
@@ -227,6 +252,8 @@ module.exports = (sbot, myIdent) => {
   return {
     getPlayers: getPlayers,
     getSituation: getSituation,
+    getSituationObservable: getSituationObservable,
+    getSituationSummaryObservable: getSituationSummaryObservable,
     getSmallGameSummary: getSmallGameSummary,
     makeMove: makeMove,
     endGame: endGame
