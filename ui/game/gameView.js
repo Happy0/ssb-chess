@@ -11,8 +11,6 @@ module.exports = (gameCtrl) => {
 
   var chessGround = null;
 
-  var config = {};
-
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
   }
@@ -114,15 +112,19 @@ module.exports = (gameCtrl) => {
       const gameId = atob(vNode.attrs.gameId);
       var dom = document.getElementById(gameId);
 
-      chessGround = Chessground(dom, {});
-
       var gameSituationObs = gameCtrl.getSituationObservable(gameId);
 
-      gameSituationObs(situation => {
+      onceTrue(gameSituationObs, situation => {
         var config = situationToChessgroundConfig(situation);
-        chessGround.set(config);
-        gameCtrl.publishValidMoves(situation.gameId);
-      })
+        chessGround = Chessground(dom, config);
+
+        gameSituationObs(situation => {
+          var config = situationToChessgroundConfig(situation);
+          chessGround.set(config);
+          gameCtrl.publishValidMoves(situation.gameId);
+        })
+      });
+
     },
     onremove: function(vnode) {
       PubSub.unsubscribe(this.validMovesListener);
