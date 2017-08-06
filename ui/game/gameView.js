@@ -2,14 +2,18 @@ var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PubSub = require('pubsub-js');
 var PromotionBox = require('./promote');
-
 var onceTrue = require("mutant/once-true");
+var GameHistory = require("./gameHistory");
+var Value = require("mutant/value");
 
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
 
   var chessGround = null;
+
+  var gameHistoryObservable = Value();
+  var gameHistory = GameHistory(gameHistoryObservable);
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
@@ -88,7 +92,7 @@ module.exports = (gameCtrl) => {
       const gameId = atob(ctrl.attrs.gameId);
       return m('div', {
         class: "ssb-chess-board-background-blue3 merida"
-      }, renderBoard(gameId));
+      }, [renderBoard(gameId), m(gameHistory)]);
     },
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
@@ -118,10 +122,15 @@ module.exports = (gameCtrl) => {
         var config = situationToChessgroundConfig(situation);
         chessGround = Chessground(dom, config);
 
-        gameSituationObs(situation => {
-          var config = situationToChessgroundConfig(situation);
+        gameCtrl.publishValidMoves(situation.gameId);
+        gameHistoryObservable.set(situation);
+
+        gameSituationObs(newSituation => {
+          var config = situationToChessgroundConfig(newSituation);
+
           chessGround.set(config);
           gameCtrl.publishValidMoves(situation.gameId);
+          gameHistoryObservable.set(newSituation);
         })
       });
 
