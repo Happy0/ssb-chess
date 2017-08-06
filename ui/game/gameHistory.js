@@ -10,7 +10,7 @@ module.exports = (gameObservable) => {
   const gameStatus = null;
 
   function renderHistory() {
-    return m('div', {}, [renderMoveHistory()]);
+    return m('div', {class: 'ssb-chess-history-area'}, [renderMoveHistory()]);
   }
 
   function renderMoveHistory() {

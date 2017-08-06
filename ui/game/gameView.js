@@ -91,7 +91,7 @@ module.exports = (gameCtrl) => {
     view: function(ctrl) {
       const gameId = atob(ctrl.attrs.gameId);
       return m('div', {
-        class: "ssb-chess-board-background-blue3 merida"
+        class: "ssb-chess-board-background-blue3 merida ssb-chess-game-layout"
       }, [renderBoard(gameId), m(gameHistory)]);
     },
     oninit: function(vnode) {

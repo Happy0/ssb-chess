@@ -20,7 +20,8 @@ module.exports = (attachToElement, sbot, injectedApi) => {
     "./css/largeBoard.css",
     "./css/invites.css",
     "./css/loading.css",
-    "./css/promote.css"
+    "./css/promote.css",
+    "./css/game.css"
   ];
 
   // h4cky0 strikes again? mebbe there's a better way? ;x

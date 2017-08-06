@@ -1,0 +1,10 @@
+.ssb-chess-game-layout {
+  margin-top: 20px;
+  display: flex;
+}
+
+.ssb-chess-history-area {
+  width: 300px;
+  height: 600px;
+  overflow-y: scroll;
+}
