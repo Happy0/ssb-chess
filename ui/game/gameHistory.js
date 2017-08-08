@@ -2,6 +2,8 @@ const Value = require("mutant/value");
 const m = require("mithril");
 const watch = require("mutant/watch");
 
+const R = require("ramda");
+
 module.exports = (gameObservable) => {
 
   const moveSelectedObservable = Value();
@@ -10,11 +12,25 @@ module.exports = (gameObservable) => {
   const gameStatus = null;
 
   function renderHistory() {
-    return m('div', {class: 'ssb-chess-history-area'}, [renderMoveHistory()]);
+    return m('div', {
+      class: 'ssb-chess-history-area'
+    }, [renderMoveHistory()]);
+  }
+
+  function renderHalfMove(pgn, moveNumber) {
+    const clickHandler = () => {
+      moveSelectedObservable.set(moveNumber);
+    }
+
+    return m('div', {onclick: clickHandler}, pgn);
   }
 
   function renderMoveHistory() {
-      return pgnMoves.map(pgnMove => m('div', {class: 'ssb-chess-pgn-move'}, pgnMove));
+    const halves = R.splitEvery(2, pgnMoves);
+
+    return halves.map( (half, moveNumber) => m('div', {
+      class: 'ssb-chess-pgn-move'
+    }, [renderHalfMove(half[0], moveNumber), renderHalfMove(half[1], moveNumber)]));
   }
 
   /**

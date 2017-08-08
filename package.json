@@ -23,7 +23,8 @@
     "depnest": "1.3.0",
     "mutant": "3.19.0",
 
-    "patchcore": "1.8.1"
+    "patchcore": "1.8.1",
+    "ramda": "0.24.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

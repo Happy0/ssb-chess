@@ -6,6 +6,8 @@ var onceTrue = require("mutant/once-true");
 var GameHistory = require("./gameHistory");
 var Value = require("mutant/value");
 
+var watchAll = require("mutant/watch-all");
+
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
@@ -125,13 +127,15 @@ module.exports = (gameCtrl) => {
         gameCtrl.publishValidMoves(situation.gameId);
         gameHistoryObservable.set(situation);
 
-        gameSituationObs(newSituation => {
-          var config = situationToChessgroundConfig(newSituation);
+        watchAll([gameSituationObs, gameHistory.getMoveSelectedObservable()],
+          (newSituation, moveSelected) => {
+            var config = situationToChessgroundConfig(newSituation);
 
-          chessGround.set(config);
-          gameCtrl.publishValidMoves(situation.gameId);
-          gameHistoryObservable.set(newSituation);
-        })
+            chessGround.set(config);
+            gameCtrl.publishValidMoves(newSituation.gameId);
+            gameHistoryObservable.set(newSituation);
+          });
+
       });
 
     },
