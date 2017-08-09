@@ -200,11 +200,11 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     }
   }
 
-  function publishValidMoves(gameId) {
+  function publishValidMoves(gameId, ply) {
 
     getSituation(gameId).then(situation => {
 
-      var gameFen = situation.fen;
+      var gameFen = ply != null ? situation.fenHistory[ply] : situation.fen;
 
       chessWorker.postMessage({
         topic: 'init',

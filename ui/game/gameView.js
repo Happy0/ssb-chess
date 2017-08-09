@@ -41,12 +41,10 @@ module.exports = (gameCtrl) => {
   }
 
   function setNotMovable(conf) {
-    var notMovable = {
-      check: false,
-      movable: {
-        color: null
-      }
-    };
+
+    conf['check'] = false;
+    conf['movable'] = {};
+    conf['movable']['color'] = null;
   }
 
   function situationToChessgroundConfig(situation) {
@@ -141,15 +139,18 @@ module.exports = (gameCtrl) => {
             var config = situationToChessgroundConfig(newSituation);
 
             // If the user is on the latest move, they may move and we
-            // render the game updates.
-            if (moveSelected < newSituation.fenHistory.length) {
+            // render the game updates. Otherwise the board is read only
+            if (moveSelected != null && (moveSelected < newSituation.ply)) {
               setNotMovable(config);
               config.fen = newSituation.fenHistory[moveSelected];
-              config.lastMove = [situation.origDests[moveSelected].orig, situation.origDests[moveSelected].dest];
+
+              if (moveSelected > 0) {
+                config.lastMove = [situation.origDests[moveSelected].orig, situation.origDests[moveSelected].dest];
+              }
             }
 
             chessGround.set(config);
-            gameCtrl.publishValidMoves(newSituation.gameId);
+            gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
             gameHistoryObservable.set(newSituation);
           });
 

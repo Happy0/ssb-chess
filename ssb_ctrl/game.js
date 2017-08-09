@@ -148,6 +148,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
       var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
       var fenHistory = msgs.map(msg => msg.value.content.fen);
+      fenHistory.unshift("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
       var status = findGameStatus(msgs);
 
