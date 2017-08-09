@@ -140,10 +140,12 @@ module.exports = (gameCtrl) => {
           (newSituation, moveSelected) => {
             var config = situationToChessgroundConfig(newSituation);
 
-            // If the player is on the latest move, moveSelected is null
-            if (moveSelected >= 0) {
+            // If the user is on the latest move, they may move and we
+            // render the game updates.
+            if (moveSelected < newSituation.fenHistory.length) {
               setNotMovable(config);
               config.fen = newSituation.fenHistory[moveSelected];
+              config.lastMove = [situation.origDests[moveSelected].orig, situation.origDests[moveSelected].dest];
             }
 
             chessGround.set(config);
