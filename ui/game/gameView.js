@@ -1,4 +1,4 @@
-var m = require("mithril");
+  var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PubSub = require('pubsub-js');
 var PromotionBox = require('./promote');
@@ -38,6 +38,15 @@ module.exports = (gameCtrl) => {
   function switchToPlayerTurnByPly(conf, ply) {
     conf.turnColor = plyToColourToPlay(ply);
     conf.movable.color = plyToColourToPlay(ply);
+  }
+
+  function setNotMovable(conf) {
+    var notMovable = {
+      check: false,
+      movable: {
+        color: null
+      }
+    };
   }
 
   function situationToChessgroundConfig(situation) {
@@ -130,6 +139,12 @@ module.exports = (gameCtrl) => {
         watchAll([gameSituationObs, gameHistory.getMoveSelectedObservable()],
           (newSituation, moveSelected) => {
             var config = situationToChessgroundConfig(newSituation);
+
+            // If the player is on the latest move, moveSelected is null
+            if (moveSelected >= 0) {
+              setNotMovable(config);
+              config.fen = newSituation.fenHistory[moveSelected];
+            }
 
             chessGround.set(config);
             gameCtrl.publishValidMoves(newSituation.gameId);

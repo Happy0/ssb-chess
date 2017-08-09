@@ -147,6 +147,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
       msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
       var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
+      var fenHistory = msgs.map(msg => msg.value.content.fen);
 
       var status = findGameStatus(msgs);
 
@@ -160,6 +161,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
       return {
         gameId: gameRootMessage,
         pgnMoves: pgnMoves,
+        fenHistory: fenHistory,
         ply: pgnMoves.length,
         origDests: origDests,
         check: isCheck,

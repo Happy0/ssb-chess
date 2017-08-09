@@ -30,7 +30,7 @@ module.exports = (gameObservable) => {
 
     return halves.map( (half, moveNumber) => m('div', {
       class: 'ssb-chess-pgn-move'
-    }, [renderHalfMove(half[0], moveNumber), renderHalfMove(half[1], moveNumber)]));
+    }, [renderHalfMove(half[0], moveNumber), renderHalfMove(half[1], moveNumber + 1)]));
   }
 
   /**
