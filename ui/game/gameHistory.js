@@ -96,7 +96,11 @@ module.exports = (gameObservable) => {
         m.redraw();
       }
     });
+  }
 
+  function goToLiveMode() {
+    moveNumberSelected = "live";
+    moveSelectedObservable.set(moveNumberSelected);
   }
 
   return {
@@ -105,7 +109,8 @@ module.exports = (gameObservable) => {
       watchForGameUpdates();
       handleArrowKeys();
     },
-    getMoveSelectedObservable: getMoveSelectedObservable
+    getMoveSelectedObservable: getMoveSelectedObservable,
+    goToLiveMode: goToLiveMode
   }
 
 }

@@ -125,16 +125,16 @@ module.exports = (gameCtrl) => {
       const gameId = atob(vNode.attrs.gameId);
       var dom = document.getElementById(gameId);
 
-      var gameSituationObs = gameCtrl.getSituationObservable(gameId);
+      this.gameSituationObs = gameCtrl.getSituationObservable(gameId);
 
-      onceTrue(gameSituationObs, situation => {
+      onceTrue(this.gameSituationObs, situation => {
         var config = situationToChessgroundConfig(situation);
         chessGround = Chessground(dom, config);
 
         gameCtrl.publishValidMoves(situation.gameId);
         gameHistoryObservable.set(situation);
 
-        watchAll([gameSituationObs, gameHistory.getMoveSelectedObservable()],
+        this.removeWatches = watchAll([this.gameSituationObs, gameHistory.getMoveSelectedObservable()],
           (newSituation, moveSelected) => {
             var newConfig = situationToChessgroundConfig(newSituation);
 
@@ -162,8 +162,15 @@ module.exports = (gameCtrl) => {
 
     },
     onremove: function(vnode) {
+
+      this.removeWatches();
+
       PubSub.unsubscribe(this.validMovesListener);
       chessGround.destroy();
+
+      // Set the game history area to 'live mode' for the next game that is
+      // opened
+      gameHistory.goToLiveMode();
     }
   }
 
