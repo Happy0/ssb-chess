@@ -6,12 +6,12 @@ const R = require("ramda");
 
 module.exports = (gameObservable) => {
 
-  const moveSelectedObservable = Value();
+  var moveNumberSelected = "live";
+  const moveSelectedObservable = Value(moveNumberSelected);
 
   var pgnMoves = [];
   const gameStatus = null;
 
-  var moveNumberSelected = "live";
   var latestMove = 0;
 
   function renderHistory() {
