@@ -136,24 +136,28 @@ module.exports = (gameCtrl) => {
 
         watchAll([gameSituationObs, gameHistory.getMoveSelectedObservable()],
           (newSituation, moveSelected) => {
-            var config = situationToChessgroundConfig(newSituation);
+            var newConfig = situationToChessgroundConfig(newSituation);
 
             // If the user is on the latest move, they may move and we
             // render the game updates. Otherwise the board is read only
-            if (moveSelected != null && (moveSelected < newSituation.ply)) {
-              setNotMovable(config);
-              config.fen = newSituation.fenHistory[moveSelected];
+            if (moveSelected !== "live") {
+              setNotMovable(newConfig);
+              newConfig.fen = newSituation.fenHistory[moveSelected];
 
               if (moveSelected > 0) {
-                config.lastMove = [situation.origDests[moveSelected].orig, situation.origDests[moveSelected].dest];
+                newConfig.lastMove = [newSituation.origDests[moveSelected -1 ].orig, newSituation.origDests[moveSelected - 1].dest];
+              } else {
+                newConfig.lastMove = null;
               }
+
+              gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
             }
 
-            chessGround.set(config);
-            gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
-            gameHistoryObservable.set(newSituation);
+            chessGround.set(newConfig);
+            gameCtrl.publishValidMoves(newSituation.gameId);
           });
 
+          gameSituationObs(newSituation => gameHistoryObservable.set(newSituation));
       });
 
     },

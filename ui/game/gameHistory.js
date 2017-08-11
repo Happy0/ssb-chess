@@ -11,7 +11,7 @@ module.exports = (gameObservable) => {
   var pgnMoves = [];
   const gameStatus = null;
 
-  var moveNumberSelected = null;
+  var moveNumberSelected = "live";
   var latestMove = 0;
 
   function renderHistory() {
@@ -22,7 +22,13 @@ module.exports = (gameObservable) => {
 
   function renderHalfMove(pgn, moveNumber) {
     const clickHandler = () => {
-      moveNumberSelected = moveNumber;
+
+      if (moveNumber === latestMove) {
+        moveNumberSelected = "live";
+      } else {
+        moveNumberSelected = moveNumber;
+      }
+
       moveSelectedObservable.set(moveNumber);
     }
 
@@ -47,16 +53,23 @@ module.exports = (gameObservable) => {
 
     document.onkeydown = function(evt) {
       evt = evt || window.event;
-      if (evt.keyCode === left && (moveNumberSelected > 0)) {
+      if (evt.keyCode === left && (moveNumberSelected !== 0)) {
+        if (moveNumberSelected === "live") {
+          moveNumberSelected = latestMove;
+        }
+
         moveNumberSelected = moveNumberSelected - 1;
-      } else if (evt.keyCode === left && (moveNumberSelected == null)) {
-        moveNumberSelected = latestMove - 1;
-      } else if (evt.keyCode === right && moveNumberSelected < latestMove) {
+      } else if (evt.keyCode === right && moveNumberSelected !== "live") {
         moveNumberSelected = moveNumberSelected + 1;
+
+        if (moveNumberSelected === latestMove) {
+          moveNumberSelected = "live";
+        }
+
       } else if (evt.keyCode === up) {
         moveNumberSelected = 0;
       } else if (evt.keyCode === down) {
-        moveNumberSelected = latestMove;
+        moveNumberSelected = "live";
       }
 
       moveSelectedObservable.set(moveNumberSelected);
@@ -80,16 +93,18 @@ module.exports = (gameObservable) => {
 
         latestMove = situation.ply;
 
-        handleArrowKeys();
-
         m.redraw();
       }
     });
+
   }
 
   return {
     view: renderHistory,
-    oncreate: watchForGameUpdates,
+    oncreate: () => {
+      watchForGameUpdates();
+      handleArrowKeys();
+    },
     getMoveSelectedObservable: getMoveSelectedObservable
   }
 
