@@ -40,9 +40,9 @@ module.exports = (gameObservable) => {
   function renderMoveHistory() {
     const halves = R.splitEvery(2, pgnMoves);
 
-    return halves.map((half, moveNumber) => m('div', {
+    return halves.map((half, halfNumber) => m('div', {
       class: 'ssb-chess-pgn-move'
-    }, [renderHalfMove(half[0], moveNumber), renderHalfMove(half[1], moveNumber + 1)]));
+    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1 ), renderHalfMove(half[1], (halfNumber + 1) * 2)]));
   }
 
   function handleArrowKeys() {
