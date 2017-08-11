@@ -155,9 +155,9 @@ module.exports = (gameCtrl) => {
 
             chessGround.set(newConfig);
             gameCtrl.publishValidMoves(newSituation.gameId);
+            gameHistoryObservable.set(newSituation);
           });
 
-          gameSituationObs(newSituation => gameHistoryObservable.set(newSituation));
       });
 
     },
