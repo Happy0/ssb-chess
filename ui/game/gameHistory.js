@@ -10,14 +10,34 @@ module.exports = (gameObservable) => {
   const moveSelectedObservable = Value(moveNumberSelected);
 
   var pgnMoves = [];
-  const gameStatus = null;
+  var status = null;
+  var players = [];
 
   var latestMove = 0;
+
+  function renderPlayers() {
+    //TODO: Order based on player perspective
+    return m('div', Object.values(players).map(player => {
+
+      return m('div', player.name);
+    }))
+  }
+
+  function renderStatus() {
+    if (!status) {
+      return m('div', "");
+    }
+
+    var statusText = status.status !== "started" ? status.status : "";
+
+    var displayedStatus = status.winner ? "Won by " + status.winner : statusText;
+    return m('div', {}, displayedStatus)
+  }
 
   function renderHistory() {
     return m('div', {
       class: 'ssb-chess-history-area'
-    }, [renderMoveHistory()]);
+    }, [renderPlayers(), renderStatus(), renderMoveHistory()]);
   }
 
   function renderHalfMove(pgn, moveNumber) {
@@ -88,8 +108,10 @@ module.exports = (gameObservable) => {
   function watchForGameUpdates() {
     gameObservable(situation => {
       if (situation) {
+        console.dir(situation);
         pgnMoves = situation.pgnMoves;
         status = situation.gameStatus;
+        players = situation.players;
 
         latestMove = situation.ply;
 
