@@ -15,7 +15,7 @@ module.exports = (gameCtrl) => {
   var chessGround = null;
 
   var gameHistoryObservable = Value();
-  var gameHistory = GameHistory(gameHistoryObservable);
+  var gameHistory = GameHistory(gameHistoryObservable, myIdent);
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";

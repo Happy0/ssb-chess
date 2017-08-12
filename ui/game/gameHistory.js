@@ -4,7 +4,10 @@ const watch = require("mutant/watch");
 
 const R = require("ramda");
 
-module.exports = (gameObservable) => {
+// todo: move this file somewhere more appropriate :P
+const PlayerModelUtils = require("../../ctrl/player_model_utils")();
+
+module.exports = (gameObservable, myIdent) => {
 
   var moveNumberSelected = "live";
   const moveSelectedObservable = Value(moveNumberSelected);
@@ -16,11 +19,22 @@ module.exports = (gameObservable) => {
   var latestMove = 0;
 
   function renderPlayers() {
-    //TODO: Order based on player perspective
-    return m('div', Object.values(players).map(player => {
+    if (!players || players.length === 0 ) {
+      return m('div', {}, "");
+    }
 
-      return m('div', player.name);
-    }))
+    var mePlaying = players[myIdent];
+    var myPerspectiveColour = mePlaying ? mePlaying.colour : "white";
+
+    var coloursToPlayers = PlayerModelUtils.coloursToPlayer(players);
+
+    var bottomPerspectiveName = coloursToPlayers[myPerspectiveColour].name;
+    var otherPlayerName = myPerspectiveColour === "white" ? coloursToPlayers["black"].name : coloursToPlayers["white"].name;
+
+    return m('div', {}, [
+      m('div', {}, otherPlayerName),
+      m('div', {}, bottomPerspectiveName)
+    ]);
   }
 
   function renderStatus() {
@@ -62,7 +76,7 @@ module.exports = (gameObservable) => {
 
     return halves.map((half, halfNumber) => m('div', {
       class: 'ssb-chess-pgn-move'
-    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1 ), renderHalfMove(half[1], (halfNumber + 1) * 2)]));
+    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)]));
   }
 
   function handleArrowKeys() {
