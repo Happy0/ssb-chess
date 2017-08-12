@@ -32,8 +32,8 @@ module.exports = (gameObservable, myIdent) => {
     var otherPlayerName = myPerspectiveColour === "white" ? coloursToPlayers["black"].name : coloursToPlayers["white"].name;
 
     return m('div', {}, [
-      m('div', {}, otherPlayerName),
-      m('div', {}, bottomPerspectiveName)
+      m('div', {class: "ssb-chess-history-player"}, otherPlayerName),
+      m('div', {class: "ssb-chess-history-player"}, bottomPerspectiveName)
     ]);
   }
 
@@ -66,8 +66,11 @@ module.exports = (gameObservable, myIdent) => {
       moveSelectedObservable.set(moveNumber);
     }
 
+    var highlightClass = ((moveNumberSelected === moveNumber) ||
+      (moveNumber === latestMove && moveNumberSelected === "live")) ? " ssb-chess-pgn-move-selected" : "";
+
     return m('div', {
-      class: "ssb-chess-pgn-cell",
+      class: "ssb-chess-pgn-cell" + highlightClass,
       onclick: clickHandler
     }, pgn);
   }
