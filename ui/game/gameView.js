@@ -35,11 +35,6 @@ module.exports = (gameCtrl) => {
     return vDom;
   }
 
-  function switchToPlayerTurnByPly(conf, ply) {
-    conf.turnColor = plyToColourToPlay(ply);
-    conf.movable.color = plyToColourToPlay(ply);
-  }
-
   function setNotMovable(conf) {
 
     conf['check'] = false;
