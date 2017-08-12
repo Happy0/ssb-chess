@@ -1,0 +1,17 @@
+.ssb-chess-pgn-cell {
+
+}
+
+.ssb-chess-pgn-move {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.ssb-chess-history-player {
+  text-align: center;
+}
+
+.ssb-chess-pgn-move-selected {
+  color: #d85000!important;
+}
