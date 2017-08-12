@@ -4,12 +4,7 @@
 }
 
 .ssb-chess-history-area {
-  width: 150px;
+  width: 200px;
   height: 600px;
-  overflow-y: scroll;
-}
-
-.ssb-chess-pgn-move {
-  display: flex;
-  justify-content: space-between;
+  margin: auto;
 }

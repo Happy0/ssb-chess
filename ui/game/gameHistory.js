@@ -67,6 +67,7 @@ module.exports = (gameObservable, myIdent) => {
     }
 
     return m('div', {
+      class: "ssb-chess-pgn-cell",
       onclick: clickHandler
     }, pgn);
   }
