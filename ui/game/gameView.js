@@ -36,8 +36,6 @@ module.exports = (gameCtrl) => {
   }
 
   function setNotMovable(conf) {
-
-    conf['check'] = false;
     conf['movable'] = {};
     conf['movable']['color'] = null;
   }
@@ -145,11 +143,15 @@ module.exports = (gameCtrl) => {
                 newConfig.lastMove = null;
               }
 
+              const colourToPlay = plyToColourToPlay(moveSelected);
+              newConfig['turnColor'] = colourToPlay;
+
               gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
+            } else {
+              gameCtrl.publishValidMoves(newSituation.gameId);
             }
 
             chessGround.set(newConfig);
-            gameCtrl.publishValidMoves(newSituation.gameId);
             gameHistoryObservable.set(newSituation);
           });
 
