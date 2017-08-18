@@ -110,7 +110,11 @@ module.exports = (gameObservable, myIdent) => {
         moveNumberSelected = "live";
       }
 
-      moveSelectedObservable.set(moveNumberSelected);
+      var allArrowKeys = [left, up, right, down];
+
+      if (allArrowKeys.indexOf(evt.keyCode) !== -1) {
+        moveSelectedObservable.set(moveNumberSelected);
+      }
     }
   }
 
