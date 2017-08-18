@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
   "main": "inject.js",
   "dependencies": {
@@ -26,7 +26,7 @@
     "patchcore": "1.8.1",
     "ramda": "0.24.1",
 
-    "ssb-embedded-chat": "1.0.1"
+    "ssb-embedded-chat": "1.0.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
