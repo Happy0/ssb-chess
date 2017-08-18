@@ -8,3 +8,23 @@
   height: 600px;
   margin: auto;
 }
+
+.ssb-chess-chat {
+  height: 100%;
+  width: 300px;
+  margin: auto;
+}
+
+.ssb-embedded-chat-input-box {
+  width: 98%;
+  border: 1px solid black;
+  padding-left: 1px;
+  padding-right: 1px;
+  height: 15px;
+}
+
+.ssb-embedded-chat-messages {
+  width: 99%;
+  height: 585px;
+  border: 1px black solid;
+}

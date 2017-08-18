@@ -8,6 +8,8 @@ var Value = require("mutant/value");
 
 var watchAll = require("mutant/watch-all");
 
+var EmbeddedChat = require("ssb-embedded-chat");
+
 module.exports = (gameCtrl) => {
 
   const myIdent = gameCtrl.getMyIdent();
@@ -33,6 +35,13 @@ module.exports = (gameCtrl) => {
     });
 
     return vDom;
+  }
+
+  function renderChat(gameId) {
+    return m('div', {
+      class: 'ssb-chess-chat',
+      id: "chat-" + gameId
+    })
   }
 
   function setNotMovable(conf) {
@@ -88,13 +97,28 @@ module.exports = (gameCtrl) => {
     return config;
   }
 
+  function makeEmbeddedChat(situation) {
+
+    var config = {
+      rootMessageId: situation.gameId,
+      chatMessageType: "chess_chat",
+      chatMessageField: "msg",
+      recipients: situation.players,
+      chatboxEnabled: situation.players[myIdent] != null
+    };
+
+    var chat = EmbeddedChat(gameCtrl.getSbot(), config)
+
+    return chat.getChatboxElement();
+  }
+
   return {
 
     view: function(ctrl) {
       const gameId = atob(ctrl.attrs.gameId);
       return m('div', {
         class: "ssb-chess-board-background-blue3 merida ssb-chess-game-layout"
-      }, [renderBoard(gameId), m(gameHistory)]);
+      }, [renderChat(gameId), renderBoard(gameId), m(gameHistory)]);
     },
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
@@ -116,13 +140,17 @@ module.exports = (gameCtrl) => {
     },
     oncreate: function(vNode) {
       const gameId = atob(vNode.attrs.gameId);
-      var dom = document.getElementById(gameId);
+      var boardDom = document.getElementById(gameId);
+      var chatDom = document.getElementById("chat-"+gameId);
 
       this.gameSituationObs = gameCtrl.getSituationObservable(gameId);
 
       onceTrue(this.gameSituationObs, situation => {
         var config = situationToChessgroundConfig(situation);
-        chessGround = Chessground(dom, config);
+        chessGround = Chessground(boardDom, config);
+
+        var chatElement = makeEmbeddedChat(situation);
+        chatDom.appendChild(chatElement);
 
         gameCtrl.publishValidMoves(situation.gameId);
         gameHistoryObservable.set(situation);

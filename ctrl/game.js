@@ -248,7 +248,8 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,
     publishValidMoves: publishValidMoves,
-    getSocialCtrl: getSocialCtrl
+    getSocialCtrl: getSocialCtrl,
+    getSbot: () => sbot
   }
 
 }
