@@ -26,7 +26,7 @@
     "patchcore": "1.8.1",
     "ramda": "0.24.1",
 
-    "ssb-embedded-chat": "1.0.0"
+    "ssb-embedded-chat": "1.0.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
