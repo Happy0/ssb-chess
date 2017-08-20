@@ -9,7 +9,7 @@ ssb-chess is currently integrated into [patchbay](https://www.github.com/ssbc/pa
 # Libraries used
 * [Mithriljs](https://mithril.js.org/
 * [Chessground](https://github.com/ornicar/chessground) is used for the board and pieces widget and animating the moves.
-( [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
+* [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
 
 # Protocol
 <TODO>
