@@ -4,7 +4,7 @@
 
 Correspondence chess built on top of the scuttlebutt platform. More information about scuttlebutt here: https://staltz.com/an-off-grid-social-network.html and [https://www.scuttlebutt.nz/](https://www.scuttlebutt.nz/)
 
-It is built to allow it to be integrated into scuttlebutt viewers (such as [patchbay](https://www.github.com/ssbc/patchbay) and [patchwork](https://www.github.com/ssbc/patchbay) using [depject](https://github.com/depject/depject) so that they can take care of things like discovering friends to play with, etc.
+It is built to allow it to be integrated into scuttlebutt viewers (such as [patchbay](https://www.github.com/ssbc/patchbay), [patchwork](https://www.github.com/ssbc/patchbay) using [depject](https://github.com/depject/depject) so that they can take care of things like discovering friends to play with, etc.
 
 ### Installation
 ssb-chess is currently integrated into [patchbay](https://www.github.com/ssbc/patchbay). You can find it in the menu at the top right (the blue dot) and then the 'chess' menu item.
@@ -17,7 +17,9 @@ ssb-chess is currently integrated into [patchbay](https://www.github.com/ssbc/pa
 
 # Protocol
 
-Note: since this is built on a peer 2 peer protocol, messages may be corrupted or deliberately misleading to cheat. ssb-chess doesn't validate that the client agrees a post is valid yet as it assumes your friends can be trusted.
+*Note*: since this is built on a peer 2 peer protocol, messages may be corrupted or deliberately misleading to cheat. ssb-chess doesn't validate that the client agrees a post is valid yet as it assumes your friends can be trusted.
+
+The documentation below documents the 'content' section of the [scuttlebutt messages](https://ssbc.github.io/secure-scuttlebutt/). The 'author' field is the ID of person who posted the message (made the chess move, posted the chat message, etc.)
 
 ## Send an Invitation to Play
 Type `chess_invite`
@@ -106,7 +108,7 @@ Type `chess_game_end`
 ## Chess Chat
 Type `ssb_chess_chat`
 
-Note: the content of the message is encrypted using [`sbot.private.publish`](https://ssbc.github.io/docs/scuttlebot/howto-publish-encrypted-messages.html) with an array of the IDs of the players of the game as the `recipients` parameter.
+*Note*: the content of the message is encrypted using [`sbot.private.publish`](https://ssbc.github.io/docs/scuttlebot/howto-publish-encrypted-messages.html) with an array of the IDs of the players of the game as the `recipients` parameter.
 
 ### Fields
 * root - the original game invite message key.
@@ -128,11 +130,11 @@ You can read more about depject [here](https://github.com/depject/depject)
 * sbot.obs.connection - A [mutant](https://github.com/mmckegg/mutant) observable with the [scuttlebot](https://github.com/ssbc/scuttlebot) connection object
 * backlinks.obs.for - A [mutant](https://github.com/mmckegg/mutant) a function which accepts a `game id` and returns an observable with an array of links to the message with the `game id` key that updates as new messages linking to this key.
 
-Note: These are supplied by [patchcore](https://github.com/ssbc/patchcore)
+*Note*: These are supplied by [patchcore](https://github.com/ssbc/patchcore)
 
 ### Gives
 * app.html.menuItem - Returns a function that accepts a callback (with a string `/chess` parameter) when clicked. This callback should route the viewer to the /chess route.
 * app.html.page - Returns a function that accepts a `path` parameter. When this function is invoked with `/chess` it returns a DOM element containing the chess app which may be mounted by the parent application.
 
-Note: ssb-chess is mounted into patchbay using depject ( https://github.com/ssbc/patchbay/blob/master/main.js )
+*Note*: ssb-chess is mounted into patchbay using depject ( https://github.com/ssbc/patchbay/blob/master/main.js )
 
