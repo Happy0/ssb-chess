@@ -13,9 +13,11 @@ ssb-chess is currently integrated into [patchbay](https://www.github.com/ssbc/pa
 * [Mithriljs](https://mithril.js.org/) is used for rendering the pages.
 * [Chessground](https://github.com/ornicar/chessground) is used for the board and pieces widget and animating the moves.
 * [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
-* [ssb Embedded Chat](https://github.com/happy0/ssb-embedded-chat) is used for the chatroom to allow the players to chat during their game.
+* [Embedded Chat](https://github.com/happy0/ssb-embedded-chat) is used for the chatroom to allow the players to chat during their game.
 
 # Protocol
+
+Note: since this is built on a peer 2 peer protocol, messages may be corrupted or deliberately misleading to cheat. ssb-chess doesn't validate that the client agrees a post is valid yet as it assumes your friends can be trusted.
 
 ## Send an Invitation to Play
 Type `chess_invite`
@@ -98,6 +100,23 @@ Type `chess_game_end`
   "orig": "f6",
   "dest": "g5",
   "pgnMove": "Qg5#"
+}
+```
+
+## Chess Chat
+Type `ssb_chess_chat`
+
+Note: the content of the message is encrypted using [`sbot.private.publish`](https://ssbc.github.io/docs/scuttlebot/howto-publish-encrypted-messages.html) with an array of the IDs of the players of the game as the `recipients` parameter.
+
+### Fields
+* root - the original game invite message key.
+* msg - The chat message contents.
+
+```javascript
+{
+  msg: "Chat testarooni"
+  root: "%YQktCnxwY0rQyljO6BLrD7AQwRpf13HzbsVAZV19vlo=.sha256"
+  type: "chess_chat"
 }
 ```
 
