@@ -73,6 +73,47 @@ Type `chess_move`
   "promotion": "b"
 }
 ```
+## Game end
+Type `chess_game_end`
 
-### Integrating ssb-chess into a scuttlebutt application using depject
-<TODO>
+### Fields
+* root - the original game invite message key.
+* status - the status the game ended with: mate / draw.
+* winner (optional) - the ID of the winning player
+* ply - the move number
+* orig - the origin square
+* dest - the destination square
+* pgnMove - the [PGN](https://en.wikipedia.org/wiki/Portable_Game_Notation) of the move.
+* fen - the position of the board after the move in [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) notation.
+* promotion (optional) - A letter donating the piece a pawn should be promoted to (b,n,q,r denoting bishop, knight, queen and rook respectively.)
+
+```javascript
+{
+ "type": "ssb_chess_game_end",
+  "status": "mate",
+  "ply": 20,
+  "fen": "rnb2rk1/ppp2ppp/3p4/4p1qK/2P1n3/8/P2P1PPP/RNB2BNR w - - 2 11",
+  "root": "%HGPn7yS2bjpWZndXtuusOjGXrirIIGu0XS18aY8YoFM=.sha256",
+  "winner": "@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519",
+  "orig": "f6",
+  "dest": "g5",
+  "pgnMove": "Qg5#"
+}
+```
+
+## Integrating ssb-chess into a scuttlebutt application using depject
+
+You can read more about depject [here](https://github.com/depject/depject)
+
+### Needs
+* sbot.obs.connection - A [mutant](https://github.com/mmckegg/mutant) observable with the [scuttlebot](https://github.com/ssbc/scuttlebot) connection object
+* backlinks.obs.for - A [mutant](https://github.com/mmckegg/mutant) a function which accepts a `game id` and returns an observable with an array of links to the message with the `game id` key that updates as new messages linking to this key.
+
+Note: These are supplied by [patchcore](https://github.com/ssbc/patchcore)
+
+### Gives
+* app.html.menuItem - Returns a function that accepts a callback (with a string `/chess` parameter) when clicked. This callback should route the viewer to the /chess route.
+* app.html.page - Returns a function that accepts a `path` parameter. When this function is invoked with `/chess` it returns a DOM element containing the chess app which may be mounted by the parent application.
+
+Note: ssb-chess is mounted into patchbay using depject ( https://github.com/ssbc/patchbay/blob/master/main.js )
+
