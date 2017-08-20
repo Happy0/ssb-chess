@@ -49,5 +49,30 @@ A player may accept an invite they have received by sending a message of type ``
 
 The game is then 'in progress.'
 
+## A chess move
+Type `chess_move`
+
+### Fields
+* root - the original game invite message key.
+* ply - the move number
+* orig - the origin square
+* dest - the destination square
+* pgnMove - the [PGN](https://en.wikipedia.org/wiki/Portable_Game_Notation) of the move.
+* fen - the position of the board after the move in [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) notation.
+* promotion (optional) - A letter donating the piece a pawn should be promoted to (b,n,q,r denoting bishop, knight, queen and rook respectively.)
+
+```javascript
+{
+  "type": "chess_move",
+  "ply": 26,
+  "root": "%WbzP0UxevK8j4g6CdLmgFnsjblnW0EVp/u6phVD5Y/4=.sha256",
+  "orig": "b2",
+  "dest": "c1",
+  "pgnMove": "bxc1=B",
+  "fen": "r2qkbnr/p3pppp/3p4/6B1/4P3/5Q2/b2N1PPP/2b1KB1R w kq - 0 14",
+  "promotion": "b"
+}
+```
+
 ### Integrating ssb-chess into a scuttlebutt application using depject
 <TODO>
