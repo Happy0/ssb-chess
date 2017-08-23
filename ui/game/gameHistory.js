@@ -63,7 +63,7 @@ module.exports = (gameObservable, myIdent) => {
         moveNumberSelected = moveNumber;
       }
 
-      moveSelectedObservable.set(moveNumber);
+      moveSelectedObservable.set(moveNumberSelected);
     }
 
     var highlightClass = ((moveNumberSelected === moveNumber) ||

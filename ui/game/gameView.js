@@ -174,6 +174,11 @@ module.exports = (gameCtrl) => {
               const colourToPlay = plyToColourToPlay(moveSelected);
               newConfig['turnColor'] = colourToPlay;
 
+              // Remove 'check' if its in the current state until we
+              // receive an event telling us it is check as we scroll
+              // through the move history
+              newConfig.check = false;
+
               gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
             } else {
               gameCtrl.publishValidMoves(newSituation.gameId);

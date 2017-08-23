@@ -46,6 +46,7 @@ function renderSummary() {
       fen: summary.fen,
       viewOnly: true,
       orientation: playerColour,
+      turnColor: summary.players[summary.toMove].colour,
       check: summary.check,
       coordinates: false
     };

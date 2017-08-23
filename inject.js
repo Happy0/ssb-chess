@@ -22,7 +22,9 @@ exports.create = function(api) {
   const route = '/chess'
 
   const topLevelDomElement = document.createElement('div');
-  topLevelDomElement.className="ssb-chess-container";
+  topLevelDomElement.className = "ssb-chess-container";
+
+  var pageLoaded = false;
 
   return nest({
     'app.html': {
@@ -42,13 +44,19 @@ exports.create = function(api) {
 
   function chessPage(path) {
     if (path !== route) {
-      return
+      return;
+    } else if (pageLoaded) {
+      return topLevelDomElement;
     } else {
       onceTrue(api.sbot.obs.connection(), (sbot) => {
+
         var injectedApi = {
-           backlinks: api.backlinks.obs.for
+          backlinks: api.backlinks.obs.for
         }
+
         index(topLevelDomElement, sbot, injectedApi);
+        pageLoaded = true;
+
       });
 
       return topLevelDomElement;
