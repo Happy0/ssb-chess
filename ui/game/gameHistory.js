@@ -83,6 +83,10 @@ module.exports = (gameObservable, myIdent) => {
     }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)]));
   }
 
+  function hasChatInputBoxFocused() {
+    return document.activeElement.className.indexOf("ssb-embedded-chat-input-box") > -1;
+  }
+
   function handleArrowKeys() {
     const left = 37;
     const up = 38;
@@ -90,7 +94,7 @@ module.exports = (gameObservable, myIdent) => {
     const down = 40;
 
     document.onkeydown = function(evt) {
-      if (document.activeElement.className.indexOf("ssb-embedded-chat-input-box") > -1) {
+      if (hasChatInputBoxFocused()) {
         // When a user is editting text in the chat box and moving their cursor with the
         // arrow keys, we don't want to scroll through the history
         return;
@@ -136,7 +140,6 @@ module.exports = (gameObservable, myIdent) => {
   function watchForGameUpdates() {
     gameObservable(situation => {
       if (situation) {
-        console.dir(situation);
         pgnMoves = situation.pgnMoves;
         status = situation.gameStatus;
         players = situation.players;
