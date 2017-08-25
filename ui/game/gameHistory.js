@@ -90,6 +90,12 @@ module.exports = (gameObservable, myIdent) => {
     const down = 40;
 
     document.onkeydown = function(evt) {
+      if (document.activeElement.className.indexOf("ssb-embedded-chat-input-box") > -1) {
+        // When a user is editting text in the chat box and moving their cursor with the
+        // arrow keys, we don't want to scroll through the history
+        return;
+      }
+
       evt = evt || window.event;
       if (evt.keyCode === left && (moveNumberSelected !== 0)) {
         if (moveNumberSelected === "live") {
