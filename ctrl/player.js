@@ -12,15 +12,17 @@ module.exports = (sbot, gameDb, gameSsbCtrl) => {
       var dbFetchCallback = (err, result) => {
         if (err) return cb(err);
 
-        if (result === []) {
+        console.dir(result);
+
+        if (result.length === 0) {
           cb(true);
         } else {
           start = start + (chunkSize + 1)
-          cb(result);
+          cb(null, result);
         }
       }
 
-      getGamesFinishedPageCb(playerId, start, start + chunkSize, Date.now() / 1000, dbFetchCallback)
+      gameDb.getGamesFinishedPageCb(playerId, start, start + chunkSize, dbFetchCallback)
     }
   }
 

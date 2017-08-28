@@ -171,7 +171,7 @@ module.exports = (sbot, db) => {
     });
   }
 
-  function getGamesFinishedPageCb(playerId, start, end, beforeTimestamp, cb) {
+  function getGamesFinishedPageCb(playerId, start, end, cb) {
 
     // This query is inefficient as it walks through the whole result set,
     // discarding results before 'start'. It'll do for now, but maybe I'll
@@ -179,9 +179,10 @@ module.exports = (sbot, db) => {
     var query = `select * from ssb_chess_games
     WHERE ((invitee = "${playerId}")
       or (inviter = "${playerId}")) and (status <> "started" and status <> "invited")
-      and (updated < beforeTimestamp)
        ORDER BY updated DESC
         LIMIT ${start},${end};`;
+
+    console.dir(query);
 
     db.all(query, (err, result) => {
       if (err) {

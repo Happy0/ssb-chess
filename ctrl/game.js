@@ -6,6 +6,7 @@ const Worker = require("tiny-worker");
 
 const GameDb = require("../db/game_db");
 const SocialCtrl = require("./social");
+const PlayerCtrl = require("./player");
 
 var PubSub = require('pubsub-js');
 
@@ -17,15 +18,14 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
   const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
   const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
   const gameChallenger = GameChallenger(sbot, myIdent);
+  const gameDb = GameDb(sbot, db);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
-  const playerCtrl = PlayerCtrl(sbot, gameSSBDao);
+  const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   var src = playerCtrl.endedGamesSummariesSource("@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519");
+  var pull = require("pull-stream");
   pull(src, pull.drain(e => console.dir(e)));
-
-
-  const gameDb = GameDb(sbot, db);
 
   const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
 
