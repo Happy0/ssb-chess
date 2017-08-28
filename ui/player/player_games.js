@@ -20,22 +20,27 @@ module.exports = (gameCtrl) => {
   function getScrollingFinishedGamesDom(playerId) {
     const finishedGamesSource = gameCtrl.getPlayerCtrl().endedGamesSummariesSource(playerId);
 
-    var content = h('div')
+    var content = h('div', {
+      className: "ssb-chess-player-finished-games-scroller"
+    })
+
     var scroller = h('div', {
-        style: {
-          'overflow-y': 'scroll',
-           position: 'fixed', bottom:'0px', top: '200px'
-        },
-        className: "ssb-chess-player-finished-games-scroller"
-      }, content)
+      style: {
+        'overflow-y': 'scroll',
+        position: 'fixed',
+        bottom: '0px',
+        top: '200px',
+        width: '100%'
+      },
+    }, content)
 
-      pull(finishedGamesSource,
-        Scroller(scroller, content, (current) => renderFinishedGameSummary(current, playerId)  )
-      );
+    pull(finishedGamesSource,
+      Scroller(scroller, content, (current) => renderFinishedGameSummary(current, playerId))
+    );
 
-      return h('div', {
-        className: 'ssb-chess-player-finished-games'
-      }, scroller);
+    return h('div', {
+      className: 'ssb-chess-player-finished-games'
+    }, scroller);
   }
 
 
