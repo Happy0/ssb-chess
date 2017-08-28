@@ -24,7 +24,8 @@ module.exports = (playerId, gameCtrl) => {
     var content = h('div')
     var scroller = h('div', {
         style: {
-          'overflow-y': 'scroll'
+          'overflow-y': 'scroll',
+           position: 'fixed', bottom:'0px', top: '200px'
         },
         className: "ssb-chess-player-finished-games-scroller"
       }, content)

@@ -3,7 +3,8 @@
 }
 
 .ssb-chess-profile-game-summary {
-  width: 100%;
+  width: 50%;
+  margin: auto;
 }
 
 .ssb-chess-player-finished-games {
