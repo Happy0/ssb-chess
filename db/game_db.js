@@ -171,6 +171,27 @@ module.exports = (sbot, db) => {
     });
   }
 
+  function getGamesFinishedPageCb(playerId, start, end, beforeTimestamp, cb) {
+
+    // This query is inefficient as it walks through the whole result set,
+    // discarding results before 'start'. It'll do for now, but maybe I'll
+    // do something more efficient in the future :)
+    var query = `select * from ssb_chess_games
+    WHERE ((invitee = "${playerId}")
+      or (inviter = "${playerId}")) and (status <> "started" and status <> "invited")
+      and (updated < beforeTimestamp)
+       ORDER BY updated DESC
+        LIMIT ${start},${end};`;
+
+    db.all(query, (err, result) => {
+      if (err) {
+        cb(err,null);
+      } else {
+        cb(null, result.map(res => res.gameId))
+      }
+    });
+  }
+
   function keepUpToDateWithGames(since) {
 
     var isChessMsgFilter = (msg) => !msg.sync === true && ssb_chess_type_messages.indexOf(msg.value.content.type) !== -1;
@@ -226,6 +247,7 @@ module.exports = (sbot, db) => {
     pendingChallengesSent: pendingChallengesSent,
     pendingChallengesReceived: pendingChallengesReceived,
     getGamesAgreedToPlayIds: getGamesAgreedToPlayIds,
-    getObservableGames: getObservableGames
+    getObservableGames: getObservableGames,
+    getGamesFinishedPageCb: getGamesFinishedPageCb
   }
 }
