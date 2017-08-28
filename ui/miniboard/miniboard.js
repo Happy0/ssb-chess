@@ -11,26 +11,39 @@ module.exports = (gameCtrl, summary, identPerspective) => {
   const playerColour = (summary.players[identPerspective] &&
     summary.players[identPerspective].colour) ? summary.players[identPerspective].colour : "white";
 
+  function renderPlayerName(player) {
+    return m('a[href=/player/' + btoa(player.id) + ']', {
+        class: "ssb-chess-miniboard-name",
+        oncreate: m.route.link
+      },
+      player.name.substring(0, 10));
+  }
+
   function renderSummaryBottom() {
 
-    var coloursNames = PlayerModelUtils.coloursToNames(summary.players);
+    var coloursNames = PlayerModelUtils.coloursToPlayer(summary.players);
     var otherPlayerColour = playerColour == "white" ? "black" : "white";
 
-    return m('div', {class: 'ssb-chess-miniboard-bottom'}, [m('center', {
+    var leftPlayer = coloursNames[playerColour];
+    var rightPlayer = coloursNames[otherPlayerColour];
+
+    return m('div', {
+      class: 'ssb-chess-miniboard-bottom'
+    }, [m('center', {
         class: "ssb-chess-miniboard-name"
-      }, coloursNames[playerColour].substring(0, 10)),
+      }, renderPlayerName(leftPlayer)),
 
       m('center', {
         class: "ssb-chess-miniboard-name"
-      }, coloursNames[otherPlayerColour].substring(0, 10))
+      }, renderPlayerName(rightPlayer))
     ])
-}
+  }
 
-function renderSummary() {
+  function renderSummary() {
 
-  var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
+    var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
 
-  return m('div', {
+    return m('div', {
       class: "ssb-chess-miniboard ssb-chess-board-background-blue3 merida"
     }, [
       m('a[href=' + '/games/' + btoa(summary.gameId) + "?observing=" + observing + ']', {
@@ -38,7 +51,8 @@ function renderSummary() {
         title: summary.gameId,
         id: summary.gameId,
         oncreate: m.route.link
-      }), renderSummaryBottom()]);
+      }), renderSummaryBottom()
+    ]);
   }
 
   function summaryToChessgroundConfig(summary) {
