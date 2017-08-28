@@ -24,12 +24,9 @@ module.exports = (playerId, gameCtrl) => {
     var scroller = h('div', {
         style: {
           //must set overflow-y to scroll for this to work.
-          'overflow-y': 'scroll',
-          //and cause this element to not stretch.
-          //this can also be achived using flexbox column.
-          position: 'fixed', bottom:'0px', top: '0px',
-          width: '600px'
-        }
+          'overflow-y': 'scroll'
+        },
+        className: "ssb-chess-player-finished-games-scroller"
       }, content)
 
       pull(finishedGamesSource,
