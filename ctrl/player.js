@@ -12,8 +12,6 @@ module.exports = (sbot, gameDb, gameSsbCtrl) => {
       var dbFetchCallback = (err, result) => {
         if (err) return cb(err);
 
-        console.dir(result);
-
         if (result.length === 0) {
           cb(true);
         } else {

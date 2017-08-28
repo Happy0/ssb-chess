@@ -23,10 +23,6 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
-  var src = playerCtrl.endedGamesSummariesSource("@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519");
-  var pull = require("pull-stream");
-  pull(src, pull.drain(e => console.dir(e)));
-
   const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
 
   function getMyIdent() {
@@ -224,10 +220,6 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     });
   }
 
-  function getSocialCtrl() {
-    return socialCtrl;
-  }
-
   function loadGameSummariesIntoDatabase() {
       gameDb.loadGameSummariesIntoDatabase();
   }
@@ -253,7 +245,8 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     makeMove: makeMove,
     startPublishingBoardUpdates: startPublishingBoardUpdates,
     publishValidMoves: publishValidMoves,
-    getSocialCtrl: getSocialCtrl,
+    getSocialCtrl: () => socialCtrl,
+    getPlayerCtrl: () => playerCtrl,
     getSbot: () => sbot
   }
 
