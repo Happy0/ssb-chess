@@ -1,17 +1,19 @@
 const Scroller = require('pull-scroll');
 var h = require('hyperscript');
 var m = require('mithril');
+var pull = require('pull-stream');
 
 var Miniboard = require('../miniboard/miniboard');
 
 module.exports = (playerId, gameCtrl) => {
 
-  const finishedGamesSource = gameCtrl.getPlayerCtrl().endedGamesSummariesSource();
+  const finishedGamesSource = gameCtrl.getPlayerCtrl().endedGamesSummariesSource(playerId);
 
   function renderFinishedGameSummary(gameSummary) {
     var dom = document.createElement('div');
 
-    m.mount(dom, Miniboard(gameCtrl, gameSummary, playerId));
+    var miniboard = Miniboard(gameCtrl, gameSummary, playerId);
+    m.mount(dom, miniboard);
 
     return dom;
   }
