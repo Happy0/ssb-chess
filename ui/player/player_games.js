@@ -5,11 +5,9 @@ var pull = require('pull-stream');
 
 var Miniboard = require('../miniboard/miniboard');
 
-module.exports = (playerId, gameCtrl) => {
+module.exports = (gameCtrl) => {
 
-  const finishedGamesSource = gameCtrl.getPlayerCtrl().endedGamesSummariesSource(playerId);
-
-  function renderFinishedGameSummary(gameSummary) {
+  function renderFinishedGameSummary(gameSummary, playerId) {
     var dom = document.createElement('div');
     dom.className = "ssb-chess-profile-game-summary"
 
@@ -19,7 +17,8 @@ module.exports = (playerId, gameCtrl) => {
     return dom;
   }
 
-  function getScrollingFinishedGamesDom() {
+  function getScrollingFinishedGamesDom(playerId) {
+    const finishedGamesSource = gameCtrl.getPlayerCtrl().endedGamesSummariesSource(playerId);
 
     var content = h('div')
     var scroller = h('div', {
@@ -31,7 +30,7 @@ module.exports = (playerId, gameCtrl) => {
       }, content)
 
       pull(finishedGamesSource,
-        Scroller(scroller, content, renderFinishedGameSummary)
+        Scroller(scroller, content, (current) => renderFinishedGameSummary(current, playerId)  )
       );
 
       return h('div', {

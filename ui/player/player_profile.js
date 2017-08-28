@@ -9,10 +9,27 @@ module.exports = (gameCtrl) => {
       return m('div');
     },
     oncreate: (vNode) => {
-      var playerId = atob(vNode.attrs.playerId);
-      var playerGames = PlayerGames(playerId, gameCtrl).getScrollingFinishedGamesDom();
+      if (vNode.attrs.playerId === this.playerId) {
+        return;
+      }
+
+      this.playerId = atob(vNode.attrs.playerId);
+      var playerGames = PlayerGames(gameCtrl).getScrollingFinishedGamesDom(this.playerId);
 
       vNode.dom.appendChild(playerGames);
+    },
+    onupdate: (vNode) => {
+      if (vNode.attrs.playerId !== this.playerId) {
+        this.playerId = atob(vNode.attrs.playerId);
+
+        while (vNode.dom.firstChild) {
+          vNode.dom.removeChild(vNode.dom.firstChild);
+        }
+
+        var playerGames = PlayerGames(gameCtrl).getScrollingFinishedGamesDom(this.playerId);
+        vNode.dom.appendChild(playerGames)
+      }
+
     }
   }
 
