@@ -18,6 +18,13 @@ module.exports = (gameObservable, myIdent) => {
 
   var latestMove = 0;
 
+  function renderPlayerName(player) {
+    return m('a[href=/player/' + btoa(player.id) + ']', {
+        oncreate: m.route.link
+      },
+      player.name.substring(0, 10));
+  }
+
   function renderPlayers() {
     if (!players || players.length === 0 ) {
       return m('div', {}, "");
@@ -28,12 +35,12 @@ module.exports = (gameObservable, myIdent) => {
 
     var coloursToPlayers = PlayerModelUtils.coloursToPlayer(players);
 
-    var bottomPerspectiveName = coloursToPlayers[myPerspectiveColour].name;
-    var otherPlayerName = myPerspectiveColour === "white" ? coloursToPlayers["black"].name : coloursToPlayers["white"].name;
+    var bottomPerspective = coloursToPlayers[myPerspectiveColour];
+    var otherPlayer = myPerspectiveColour === "white" ? coloursToPlayers["black"] : coloursToPlayers["white"];
 
     return m('div', {}, [
-      m('div', {class: "ssb-chess-history-player"}, otherPlayerName),
-      m('div', {class: "ssb-chess-history-player"}, bottomPerspectiveName)
+      m('div', {class: "ssb-chess-history-player"}, renderPlayerName(otherPlayer)),
+      m('div', {class: "ssb-chess-history-player"}, renderPlayerName(bottomPerspective))
     ]);
   }
 
