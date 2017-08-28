@@ -1,0 +1,16 @@
+.ssb-chess-player-profile {
+
+}
+
+.ssb-chess-profile-game-summary {
+  width: 100%;
+}
+
+.ssb-chess-player-finished-games {
+  display: flex;
+}
+
+.ssb-chess-player-finished-games-scroller {
+  flex-direction: column;
+  width: 100%;
+}
