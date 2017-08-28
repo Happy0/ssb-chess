@@ -6,6 +6,7 @@ var Db = require("./db/init")();
 var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 var NavigationBar = require('./ui/pageLayout/navigation');
 var GameComponent = require('./ui/game/gameView');
+var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
 
@@ -55,7 +56,8 @@ module.exports = (attachToElement, sbot, injectedApi) => {
       "/games_my_move": MiniboardListComponent(gameCtrl, gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
       "/games/:gameId": GameComponent(gameCtrl),
       "/invitations": InvitationsComponent(gameCtrl),
-      "/observable": MiniboardListComponent(gameCtrl, gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent())
+      "/observable": MiniboardListComponent(gameCtrl, gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent()),
+      "/player/:playerId": PlayerProfileComponent(gameCtrl)
     })
   }
 
