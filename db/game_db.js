@@ -182,8 +182,6 @@ module.exports = (sbot, db) => {
        ORDER BY updated DESC
         LIMIT ${start},${end};`;
 
-    console.dir(query);
-
     db.all(query, (err, result) => {
       if (err) {
         cb(err,null);

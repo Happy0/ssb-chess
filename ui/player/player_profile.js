@@ -19,6 +19,9 @@ module.exports = (gameCtrl) => {
       vNode.dom.appendChild(playerGames);
     },
     onupdate: (vNode) => {
+      /* When we arrive at this route again we need to replace the contents of
+       * the game history page if it's a different player since we last loaded
+       * this route. Maybe there's a nicer way of doing this... */
       if (vNode.attrs.playerId !== this.playerId) {
         this.playerId = atob(vNode.attrs.playerId);
 
