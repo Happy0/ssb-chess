@@ -6,8 +6,6 @@ module.exports = (gameCtrl) => {
 
   return {
     view: (vNode) => {
-
-
       return m('div');
     },
     oncreate: (vNode) => {
