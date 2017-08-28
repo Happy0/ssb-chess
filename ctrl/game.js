@@ -19,6 +19,11 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
   const gameChallenger = GameChallenger(sbot, myIdent);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
+  const playerCtrl = PlayerCtrl(sbot, gameSSBDao);
+
+  var src = playerCtrl.endedGamesSummariesSource("@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519");
+  pull(src, pull.drain(e => console.dir(e)));
+
 
   const gameDb = GameDb(sbot, db);
 

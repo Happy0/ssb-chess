@@ -1,4 +1,4 @@
-var pull = require("pull-streams");
+var pull = require("pull-stream");
 
 module.exports = (sbot, gameDb, gameSsbCtrl) => {
 
@@ -39,8 +39,8 @@ module.exports = (sbot, gameDb, gameSsbCtrl) => {
   }
 
 
-return {
-  endedGamesSummariesSource: endedGamesSummariesSource
-}
+  return {
+    endedGamesSummariesSource: endedGamesSummariesSource
+  }
 
 }
