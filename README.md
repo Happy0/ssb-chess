@@ -126,15 +126,5 @@ Type `ssb_chess_chat`
 
 You can read more about depject [here](https://github.com/depject/depject)
 
-### Needs
-* sbot.obs.connection - A [mutant](https://github.com/mmckegg/mutant) observable with the [scuttlebot](https://github.com/ssbc/scuttlebot) connection object
-* backlinks.obs.for - A [mutant](https://github.com/mmckegg/mutant) a function which accepts a `game id` and returns an observable with an array of links to the message with the `game id` key that updates as new messages linking to this key.
-
-*Note*: These are supplied by [patchcore](https://github.com/ssbc/patchcore)
-
-### Gives
-* app.html.menuItem - Returns a function that accepts a callback (with a string `/chess` parameter) when clicked. This callback should route the viewer to the /chess route.
-* app.html.page - Returns a function that accepts a `path` parameter. When this function is invoked with `/chess` it returns a DOM element containing the chess app which may be mounted by the parent application.
-
-*Note*: ssb-chess is mounted into patchbay using depject ( https://github.com/ssbc/patchbay/blob/master/main.js )
-
+<TODO> The strategy for this was recently updated. I need to document the
+new approach :)
