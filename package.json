@@ -29,5 +29,6 @@
     "postinstall": "npm rebuild"
   },
   "author": "",
+  "homepage": "https://github.com/Happy0/ssb-chess",
   "license": "GPL-2.0"
 }
