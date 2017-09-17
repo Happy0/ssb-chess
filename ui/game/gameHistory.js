@@ -38,7 +38,7 @@ module.exports = (gameObservable, myIdent) => {
     var bottomPerspective = coloursToPlayers[myPerspectiveColour];
     var otherPlayer = myPerspectiveColour === "white" ? coloursToPlayers["black"] : coloursToPlayers["white"];
 
-    return m('div', {}, [
+    return m('div', {class: "ssb-chess-history-player-container"}, [
       m('div', {class: "ssb-chess-history-player"}, renderPlayerName(otherPlayer)),
       m('div', {class: "ssb-chess-history-player"}, renderPlayerName(bottomPerspective))
     ]);
