@@ -70,11 +70,11 @@ module.exports = (gameCtrl) => {
 
               PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
-                  gameCtrl.makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
                 }).renderPromotionOptionsOverlay();
 
             } else {
-              gameCtrl.makeMove(situation.gameId, orig, dest);
+              gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
             }
 
             var notMovable = {
@@ -152,7 +152,7 @@ module.exports = (gameCtrl) => {
         var chatElement = makeEmbeddedChat(situation);
         chatDom.appendChild(chatElement);
 
-        gameCtrl.publishValidMoves(situation.gameId);
+        gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
         gameHistoryObservable.set(situation);
 
         this.removeWatches = watchAll([this.gameSituationObs, gameHistory.getMoveSelectedObservable()],
@@ -179,9 +179,9 @@ module.exports = (gameCtrl) => {
               // through the move history
               newConfig.check = false;
 
-              gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
+              gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId, moveSelected);
             } else {
-              gameCtrl.publishValidMoves(newSituation.gameId);
+              gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId);
             }
 
             chessGround.set(newConfig);

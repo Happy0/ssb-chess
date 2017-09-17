@@ -17,10 +17,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   const socialCtrl = SocialCtrl(sbot);
 
-  function getEndedGames(playerId) {
-    //TODO
-  }
-
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
       sbot.get(gameRootMessage, function(error, result) {
@@ -222,6 +218,23 @@ module.exports = (sbot, myIdent, injectedApi) => {
     }
   }
 
+  function resignGame(gameRootMessage) {
+    const post = {
+      type: 'chess_game_end',
+      status: "resigned"
+    };
+
+    return new Promise( (resolve, reject) => {
+      sbot.publish(post, (err, msg) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(msg);
+        }
+      })
+    })
+  }
+
   function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove) {
     return new Promise((resolve, reject) => {
 
@@ -259,6 +272,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     getSituationSummaryObservable: getSituationSummaryObservable,
     getSmallGameSummary: getSmallGameSummary,
     makeMove: makeMove,
+    resignGame: resignGame,
     endGame: endGame
   }
 
