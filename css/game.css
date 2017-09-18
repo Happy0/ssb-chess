@@ -4,9 +4,16 @@
 }
 
 .ssb-chess-history-area {
+  display: flex;
+  flex-direction: column;
   width: 200px;
   height: 600px;
   margin: auto;
+}
+
+.ssb-chess-history-player-container {
+  display: flex;
+  justify-content: space-between;
 }
 
 .ssb-chess-chat {
