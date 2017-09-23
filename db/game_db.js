@@ -5,6 +5,8 @@ var DbPromiseUtils = require("./db_promise_utils");
 
 var PubSub = require("pubsub-js");
 
+var ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
+
 //TODO: Get rid of some of the boiler plate in this file.
 
 module.exports = (sbot, db) => {
@@ -119,25 +121,6 @@ module.exports = (sbot, db) => {
     }
   }
 
-  function winnerFromEndMsg(invite, maybeGameEndMsg) {
-    if (!maybeGameEndMsg) {
-      return null;
-    } else {
-      switch(maybeGameEndMsg.value.content.status) {
-        case "mate":
-          return maybeGameEndMsg.value.author;
-        case "draw":
-          return null;
-        case "resigned":
-          var players = [invite.value.author, invite.value.content.inviting];
-          var winner = players.filter(playerId => playerId != maybeGameEndMsg.value.author)[0];
-          return winner;
-        default:
-          return null;
-      }
-    }
-  }
-
   function storeGameHistoryIntoView(gameHistory, optionalSyncCallback) {
     var invite = gameHistory.invite;
     var inviter = invite.value.author;
@@ -153,7 +136,7 @@ module.exports = (sbot, db) => {
     var status = getGameStatus(acceptInviteMsg, gameEndMsg);
     var updateTime = getUpdatedTime(acceptInviteMsg, gameEndMsg, invite.value.timestamp);
 
-    var winner = winnerFromEndMsg(invite, gameEndMsg);
+    var winner = ChessMsgUtils.winnerFromEndMsg(invite, gameEndMsg);
 
     var insertStmt = `INSERT OR REPLACE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
       VALUES ( '${invite.key}',

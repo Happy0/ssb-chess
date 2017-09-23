@@ -12,6 +12,7 @@ const onceTrue = require("mutant/once-true")
 
 var SocialCtrl = require("./social");
 const MutantUtils = require("./mutant_utils")();
+const ChessMsgUtils = require ("../ssb_model/chess_msg_utils")();
 
 module.exports = (sbot, myIdent, injectedApi) => {
 
@@ -73,41 +74,17 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return MutantUtils.mutantToPromise(getSituationSummaryObservable(gameRootMessage));
   }
 
-  function findGameStatus(gameMessages) {
+  function findGameStatus(players, gameMessages) {
     var result = gameMessages.find(msg => {
       return msg.value.content.type === "chess_game_end"
     });
 
     const status = {
       status: result != null && result.value.content.status ? result.value.content.status : "started",
-      winner: result != null ? result.value.content.winner : null
+      winner: result != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), result) : null
     }
 
     return status;
-  }
-
-  //TODO: REMOVE
-  function getGameStatus(gameRootMessage) {
-    const source = sbot.links({
-      dest: gameRootMessage,
-      values: true,
-      keys: false
-    });
-
-    return new Promise((resolve, reject) => {
-      pull(source, pull.find(msg => msg.value.content.type === "chess_game_end", (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          const status = {
-            status: result != null && result.value.content.status ? result.value.content.status : "started",
-            winner: result != null ? result.value.content.winner : null
-          }
-
-          resolve(status);
-        }
-      }));
-    });
   }
 
   function filterByPlayerMoves(players, messages) {
@@ -133,11 +110,15 @@ module.exports = (sbot, myIdent, injectedApi) => {
     const gameMessages = injectedApi.backlinks(gameRootMessage);
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
-    return computed([players, gameMessages.sync, gameMessages], (players, synced, messages) => {
+    return computed([players, gameMessages.sync, gameMessages],
+       (players, synced, messages) => {
       if (!players || !synced) return null;
 
+      // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
+      // to 'move messages';
       var msgs = filterByPlayerMoves(players, messages);
       if (!msgs) msgs = [];
+      if (!messages) messages = [];
 
       // Sort in ascending ply so that we get a list of moves linearly
       msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
@@ -146,7 +127,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
       var fenHistory = msgs.map(msg => msg.value.content.fen);
       fenHistory.unshift("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-      var status = findGameStatus(msgs);
+      var status = findGameStatus(players, messages);
 
       var origDests = msgs.map(msg => ({
         'orig': msg.value.content.orig,
