@@ -48,16 +48,25 @@ module.exports = (gameObservable, myIdent) => {
       return m('div', "");
     }
 
-    var statusText = status.status !== "started" ? status.status : "";
+    switch (status.status) {
+      case "resigned":
+        return m('div', {class: "ssb-chess-end-text"},
+          players[status.winner].name + " wins by resignation.");
+      case "mate":
+        return m('div', {class: "ssb-chess-end-text"},
+          players[status.winner].name + " wins.");
+      case "draw":
+        return m('div', {class: "ssb-chess-end-text"}, "Draw.")
+      default:
+        return m('div');
+    }
 
-    var displayedStatus = status.winner ? "Won by " + status.winner : statusText;
-    return m('div', {}, displayedStatus)
   }
 
   function renderHistory() {
     return m('div', {
       class: 'ssb-chess-history-area'
-    }, [renderPlayers(), renderStatus(), renderMoveHistory()]);
+    }, [renderPlayers(), renderMoveHistory(), renderStatus()]);
   }
 
   function renderHalfMove(pgn, moveNumber) {
@@ -147,7 +156,7 @@ module.exports = (gameObservable, myIdent) => {
     gameObservable(situation => {
       if (situation) {
         pgnMoves = situation.pgnMoves;
-        status = situation.gameStatus;
+        status = situation.status;
         players = situation.players;
 
         latestMove = situation.ply;
