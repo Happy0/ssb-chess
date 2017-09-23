@@ -221,7 +221,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
   function resignGame(gameRootMessage) {
     const post = {
       type: 'chess_game_end',
-      status: "resigned"
+      status: "resigned",
+      root: gameRootMessage
     };
 
     return new Promise( (resolve, reject) => {
