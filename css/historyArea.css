@@ -2,6 +2,17 @@
 
 }
 
+.ssb-chess-history-player-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ssb-chess-pgn-moves-list {
+  height: 50%;
+  overflow-y: auto;
+}
+
 .ssb-chess-pgn-move {
   display: flex;
   justify-content: space-between;
@@ -20,5 +31,5 @@
   font-style: italic;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 5px;
+  margin-top: 10px;
 }

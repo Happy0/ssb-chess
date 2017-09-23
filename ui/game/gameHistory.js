@@ -93,9 +93,10 @@ module.exports = (gameObservable, myIdent) => {
   function renderMoveHistory() {
     const halves = R.splitEvery(2, pgnMoves);
 
-    return halves.map((half, halfNumber) => m('div', {
-      class: 'ssb-chess-pgn-move'
-    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)]));
+    return m('div', {class: 'ssb-chess-pgn-moves-list'},
+      halves.map((half, halfNumber) => m('div', {
+        class: 'ssb-chess-pgn-move'
+    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)])));
   }
 
   function hasChatInputBoxFocused() {
