@@ -48,16 +48,25 @@ module.exports = (gameObservable, myIdent) => {
       return m('div', "");
     }
 
-    var statusText = status.status !== "started" ? status.status : "";
+    switch (status.status) {
+      case "resigned":
+        return m('div', {class: "ssb-chess-end-text"},
+          players[status.winner].name + " wins by resignation.");
+      case "mate":
+        return m('div', {class: "ssb-chess-end-text"},
+          players[status.winner].name + " wins.");
+      case "draw":
+        return m('div', {class: "ssb-chess-end-text"}, "Draw.")
+      default:
+        return m('div');
+    }
 
-    var displayedStatus = status.winner ? "Won by " + status.winner : statusText;
-    return m('div', {}, displayedStatus)
   }
 
   function renderHistory() {
     return m('div', {
-      class: 'ssb-chess-history-area'
-    }, [renderPlayers(), renderStatus(), renderMoveHistory()]);
+      class: ''
+    }, [renderPlayers(), renderMoveHistory(), renderStatus()]);
   }
 
   function renderHalfMove(pgn, moveNumber) {
@@ -84,9 +93,10 @@ module.exports = (gameObservable, myIdent) => {
   function renderMoveHistory() {
     const halves = R.splitEvery(2, pgnMoves);
 
-    return halves.map((half, halfNumber) => m('div', {
-      class: 'ssb-chess-pgn-move'
-    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)]));
+    return m('div', {class: 'ssb-chess-pgn-moves-list'},
+      halves.map((half, halfNumber) => m('div', {
+        class: 'ssb-chess-pgn-move'
+    }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)])));
   }
 
   function hasChatInputBoxFocused() {
@@ -143,15 +153,23 @@ module.exports = (gameObservable, myIdent) => {
     return moveSelectedObservable;
   }
 
+  function scrollToBottomIfLive() {
+    if (moveNumberSelected === "live") {
+      var moveListElement = document.getElementsByClassName("ssb-chess-pgn-moves-list")[0];
+      moveListElement.scrollTop = moveListElement.scrollHeight;
+    }
+  }
+
   function watchForGameUpdates() {
     gameObservable(situation => {
       if (situation) {
         pgnMoves = situation.pgnMoves;
-        status = situation.gameStatus;
+        status = situation.status;
         players = situation.players;
 
         latestMove = situation.ply;
 
+        scrollToBottomIfLive();
         m.redraw();
       }
     });

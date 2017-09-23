@@ -1,9 +1,10 @@
-  var m = require("mithril");
+var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PubSub = require('pubsub-js');
 var PromotionBox = require('./promote');
 var onceTrue = require("mutant/once-true");
 var GameHistory = require("./gameHistory");
+var ActionButtons = require('./gameActions');
 var Value = require("mutant/value");
 
 var watchAll = require("mutant/watch-all");
@@ -16,8 +17,16 @@ module.exports = (gameCtrl) => {
 
   var chessGround = null;
 
-  var gameHistoryObservable = Value();
-  var gameHistory = GameHistory(gameHistoryObservable, myIdent);
+  var situationObservable = Value();
+
+  var gameHistory = GameHistory(situationObservable, myIdent);
+  var actionButtons  = ActionButtons(
+    gameCtrl.getMoveCtrl(),
+    myIdent,
+    situationObservable
+  );
+
+  var isPlayerObservingObservable = Value(false);
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
@@ -70,11 +79,11 @@ module.exports = (gameCtrl) => {
 
               PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
-                  gameCtrl.makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
                 }).renderPromotionOptionsOverlay();
 
             } else {
-              gameCtrl.makeMove(situation.gameId, orig, dest);
+              gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
             }
 
             var notMovable = {
@@ -116,9 +125,14 @@ module.exports = (gameCtrl) => {
 
     view: function(ctrl) {
       const gameId = atob(ctrl.attrs.gameId);
+
       return m('div', {
         class: "ssb-chess-board-background-blue3 merida ssb-chess-game-layout"
-      }, [renderChat(gameId), renderBoard(gameId), m(gameHistory)]);
+      }, [renderChat(gameId), renderBoard(gameId),
+        m('div', {class: "ssb-chess-history-area"}, [
+          m(gameHistory),
+          m(actionButtons)
+        ] )]);
     },
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
@@ -152,8 +166,8 @@ module.exports = (gameCtrl) => {
         var chatElement = makeEmbeddedChat(situation);
         chatDom.appendChild(chatElement);
 
-        gameCtrl.publishValidMoves(situation.gameId);
-        gameHistoryObservable.set(situation);
+        gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
+        situationObservable.set(situation);
 
         this.removeWatches = watchAll([this.gameSituationObs, gameHistory.getMoveSelectedObservable()],
           (newSituation, moveSelected) => {
@@ -179,13 +193,13 @@ module.exports = (gameCtrl) => {
               // through the move history
               newConfig.check = false;
 
-              gameCtrl.publishValidMoves(newSituation.gameId, moveSelected);
+              gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId, moveSelected);
             } else {
-              gameCtrl.publishValidMoves(newSituation.gameId);
+              gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId);
             }
 
             chessGround.set(newConfig);
-            gameHistoryObservable.set(newSituation);
+            situationObservable.set(newSituation);
           });
 
       });

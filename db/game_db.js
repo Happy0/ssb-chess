@@ -5,6 +5,8 @@ var DbPromiseUtils = require("./db_promise_utils");
 
 var PubSub = require("pubsub-js");
 
+var ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
+
 //TODO: Get rid of some of the boiler plate in this file.
 
 module.exports = (sbot, db) => {
@@ -134,7 +136,7 @@ module.exports = (sbot, db) => {
     var status = getGameStatus(acceptInviteMsg, gameEndMsg);
     var updateTime = getUpdatedTime(acceptInviteMsg, gameEndMsg, invite.value.timestamp);
 
-    var winner = gameEndMsg ? gameEndMsg.value.content.winner : null;
+    var winner = ChessMsgUtils.winnerFromEndMsg(invite, gameEndMsg);
 
     var insertStmt = `INSERT OR REPLACE INTO ssb_chess_games (gameId, inviter, invitee, inviterColor, status, winner, updated)
       VALUES ( '${invite.key}',

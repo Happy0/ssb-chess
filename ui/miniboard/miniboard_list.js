@@ -40,7 +40,6 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
 
     },
     onremove: function(e) {
-      console.log("remove");
       PubSub.unsubscribe(this.miniboardUpdatesListener);
     }
   }

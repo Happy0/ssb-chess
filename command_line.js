@@ -74,7 +74,7 @@ module.exports = (gameCtrl, socialCtrl) => {
       const orig = args["<orig_square>"];
       const dest = args["<dest_square>"];
 
-      gameCtrl.makeMove(moveInGameId, orig, dest);
+      gameCtrl.getMoveCtrl().makeMove(moveInGameId, orig, dest);
     } else if (args["followers"]) {
       socialCtrl.followingMe().then(followers => console.dir(followers)).then(() => process.exit(1));
     } else if (args["following"]) {
