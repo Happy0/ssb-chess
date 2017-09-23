@@ -82,7 +82,7 @@ Type `chess_game_end`
 
 ### Fields
 * root - the original game invite message key.
-* status - the status the game ended with: mate / draw / resigned.
+* status - the status the game ended with. May be one of the following: `mate | draw | resigned`.
 * ply (optional - may be omitted for resignations) - the move number
 * orig (optional - may be omitted for resignations) - the origin square
 * dest (optional - may be omitted for resignations) - the destination square
