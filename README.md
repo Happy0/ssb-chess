@@ -82,14 +82,15 @@ Type `chess_game_end`
 
 ### Fields
 * root - the original game invite message key.
-* status - the status the game ended with: mate / draw.
-* winner (optional) - the ID of the winning player
-* ply - the move number
-* orig - the origin square
-* dest - the destination square
-* pgnMove - the [PGN](https://en.wikipedia.org/wiki/Portable_Game_Notation) of the move.
-* fen - the position of the board after the move in [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) notation.
+* status - the status the game ended with: mate / draw / resigned.
+* ply (optional - may be omitted for resignations) - the move number
+* orig (optional - may be omitted for resignations) - the origin square
+* dest (optional - may be omitted for resignations) - the destination square
+* pgnMove (optional - may be omitted for resignations) - the [PGN](https://en.wikipedia.org/wiki/Portable_Game_Notation) of the move.
+* fen (optional - may be omitted for resignations) - the position of the board after the move in [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) notation.
 * promotion (optional) - A letter donating the piece a pawn should be promoted to (b,n,q,r denoting bishop, knight, queen and rook respectively.)
+
+*Note*: The client should work out the winner for display based on who posted the message. For resign messages, the opposite player is the winner. For 'mate' messages, the player authoring the message is the winner and for a draw there are no winners.
 
 ```javascript
 {
