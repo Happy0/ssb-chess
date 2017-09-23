@@ -1,9 +1,10 @@
-  var m = require("mithril");
+var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var PubSub = require('pubsub-js');
 var PromotionBox = require('./promote');
 var onceTrue = require("mutant/once-true");
 var GameHistory = require("./gameHistory");
+var ActionButtons = require('./gameActions');
 var Value = require("mutant/value");
 
 var watchAll = require("mutant/watch-all");
@@ -18,6 +19,7 @@ module.exports = (gameCtrl) => {
 
   var gameHistoryObservable = Value();
   var gameHistory = GameHistory(gameHistoryObservable, myIdent);
+  var actionButtons  = ActionButtons(gameCtrl.getMoveCtrl());
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
@@ -118,7 +120,11 @@ module.exports = (gameCtrl) => {
       const gameId = atob(ctrl.attrs.gameId);
       return m('div', {
         class: "ssb-chess-board-background-blue3 merida ssb-chess-game-layout"
-      }, [renderChat(gameId), renderBoard(gameId), m(gameHistory)]);
+      }, [renderChat(gameId), renderBoard(gameId),
+        m('div', {class: "ssb-chess-history-area"}, [
+          m(gameHistory),
+          m(actionButtons)
+        ] )]);
     },
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);

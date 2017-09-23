@@ -1,3 +1,5 @@
+var m = require("mithril");
+
 module.exports = (gameMoveCtrl) => {
 
   function resignButton(gameId) {
@@ -5,12 +7,12 @@ module.exports = (gameMoveCtrl) => {
       gameMoveCtrl.resignGame(gameId);
     }
 
-    return m('button', {onclick: resignGame} 'Resign');
+    return m('button', {onclick: resignGame}, 'Resign');
   }
 
   return {
     view: (vDom) => {
-      return m('div', [resignButton()]);
+      return m('div', {class: "ssb-game-actions"}, [resignButton()]);
     }
   }
 }

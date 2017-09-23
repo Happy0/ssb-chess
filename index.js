@@ -24,7 +24,8 @@ module.exports = (attachToElement, sbot, injectedApi) => {
     "./css/promote.css",
     "./css/game.css",
     "./css/historyArea.css",
-    "./css/playerProfiles.css"
+    "./css/playerProfiles.css",
+    "./css/actionButtons.css"
   ];
 
   // h4cky0 strikes again? mebbe there's a better way? ;x

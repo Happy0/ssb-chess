@@ -9,8 +9,8 @@
 }
 
 .ssb-chess-pgn-moves-list {
-  height: 50%;
-  overflow-y: auto;
+  height: 300px;
+  overflow-y: scroll;
 }
 
 .ssb-chess-pgn-move {

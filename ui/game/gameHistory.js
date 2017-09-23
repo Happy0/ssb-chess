@@ -65,7 +65,7 @@ module.exports = (gameObservable, myIdent) => {
 
   function renderHistory() {
     return m('div', {
-      class: 'ssb-chess-history-area'
+      class: ''
     }, [renderPlayers(), renderMoveHistory(), renderStatus()]);
   }
 
