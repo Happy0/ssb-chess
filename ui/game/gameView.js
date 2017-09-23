@@ -17,9 +17,16 @@ module.exports = (gameCtrl) => {
 
   var chessGround = null;
 
-  var gameHistoryObservable = Value();
-  var gameHistory = GameHistory(gameHistoryObservable, myIdent);
-  var actionButtons  = ActionButtons(gameCtrl.getMoveCtrl());
+  var situationObservable = Value();
+
+  var gameHistory = GameHistory(situationObservable, myIdent);
+  var actionButtons  = ActionButtons(
+    gameCtrl.getMoveCtrl(),
+    myIdent,
+    situationObservable
+  );
+
+  var isPlayerObservingObservable = Value(false);
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
@@ -118,6 +125,7 @@ module.exports = (gameCtrl) => {
 
     view: function(ctrl) {
       const gameId = atob(ctrl.attrs.gameId);
+
       return m('div', {
         class: "ssb-chess-board-background-blue3 merida ssb-chess-game-layout"
       }, [renderChat(gameId), renderBoard(gameId),
@@ -159,7 +167,7 @@ module.exports = (gameCtrl) => {
         chatDom.appendChild(chatElement);
 
         gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
-        gameHistoryObservable.set(situation);
+        situationObservable.set(situation);
 
         this.removeWatches = watchAll([this.gameSituationObs, gameHistory.getMoveSelectedObservable()],
           (newSituation, moveSelected) => {
@@ -191,7 +199,7 @@ module.exports = (gameCtrl) => {
             }
 
             chessGround.set(newConfig);
-            gameHistoryObservable.set(newSituation);
+            situationObservable.set(newSituation);
           });
 
       });
