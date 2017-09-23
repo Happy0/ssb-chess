@@ -153,6 +153,13 @@ module.exports = (gameObservable, myIdent) => {
     return moveSelectedObservable;
   }
 
+  function scrollToBottomIfLive() {
+    if (moveNumberSelected === "live") {
+      var moveListElement = document.getElementsByClassName("ssb-chess-pgn-moves-list")[0];
+      moveListElement.scrollTop = moveListElement.scrollHeight;
+    }
+  }
+
   function watchForGameUpdates() {
     gameObservable(situation => {
       if (situation) {
@@ -162,6 +169,7 @@ module.exports = (gameObservable, myIdent) => {
 
         latestMove = situation.ply;
 
+        scrollToBottomIfLive();
         m.redraw();
       }
     });
