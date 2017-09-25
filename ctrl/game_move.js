@@ -1,3 +1,5 @@
+const PlayerModelUtils = require("./player_model_utils")();
+
 module.exports = (gameSSBDao, myIdent) => {
 
   var rootDir = __dirname.replace("ctrl","") + "/";
