@@ -15,7 +15,11 @@ module.exports = (gameCtrl) => {
       gameCtrl.acceptChallenge(gameId).then(e => m.redraw())
     }
 
+    // Hide for now since it doesn't do anything yet ;x
+    // Will unhide once I implement 'cancel invites' controllers
+    // and take them into account when indexing games.
     const cancelButton = m('button', {
+      style: 'display: none;',
       class: 'ssb-chess-miniboard-controls',
       disabled: true
     }, 'cancel');
