@@ -114,7 +114,7 @@ module.exports = (gameCtrl) => {
                 gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
               }
 
-              watchForMoveConfirmation(situation, onConfirmMove);
+              watchForMoveConfirmation(situation, onConfirmMove)
             }
 
             var notMovable = {
@@ -246,6 +246,8 @@ module.exports = (gameCtrl) => {
       // Set the game history area to 'live mode' for the next game that is
       // opened
       gameHistory.goToLiveMode();
+
+      actionButtons.hideMoveConfirmation();
     }
   }
 

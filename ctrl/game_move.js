@@ -6,37 +6,33 @@ module.exports = (gameSSBDao, myIdent) => {
   const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
 
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
-    console.log(gameRootMessage);
-    console.log(originSquare);
-    console.log(destinationSquare);
-    console.log(promoteTo);
 
-    // gameSSBDao.getSituation(gameRootMessage).then(situation => {
-    //   if (situation.toMove !== myIdent) {
-    //     console.log("Not " + myIdent + " to move");
-    //   } else {
-    //
-    //     const pgnMoves = situation.pgnMoves;
-    //     chessWorker.postMessage({
-    //       'topic': 'move',
-    //       'payload': {
-    //         'fen': situation.fen,
-    //         'pgnMoves': pgnMoves,
-    //         'orig': originSquare,
-    //         'dest': destinationSquare,
-    //         'promotion': promoteTo
-    //       },
-    //       reqid: {
-    //         gameRootMessage: gameRootMessage,
-    //         originSquare: originSquare,
-    //         destinationSquare: destinationSquare,
-    //         players: situation.players
-    //       }
-    //
-    //     });
-    //
-    //   }
-    // });
+    gameSSBDao.getSituation(gameRootMessage).then(situation => {
+      if (situation.toMove !== myIdent) {
+        console.log("Not " + myIdent + " to move");
+      } else {
+
+        const pgnMoves = situation.pgnMoves;
+        chessWorker.postMessage({
+          'topic': 'move',
+          'payload': {
+            'fen': situation.fen,
+            'pgnMoves': pgnMoves,
+            'orig': originSquare,
+            'dest': destinationSquare,
+            'promotion': promoteTo
+          },
+          reqid: {
+            gameRootMessage: gameRootMessage,
+            originSquare: originSquare,
+            destinationSquare: destinationSquare,
+            players: situation.players
+          }
+
+        });
+
+      }
+    });
   }
 
   function resignGame(gameId) {
