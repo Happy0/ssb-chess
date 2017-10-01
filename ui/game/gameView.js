@@ -6,8 +6,8 @@ var onceTrue = require("mutant/once-true");
 var GameHistory = require("./gameHistory");
 var ActionButtons = require('./gameActions');
 var Value = require("mutant/value");
-
 var watchAll = require("mutant/watch-all");
+var computed = require("mutant/computed");
 
 var EmbeddedChat = require("ssb-embedded-chat");
 
@@ -74,7 +74,7 @@ module.exports = (gameCtrl) => {
         events: {
           after: (orig, dest, metadata) => {
 
-            var moveConfirmed = actionButtons.showMoveConfirmation();
+            var confirmedObs = actionButtons.showMoveConfirmation();
             m.redraw();
 
             if (isPromotionMove(chessGround, dest)) {
@@ -87,10 +87,17 @@ module.exports = (gameCtrl) => {
 
             } else {
 
-              var removeConfirmationListener = moveConfirmed(selected => {
-                if (selected.confirmed) {
+              var watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => {
+                return {
+                  moveConfirmed: confirmed,
+                  moveSelected: moveSelected
+                }
+              });
+
+              var removeConfirmationListener = watches( value  => {
+                if (value.moveConfirmed.confirmed) {
                   gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
-                } else {
+                } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
                   var oldConfig = situationToChessgroundConfig(situation);
                   chessGround.set(oldConfig);
                   gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
