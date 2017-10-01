@@ -24,7 +24,7 @@ module.exports = (settingsCtrl, onCloseDialog) => {
   function closeButton() {
     return m('button', {href: '#', 'id': 'ssb-chess-settings-dialog-close', onclick: onCloseDialog}, 'Close');
   }
-9
+
   return {
     view: () => {
       return m('div', [
