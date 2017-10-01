@@ -82,7 +82,8 @@ module.exports = (gameCtrl, settings) => {
         var oldConfig = situationToChessgroundConfig(situation);
 
         if (value.moveSelected === "live") {
-          chessGround.set(oldConfig)
+          chessGround.set(oldConfig);
+          gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
         }
       }
 
