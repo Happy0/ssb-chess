@@ -74,6 +74,9 @@ module.exports = (gameCtrl) => {
         events: {
           after: (orig, dest, metadata) => {
 
+            var moveConfirmed = actionButtons.showMoveConfirmation();
+            m.redraw();
+
             if (isPromotionMove(chessGround, dest)) {
               var chessboardDom = document.getElementsByClassName("cg-board-wrap")[0];
 
@@ -83,7 +86,20 @@ module.exports = (gameCtrl) => {
                 }).renderPromotionOptionsOverlay();
 
             } else {
-              gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
+
+              var removeConfirmationListener = moveConfirmed(selected => {
+                if (selected.confirmed) {
+                  gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
+                } else {
+                  var oldConfig = situationToChessgroundConfig(situation);
+                  chessGround.set(oldConfig);
+                  gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
+                }
+
+                removeConfirmationListener();
+                actionButtons.hideMoveConfirmation();
+              });
+
             }
 
             var notMovable = {

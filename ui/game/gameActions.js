@@ -13,11 +13,19 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
   function moveConfirmButtons() {
 
     var confirmMove = () => {
-
+      console.log("confirmed move");
+      moveConfirmationObservable.set({
+        moveNeedsConfirmed: false,
+        confirmed: true
+      })
     }
 
     var cancelMove = () => {
       console.log("Cancelled move.");
+      moveConfirmationObservable.set({
+        moveNeedsConfirmed: false,
+        confirmed: false
+      })
     }
 
     return m('div', {class: 'ssb-chess-move-confirm-buttons'},
