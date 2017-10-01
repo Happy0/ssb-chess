@@ -12,3 +12,28 @@
   width: 100%;
   overflow: scroll;
 }
+
+#ssb-chess-settings-dialog {
+  background-color: white;
+  position: absolute;
+  z-index: 500;
+  top: 30%;
+  left: 50%;
+  height: 100px;
+  width: 300px;
+}
+
+#ssb-chess-dialog-checkbox-container {
+  margin: 5px;
+  text-align: center;
+}
+
+#ssb-chess-settings-dialog-close {
+  margin: auto;
+  display: block;
+}
+
+#ssb-chess-settings-nav-item {
+  float: right;
+  margin-right: 10px;
+}

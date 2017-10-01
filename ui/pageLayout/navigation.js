@@ -1,7 +1,8 @@
 const m = require('mithril');
 const PubSub = require('pubsub-js');
+const SettingsDialog = require('../settings/settings-dialog');
 
-module.exports = (gameCtrl) => {
+module.exports = (gameCtrl, settings) => {
 
   const gamesInProgress = {
     name: "Games",
@@ -50,8 +51,36 @@ module.exports = (gameCtrl) => {
       ]));
   }
 
+  var closeSettingsDialog = () => {
+    var dialogElementId = 'ssb-chess-settings-dialog';
+    var element = document.getElementById(dialogElementId);
+
+    if (element) {
+      element.parentNode.removeChild(element);
+    }
+  }
+
+  var showSettings = () => {
+
+    var element = document.getElementById('ssb-chess-settings-dialog');
+
+    if (!element) {
+      var container = document.createElement('div');
+      container.id = 'ssb-chess-settings-dialog';
+
+      var settingsDialog = SettingsDialog(settings, closeSettingsDialog);
+
+      document.body.appendChild(container);
+      m.render(container, m(settingsDialog));
+    }
+
+  }
+
   function renderNavigation() {
-    return m('div', navItems.map(renderNavItem));
+    return m('div', [
+      navItems.map(renderNavItem),
+      m('a', {id: 'ssb-chess-settings-nav-item', href: "#", onclick: showSettings}, 'SETTINGS')
+    ]);
   }
 
   function updateCounts() {

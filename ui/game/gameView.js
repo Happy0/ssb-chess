@@ -6,12 +6,12 @@ var onceTrue = require("mutant/once-true");
 var GameHistory = require("./gameHistory");
 var ActionButtons = require('./gameActions');
 var Value = require("mutant/value");
-
 var watchAll = require("mutant/watch-all");
+var computed = require("mutant/computed");
 
 var EmbeddedChat = require("ssb-embedded-chat");
 
-module.exports = (gameCtrl) => {
+module.exports = (gameCtrl, settings) => {
 
   const myIdent = gameCtrl.getMyIdent();
 
@@ -58,6 +58,40 @@ module.exports = (gameCtrl) => {
     conf['movable']['color'] = null;
   }
 
+  function watchForMoveConfirmation(situation, onConfirm) {
+      if (!settings.getMoveConfirmation()) {
+        // If move confirmation is not enabled, perform the move immediately
+        onConfirm();
+        return
+      }
+
+      var confirmedObs = actionButtons.showMoveConfirmation();
+      m.redraw();
+
+      var watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => {
+      return {
+        moveConfirmed: confirmed,
+        moveSelected: moveSelected
+      }
+    });
+
+    var removeConfirmationListener = watches( value  => {
+      if (value.moveConfirmed.confirmed) {
+        onConfirm();
+      } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
+        var oldConfig = situationToChessgroundConfig(situation);
+
+        if (value.moveSelected === "live") {
+          chessGround.set(oldConfig)
+        }
+      }
+
+      removeConfirmationListener();
+      actionButtons.hideMoveConfirmation();
+    });
+
+  }
+
   function situationToChessgroundConfig(situation) {
     const playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
 
@@ -79,11 +113,16 @@ module.exports = (gameCtrl) => {
 
               PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
-                  gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  var onConfirmMove = () => gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  watchForMoveConfirmation(situation, onConfirmMove);
                 }).renderPromotionOptionsOverlay();
 
             } else {
-              gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
+              var onConfirmMove = () => {
+                gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
+              }
+
+              watchForMoveConfirmation(situation, onConfirmMove)
             }
 
             var notMovable = {
@@ -215,6 +254,8 @@ module.exports = (gameCtrl) => {
       // Set the game history area to 'live mode' for the next game that is
       // opened
       gameHistory.goToLiveMode();
+
+      actionButtons.hideMoveConfirmation();
     }
   }
 
