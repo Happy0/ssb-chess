@@ -58,6 +58,32 @@ module.exports = (gameCtrl) => {
     conf['movable']['color'] = null;
   }
 
+  function watchForMoveConfirmation(situation, onConfirm) {
+      var confirmedObs = actionButtons.showMoveConfirmation();
+      m.redraw();
+
+      var watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => {
+        return {
+          moveConfirmed: confirmed,
+          moveSelected: moveSelected
+        }
+      });
+
+      var removeConfirmationListener = watches( value  => {
+        if (value.moveConfirmed.confirmed) {
+          onConfirm();
+        } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
+          var oldConfig = situationToChessgroundConfig(situation);
+          chessGround.set(oldConfig);
+          gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
+        }
+
+        removeConfirmationListener();
+        actionButtons.hideMoveConfirmation();
+      });
+
+  }
+
   function situationToChessgroundConfig(situation) {
     const playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
 
@@ -74,39 +100,21 @@ module.exports = (gameCtrl) => {
         events: {
           after: (orig, dest, metadata) => {
 
-            var confirmedObs = actionButtons.showMoveConfirmation();
-            m.redraw();
-
             if (isPromotionMove(chessGround, dest)) {
               var chessboardDom = document.getElementsByClassName("cg-board-wrap")[0];
 
               PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
-                  gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  var onConfirmMove = () => gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  watchForMoveConfirmation(situation, onConfirmMove);
                 }).renderPromotionOptionsOverlay();
 
             } else {
+              var onConfirmMove = () => {
+                gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
+              }
 
-              var watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => {
-                return {
-                  moveConfirmed: confirmed,
-                  moveSelected: moveSelected
-                }
-              });
-
-              var removeConfirmationListener = watches( value  => {
-                if (value.moveConfirmed.confirmed) {
-                  gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
-                } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
-                  var oldConfig = situationToChessgroundConfig(situation);
-                  chessGround.set(oldConfig);
-                  gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
-                }
-
-                removeConfirmationListener();
-                actionButtons.hideMoveConfirmation();
-              });
-
+              watchForMoveConfirmation(situation, onConfirmMove);
             }
 
             var notMovable = {
