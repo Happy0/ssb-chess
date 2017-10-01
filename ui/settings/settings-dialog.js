@@ -21,8 +21,24 @@ module.exports = (settingsCtrl, onCloseDialog) => {
     ])
   }
 
+  function closeDialog() {
+      document.removeEventListener('click', windowClickListener, true);
+      onCloseDialog();
+  }
+
+  function windowClickListener(event) {
+    var dialogElement = document.getElementById('ssb-chess-settings-dialog');
+    if (!dialogElement) {
+      return;
+    }
+
+    if((event.target != dialogElement) && !dialogElement.contains(event.target) ) {
+      closeDialog();
+    }
+  }
+
   function closeButton() {
-    return m('button', {href: '#', 'id': 'ssb-chess-settings-dialog-close', onclick: onCloseDialog}, 'Close');
+    return m('button', {href: '#', 'id': 'ssb-chess-settings-dialog-close', onclick: closeDialog}, 'Close');
   }
 
   return {
@@ -34,6 +50,9 @@ module.exports = (settingsCtrl, onCloseDialog) => {
           (selected) => settingsCtrl.setMoveConfirmation(selected)),
         closeButton()
       ])
+    },
+    oncreate: () => {
+      document.addEventListener('click', windowClickListener, true);
     }
   }
 

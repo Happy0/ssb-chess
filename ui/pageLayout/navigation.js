@@ -51,23 +51,24 @@ module.exports = (gameCtrl, settings) => {
       ]));
   }
 
-  var showSettings = () => {
+  var closeSettingsDialog = () => {
     var dialogElementId = 'ssb-chess-settings-dialog';
-    var element = document.getElementById('ssb-chess-settings-dialog');
+    var element = document.getElementById(dialogElementId);
 
-    var closeDialog = () => {
-      var element = document.getElementById(dialogElementId);
-
-      if (element) {
-        element.parentNode.removeChild(element);
-      }
+    if (element) {
+      element.parentNode.removeChild(element);
     }
+  }
+
+  var showSettings = () => {
+
+    var element = document.getElementById('ssb-chess-settings-dialog');
 
     if (!element) {
       var container = document.createElement('div');
       container.id = 'ssb-chess-settings-dialog';
 
-      var settingsDialog = SettingsDialog(settings, closeDialog);
+      var settingsDialog = SettingsDialog(settings, closeSettingsDialog);
 
       document.body.appendChild(container);
       m.render(container, m(settingsDialog));
