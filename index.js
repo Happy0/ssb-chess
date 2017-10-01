@@ -10,6 +10,8 @@ var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var StatusBar = require('./ui/pageLayout/status_bar');
 
+var settingsCtrl = require('./ctrl/settings')();
+
 module.exports = (attachToElement, sbot, injectedApi) => {
 
   var cssFiles = [
@@ -39,7 +41,7 @@ module.exports = (attachToElement, sbot, injectedApi) => {
 
   function renderPageTop(parent, gameCtrl) {
 
-    var navBar = NavigationBar(gameCtrl);
+    var navBar = NavigationBar(gameCtrl, settingsCtrl);
     var statusBar = m(StatusBar());
 
     var TopComponent = {
@@ -56,7 +58,7 @@ module.exports = (attachToElement, sbot, injectedApi) => {
     m.route(mainBody, "/my_games", {
       "/my_games": MiniboardListComponent(gameCtrl, gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl, gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
-      "/games/:gameId": GameComponent(gameCtrl),
+      "/games/:gameId": GameComponent(gameCtrl, settingsCtrl),
       "/invitations": InvitationsComponent(gameCtrl),
       "/observable": MiniboardListComponent(gameCtrl, gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent()),
       "/player/:playerId": PlayerProfileComponent(gameCtrl)

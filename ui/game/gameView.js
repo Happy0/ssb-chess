@@ -11,7 +11,7 @@ var computed = require("mutant/computed");
 
 var EmbeddedChat = require("ssb-embedded-chat");
 
-module.exports = (gameCtrl) => {
+module.exports = (gameCtrl, settings) => {
 
   const myIdent = gameCtrl.getMyIdent();
 
@@ -59,28 +59,34 @@ module.exports = (gameCtrl) => {
   }
 
   function watchForMoveConfirmation(situation, onConfirm) {
+      if (!settings.getMoveConfirmation()) {
+        // If move confirmation is not enabled, perform the move immediately
+        onConfirm();
+        return
+      }
+
       var confirmedObs = actionButtons.showMoveConfirmation();
       m.redraw();
 
       var watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => {
-        return {
-          moveConfirmed: confirmed,
-          moveSelected: moveSelected
-        }
-      });
+      return {
+        moveConfirmed: confirmed,
+        moveSelected: moveSelected
+      }
+    });
 
-      var removeConfirmationListener = watches( value  => {
-        if (value.moveConfirmed.confirmed) {
-          onConfirm();
-        } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
-          var oldConfig = situationToChessgroundConfig(situation);
-          chessGround.set(oldConfig);
-          gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
-        }
+    var removeConfirmationListener = watches( value  => {
+      if (value.moveConfirmed.confirmed) {
+        onConfirm();
+      } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
+        var oldConfig = situationToChessgroundConfig(situation);
+        chessGround.set(oldConfig);
+        gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
+      }
 
-        removeConfirmationListener();
-        actionButtons.hideMoveConfirmation();
-      });
+      removeConfirmationListener();
+      actionButtons.hideMoveConfirmation();
+    });
 
   }
 
