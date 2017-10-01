@@ -80,8 +80,10 @@ module.exports = (gameCtrl, settings) => {
         onConfirm();
       } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
         var oldConfig = situationToChessgroundConfig(situation);
-        chessGround.set(oldConfig);
-        gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
+
+        if (value.moveSelected === "live") {
+          chessGround.set(oldConfig)
+        }
       }
 
       removeConfirmationListener();
