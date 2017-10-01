@@ -17,8 +17,6 @@ module.exports = () => {
   }
 
   function setMoveConfirmation(choice) {
-    console.log("setting move confirmation ");
-    console.log(choice);
       var chessSettings = getObject("ssb-chess");
       chessSettings.moveConfirmationEnabled = choice;
       storeSettings(chessSettings);

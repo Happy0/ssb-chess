@@ -78,7 +78,7 @@ module.exports = (gameCtrl, settings) => {
   function renderNavigation() {
     return m('div', [
       navItems.map(renderNavItem),
-      m('a', {href: "#", onclick: showSettings}, 'SETTINGS')
+      m('a', {id: 'ssb-chess-settings-nav-item', href: "#", onclick: showSettings}, 'SETTINGS')
     ]);
   }
 

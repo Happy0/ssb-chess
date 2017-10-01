@@ -26,3 +26,8 @@
 #ssb-chess-dialog-checkbox-container {
   margin: auto;
 }
+
+#ssb-chess-settings-nav-item {
+  float: right;
+  margin-right: 10px;
+}
