@@ -17,14 +17,20 @@
   background-color: white;
   position: absolute;
   z-index: 500;
-  top: 50%;
+  top: 30%;
   left: 50%;
-  height: 150px;
+  height: 100px;
   width: 300px;
 }
 
 #ssb-chess-dialog-checkbox-container {
-  margin: auto;
+  margin: 5px;
+  text-align: center;
+}
+
+#ssb-chess-settings-dialog-close {
+  text-align: center;
+  display: block;
 }
 
 #ssb-chess-settings-nav-item {

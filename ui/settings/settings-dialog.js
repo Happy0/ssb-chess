@@ -22,13 +22,13 @@ module.exports = (settingsCtrl, onCloseDialog) => {
   }
 
   function closeButton() {
-    return m('a', {href: '#', 'class': 'ssb-chess-settings-dialog-close', onclick: onCloseDialog}, 'Close');
+    return m('a', {href: '#', 'id': 'ssb-chess-settings-dialog-close', onclick: onCloseDialog}, 'Close');
   }
 9
   return {
     view: () => {
       return m('div', [
-        m('div', {class: 'ssb-chess-dialog-title'}, 'SETTINGS'),
+        m('div', {class: 'ssb-chess-dialog-title'}, ''),
         labelCheckbox('Move confirmation',
          settingsCtrl.getMoveConfirmation,
           (selected) => settingsCtrl.setMoveConfirmation(selected)),
