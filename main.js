@@ -1,10 +1,3 @@
-// TODO: this is intended to allow you to run the application stand-alone,
-// but it is broken at the moment as I haven't worked out the depject
-// magic required to get it to run again.
-
-// usually the app is ran through patchbay (via the dependency injection in
-// inject.js)
-
 if (!process.argv.find(arg => arg === "cli")) {
   const electron = require('electron')
   // Module to control application life.

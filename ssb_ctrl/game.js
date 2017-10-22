@@ -14,7 +14,10 @@ var SocialCtrl = require("./social");
 const MutantUtils = require("./mutant_utils")();
 const ChessMsgUtils = require ("../ssb_model/chess_msg_utils")();
 
-module.exports = (sbot, myIdent, injectedApi) => {
+const getFilteredBackLinks = require("./backlinks_obs")();
+const combine = require("depject");
+
+module.exports = (sbot, myIdent) => {
 
   const socialCtrl = SocialCtrl(sbot);
 
@@ -106,8 +109,33 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   };
 
+  /**
+  * Returns 'true' if the given scuttlebutt message is something that changes
+  * the chess board situation. For example, a move or invite. Returns false
+  * for messages that do not modify the situation (such as chat messages.)
+  */
+  function isSituationalChessMessage(msg) {
+    if (!msg.value || !msg.value.content) {
+      return false;
+    }
+    else {
+      var relevantMessageTypes = [
+        "chess_invite",
+        "chess_invite_accept",
+        "chess_move",
+        "chess_game_end"];
+
+        var messageType = msg.value.content.type;
+        var isSituationMsg = relevantMessageTypes.find(msg => msg === messageType)
+        return isSituationMsg !== undefined;
+    }
+  }
+
   function getSituationObservable(gameRootMessage) {
-    const gameMessages = injectedApi.backlinks(gameRootMessage);
+    const gameMessages = getFilteredBackLinks(gameRootMessage, {
+        filter: isSituationalChessMessage
+    });
+
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
     return computed([players, gameMessages.sync, gameMessages],
