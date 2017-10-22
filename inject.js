@@ -5,15 +5,14 @@ const { h, onceTrue } = require('mutant');
 const index = require('./index');
 
 exports.gives = nest({
-  'app.html.menuItem': true, 
+  'app.html.menuItem': true,
   'app.page.chessIndex': true,
   'router.sync.routes': true,
 })
 
 exports.needs = nest({
   'app.page.chessIndex': 'first',
-  'sbot.obs.connection': 'first',
-  'backlinks.obs.for': 'first'
+  'sbot.obs.connection': 'first'
 });
 
 exports.create = function(api) {
@@ -21,7 +20,7 @@ exports.create = function(api) {
   var pageLoaded = false;
 
   return nest({
-    'app.html.menuItem': menuItem, 
+    'app.html.menuItem': menuItem,
     'app.page.chessIndex': chessIndex,
     'router.sync.routes': routes,
   })
@@ -38,15 +37,11 @@ exports.create = function(api) {
   function chessIndex(location) {
     if (pageLoaded) {
       return topLevelDomElement;
-    } 
-    
+    }
+
     onceTrue(api.sbot.obs.connection(), (sbot) => {
 
-      var injectedApi = {
-        backlinks: api.backlinks.obs.for
-      }
-
-      index(topLevelDomElement, sbot, injectedApi);
+      index(topLevelDomElement, sbot);
       pageLoaded = true;
     });
 
@@ -68,4 +63,3 @@ exports.create = function(api) {
     return [...sofar, ...routes]
   }
 }
-

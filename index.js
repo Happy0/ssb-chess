@@ -12,7 +12,7 @@ var StatusBar = require('./ui/pageLayout/status_bar');
 
 var settingsCtrl = require('./ctrl/settings')();
 
-module.exports = (attachToElement, sbot, injectedApi) => {
+module.exports = (attachToElement, sbot) => {
 
   var cssFiles = [
     "./css/global.css",
@@ -67,7 +67,7 @@ module.exports = (attachToElement, sbot, injectedApi) => {
 
   sbot.whoami((err, ident) => {
     Db.initDb().then(db => {
-      const gameCtrl = GameCtrl(sbot, ident.id, db, injectedApi);
+      const gameCtrl = GameCtrl(sbot, ident.id, db);
 
       const mainBody = attachToElement;
       const navDiv = document.createElement("div");

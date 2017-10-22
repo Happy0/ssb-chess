@@ -152,9 +152,16 @@ module.exports = (gameCtrl, settings) => {
       rootMessageId: situation.gameId,
       chatMessageType: "chess_chat",
       chatMessageField: "msg",
-      recipients: situation.players,
-      chatboxEnabled: situation.players[myIdent] != null
+      chatboxEnabled: true
     };
+
+     if (situation.players[myIdent] != null) {
+       config.isPublic = false;
+       config.participants = Object.keys(situation.players);
+     } else {
+       config.isPublic = true;
+     }
+
 
     var chat = EmbeddedChat(gameCtrl.getSbot(), config)
 
