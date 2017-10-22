@@ -99,6 +99,8 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
         confirmed: false
       });
 
+      m.redraw();
+      
       return moveConfirmationObservable;
     }
 
