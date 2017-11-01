@@ -99,8 +99,10 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
         confirmed: false
       });
 
-      m.redraw();
-      
+      // Wrap in 'setTimeout' as we don't want an accidental redraw within a
+      // redraw as this can lead to bad behaviour
+      setTimeout(m.redraw);
+
       return moveConfirmationObservable;
     }
 

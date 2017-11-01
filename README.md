@@ -1,5 +1,3 @@
-It's all broken at the moment (patchbay is using a working version though)... Last known working version is 1.5.1. I'll update this README when it's stable again.
-
 # ssb-chess
 
 ![A screenshot of ssb-chess](http://i.imgur.com/Xz9ovwX.png)
