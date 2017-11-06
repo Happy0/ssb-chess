@@ -42,6 +42,7 @@ exports.create = function(api) {
     onceTrue(api.sbot.obs.connection(), (sbot) => {
 
       index(topLevelDomElement, sbot);
+
       pageLoaded = true;
     });
 

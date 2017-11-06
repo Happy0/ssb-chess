@@ -1,14 +1,11 @@
 var GameCtrl = require('./ctrl/game');
 var m = require("mithril");
 
-var Db = require("./db/init")();
-
 var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 var NavigationBar = require('./ui/pageLayout/navigation');
 var GameComponent = require('./ui/game/gameView');
 var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
-var StatusBar = require('./ui/pageLayout/status_bar');
 
 var settingsCtrl = require('./ctrl/settings')();
 
@@ -42,11 +39,9 @@ module.exports = (attachToElement, sbot) => {
   function renderPageTop(parent, gameCtrl) {
 
     var navBar = NavigationBar(gameCtrl, settingsCtrl);
-    var statusBar = m(StatusBar());
 
     var TopComponent = {
       view: () => m('div',[
-        statusBar,
         m(navBar)
       ])
     };
@@ -66,27 +61,22 @@ module.exports = (attachToElement, sbot) => {
   }
 
   sbot.whoami((err, ident) => {
-    Db.initDb().then(db => {
-      const gameCtrl = GameCtrl(sbot, ident.id, db);
+    const gameCtrl = GameCtrl(sbot, ident.id);
 
-      const mainBody = attachToElement;
-      const navDiv = document.createElement("div");
-      navDiv.id = "ssb-nav";
-      const bodyDiv = document.createElement("div");
+    const mainBody = attachToElement;
+    const navDiv = document.createElement("div");
+    navDiv.id = "ssb-nav";
+    const bodyDiv = document.createElement("div");
 
-      const cssDiv = document.createElement("div");
-      cssFilesToStyleTag(cssDiv);
+    const cssDiv = document.createElement("div");
+    cssFilesToStyleTag(cssDiv);
 
-      mainBody.appendChild(cssDiv);
-      mainBody.appendChild(navDiv);
-      mainBody.appendChild(bodyDiv);
+    mainBody.appendChild(cssDiv);
+    mainBody.appendChild(navDiv);
+    mainBody.appendChild(bodyDiv);
 
-      renderPageTop(navDiv, gameCtrl);
+    renderPageTop(navDiv, gameCtrl);
 
-      appRouter(bodyDiv, gameCtrl);
-
-      gameCtrl.loadGameSummariesIntoDatabase();
-      gameCtrl.startPublishingBoardUpdates();
-    })
+    appRouter(bodyDiv, gameCtrl);
   });
 }

@@ -123,6 +123,10 @@ Type `ssb_chess_chat`
 }
 ```
 
+## Required scuttlebot plugins
+
+* Requires the ssb-chess-db which is used to index the state of all the known games.
+
 ## Integrating ssb-chess into a scuttlebutt application using depject
 
 You can read more about depject [here](https://github.com/depject/depject)
