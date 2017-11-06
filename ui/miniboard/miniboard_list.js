@@ -29,15 +29,6 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
     },
     oncreate: function(e) {
       updateMiniboards();
-
-      this.miniboardUpdatesListener = PubSub.subscribe("catch_up_with_games", (msg, data) => {
-
-        // Eh, maybe one day I'll be more fine grained about it :P
-        console.info("Updating miniboards");
-        updateMiniboards();
-
-      });
-
     },
     onremove: function(e) {
       PubSub.unsubscribe(this.miniboardUpdatesListener);

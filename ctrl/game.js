@@ -1,6 +1,5 @@
 const GameChallenger = require("../ssb_ctrl/game_challenge");
 const GameSSBDao = require("../ssb_ctrl/game");
-const LiveUpdateBroadcaster = require("../ssb_ctrl/live_update_broadcaster");
 const uuidV4 = require('uuid/v4');
 const Worker = require("tiny-worker");
 
@@ -13,24 +12,18 @@ var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
 
-module.exports = (sbot, myIdent, db, injectedApi) => {
+module.exports = (sbot, myIdent, injectedApi) => {
 
   const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
   const gameChallenger = GameChallenger(sbot, myIdent);
-  const gameDb = GameDb(sbot, db);
+  const gameDb = GameDb(sbot);
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
-  const liveUpdateBroadcaster = LiveUpdateBroadcaster(sbot);
-
   function getMyIdent() {
     return myIdent;
-  }
-
-  function startPublishingBoardUpdates() {
-    liveUpdateBroadcaster.listenForSSBChessMessageUpdates();
   }
 
   function inviteToPlay(playerKey, asWhite) {
@@ -107,12 +100,7 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     return gameSSBDao.getSituationSummaryObservable(gameId);
   }
 
-  function loadGameSummariesIntoDatabase() {
-      gameDb.loadGameSummariesIntoDatabase();
-  }
-
   return {
-    loadGameSummariesIntoDatabase: loadGameSummariesIntoDatabase,
     getMyIdent: getMyIdent,
     inviteToPlay: inviteToPlay,
     acceptChallenge: acceptChallenge,
@@ -127,7 +115,6 @@ module.exports = (sbot, myIdent, db, injectedApi) => {
     getSituation: getSituation,
     getSituationObservable: getSituationObservable,
     getSituationSummaryObservable: getSituationSummaryObservable,
-    startPublishingBoardUpdates: startPublishingBoardUpdates,
     getMoveCtrl: () => moveCtrl,
     getSocialCtrl: () => socialCtrl,
     getPlayerCtrl: () => playerCtrl,

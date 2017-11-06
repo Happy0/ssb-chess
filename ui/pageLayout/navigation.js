@@ -101,7 +101,10 @@ module.exports = (gameCtrl, settings) => {
       return renderNavigation();
     },
     oncreate: () => {
-      this.gameUpdatesListener = PubSub.subscribe('catch_up_with_games', updateCounts);
+      // TODO: use observables
+      updateCounts();
+      var fiveSeconds = 5000;
+      setInterval(updateCounts, fiveSeconds);
     },
     onremove: () => {
       Pubsub.unsubscribe(this.gameUpdatesListener);
