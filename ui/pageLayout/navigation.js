@@ -89,10 +89,11 @@ module.exports = (gameCtrl, settings) => {
     Promise.all(countPromises).then(counts => {
 
       counts.forEach((count, idx) => {
-        navItems[idx].count = count;
+        if (count !== navItems[idx].count) {
+          navItems[idx].count = count;
+          m.redraw();
+        }
       });
-
-      m.redraw();
     });
   }
 
