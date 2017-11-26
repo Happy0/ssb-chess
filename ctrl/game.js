@@ -76,9 +76,14 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var start = start? start : 0;
     var end = end? end : 20
 
-    return gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
-      gameIds.map(gameSSBDao.getSmallGameSummary)
-    ))
+    return gameDb.getObservableGames(myIdent, start, end)
+      .then(gameIds => Promise.all(
+        gameIds.map(gameId => gameSSBDao.getSmallGameSummary(gameId).catch(err => {
+          console.debug("Error while resolving gameId " + gameId + ": " + err);
+          return Promise.resolve(null)
+        }
+      )).filter(g => g != null)
+      ))
   }
 
   function getGamesWhereMyMove() {
