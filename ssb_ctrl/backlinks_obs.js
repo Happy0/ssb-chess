@@ -5,10 +5,10 @@ module.exports = () => {
 
   var backlinksObs = {
     "needs": {
-      "backlinks.filter.obs": true
+      "backlinks.obs.filter": true
     }
   }
 
   var api = combine([backlinksObs, patchCore]);
-  return api.backlinks.filter.obs[0];
+  return api.backlinks.obs.filter[0];
 }

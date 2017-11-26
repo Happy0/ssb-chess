@@ -132,7 +132,7 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getSituationObservable(gameRootMessage) {
-    const gameMessages = getFilteredBackLinks(gameRootMessage, isSituationalChessMessage);
+    const gameMessages = getFilteredBackLinks(gameRootMessage, {filter: isSituationalChessMessage});
 
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
