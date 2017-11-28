@@ -10,6 +10,7 @@
     "hyperscript": "2.0.2",
     "mithril": "1.1.1",
     "mutant": "3.19.0",
+    "mutant-pull-reduce": "^1.1.0",
     "neodoc": "1.4.0",
     "patchcore": "^1.15.0",
     "pubsub-js": "1.5.7",

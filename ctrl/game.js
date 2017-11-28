@@ -12,6 +12,8 @@ var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
 
+const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
+
 module.exports = (sbot, myIdent, injectedApi) => {
 
   const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
@@ -21,6 +23,14 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
+
+  const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
+
+  var obs = userGamesUpdateWatcher.latestGameMessageForPlayerObs("@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519");
+
+  obs(e => console.log(e));
+
+
 
   function getMyIdent() {
     return myIdent;
