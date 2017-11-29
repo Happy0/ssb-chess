@@ -4,42 +4,57 @@ var MutantPullReduce = require('mutant-pull-reduce');
 module.exports = (sbot) => {
 
   function latestGameMessageForPlayerObs(playerId) {
-    var liveFeed = sbot.createFeedStream({
-      live: true
-    })
 
-    var chessMessagesReferencingPlayer = pull(liveFeed, msgReferencesPlayerFilter(playerId)) ;
+    var chessMessagesReferencingPlayer = chessMessagesForPlayerGames(playerId, Date.now());
 
     return MutantPullReduce(chessMessagesReferencingPlayer, (state, next) => {
       return next;
     }, {
-      startValue: Date.now(),
       nextTick: true,
       sync: true
     });
   }
 
-  function getGamePlayers(msg, cb) {
-    if (!msg.value || !msg.value.content || !msg.value.content.root) {
+  function chessMessagesForPlayerGames(playerId, since) {
+    var liveFeed = sbot.createFeedStream({
+      live: true,
+      gt: since
+    })
+
+    return pull(liveFeed, msgReferencesPlayerFilter(playerId))
+  }
+
+  function getGameInvite(msg, cb) {
+
+    if (msg.value.content.type === "chess_invite") {
+      return getInviteOrWarn(null, msg.value, cb)
+    }
+    else if (!msg.value || !msg.value.content || !msg.value.content.root) {
       console.warn("No root found for chess message ");
       console.warn(msg);
       cb(null, []);
     } else {
       var gameId = msg.value.content.root;
-      sbot.get(gameId, (err, result) => {
+      sbot.get(gameId, (err, result) => getInviteOrWarn(err, result, cb));
+    }
+  }
 
-        if (msg.value.content.type !== "chess_invite") {
-          console.warn("Unexpectedly not a chess invite root ");
-          console.warn(msg);
-          cb(null, []);
-        }
-        else if (msg.value.content.inviting) {
-          console.warn("Unexpectedly no invitee")
-          console.warn(msg);
-        } else {
-          cb(null, [msg.value.author, msg.value.content.inviting])
-        }
-      });
+  function getInviteOrWarn(err, result, cb) {
+    if (err) {
+        console.warn("Error while retrieving game invite message");
+        console.warn(err);
+        cb(null, null);
+    }
+    else if (result.content.type !== "chess_invite") {
+      console.warn("Unexpectedly not a chess invite root ");
+      console.warn(result);
+      cb(null, null);
+    }
+    else if (!result.content.inviting) {
+      console.warn("Unexpectedly no invitee")
+      console.warn(result);
+    } else {
+      cb(null, result)
     }
   }
 
@@ -64,9 +79,11 @@ module.exports = (sbot) => {
     return pull(
             pull(
               pull.filter(isChessMessage),
-              pull.asyncMap(getGamePlayers)
+              pull.asyncMap(getGameInvite)
             ),
-            pull.filter(containsPlayerId)
+            pull.filter(msg =>
+               msg == null ||
+                [msg.author, msg.content.invitee].indexOf !== -1)
           )
   }
 
@@ -75,6 +92,7 @@ module.exports = (sbot) => {
     * Watches for incoming updates to a player's games and sets the observable
     * value to the last message.
     */
-   latestGameMessageForPlayerObs : latestGameMessageForPlayerObs
+   latestGameMessageForPlayerObs : latestGameMessageForPlayerObs,
+   chessMessagesForPlayerGames: chessMessagesForPlayerGames
   }
 }
