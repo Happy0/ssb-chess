@@ -44,13 +44,22 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return gameChallenger.acceptChallenge(rootGameMessage);
   }
 
+  var myGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+
   function pendingChallengesSent() {
-    var challenges = gameDb.pendingChallengesSent(myIdent);
-    return challenges;
+    var observable = Value([]);
+
+    var challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
+
+    return observable;
   }
 
   function pendingChallengesReceived() {
-    return gameDb.pendingChallengesReceived(myIdent);
+    var observable = Value([]);
+
+    gameDb.pendingChallengesReceived(myIdent).then(observable.set);
+
+    return observable
   }
 
   function getMyGamesInProgress() {
@@ -92,7 +101,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var start = start? start : 0;
     var end = end? end : 20
 
-    // todo: make this sorted / updated
+    // todo: make this sorted / update the observable
     gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
       gameIds.map(gameSSBDao.getSmallGameSummary)
     )).then(observable.set)
@@ -122,7 +131,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getSituation(gameId) {
-    return gameSSBDao.getSituation(gamwhereMeId);
+    return gameSSBDao.getSituation(gameId);
   }
 
   function getSituationObservable(gameId) {

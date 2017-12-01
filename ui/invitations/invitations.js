@@ -55,15 +55,19 @@ module.exports = (gameCtrl) => {
       invites.map(invite => gameCtrl.getSituation(invite.gameId)));
   }
 
-  function updateInvites() {
+  function keepInvitesUpdated() {
     var invitesReceived = gameCtrl.pendingChallengesReceived();
     var invitesSent = gameCtrl.pendingChallengesSent();
 
-    invitesReceived.then(invitesToSituations).then(received =>
-      invitationsReceived = received).then(m.redraw);
+    invitesReceived(received => {
+      invitesToSituations(received).then(inviteSituations => invitationsReceived = inviteSituations);
+      m.redraw();
+    })
 
-    invitesSent.then(invitesToSituations).then(sent =>
-      invitationsSent = sent).then(m.redraw);
+    invitesSent(sent => {
+      invitesToSituations(sent).then(inviteSituations => invitationsSent = inviteSituations);
+      m.redraw();
+    })
 
   }
 
@@ -87,14 +91,7 @@ module.exports = (gameCtrl) => {
   return {
     oncreate: function() {
 
-      this.miniboardUpdatesListener = PubSub.subscribe("catch_up_with_games", (msg, data) => {
-
-        // Eh, maybe one day I'll be more fine grained about it :P
-        console.info("Updating miniboards");
-        updateInvites();
-      });
-
-      updateInvites();
+      keepInvitesUpdated();
     },
     view: function() {
 

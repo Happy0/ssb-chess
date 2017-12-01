@@ -21,7 +21,7 @@ module.exports = (gameCtrl, settings) => {
     name: 'Invitations',
     link: "/invitations",
     count: 0,
-    countUpdateFn: gameCtrl.pendingChallengesReceived,
+  //  countUpdateFn: gameCtrl.pendingChallengesReceived,
     countHoverText: () => `${invitations.count} pending invitations received.`
   };
   const observable = {
