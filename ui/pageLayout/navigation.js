@@ -14,7 +14,7 @@ module.exports = (gameCtrl, settings) => {
     name: "My Move",
     link: "/games_my_move",
     count: 0,
-    countUpdateFn: gameCtrl.getGamesWhereMyMove,
+//    countUpdateFn: gameCtrl.getGamesWhereMyMove,
     countHoverText: () => `${gamesMyMove.count} games awaiting your move.`
   };
   const invitations = {

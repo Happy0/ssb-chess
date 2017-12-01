@@ -14,10 +14,11 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
 
   this.ident = ident;
 
-  function updateMiniboards() {
-    getGameSummariesFunc().then(summaries => {
+  function keepMiniboardsUpdated() {
+    getGameSummariesFunc()(summaries => {
       gameSummaries = summaries;
-    }).then(m.redraw);
+      m.redraw();
+    });
   }
 
   return {
@@ -28,7 +29,7 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
         gameSummaries.map(summary => m(Miniboard(gameCtrl, summary, this.ident))));
     },
     oncreate: function(e) {
-      updateMiniboards();
+      keepMiniboardsUpdated();
     },
     onremove: function(e) {
       PubSub.unsubscribe(this.miniboardUpdatesListener);

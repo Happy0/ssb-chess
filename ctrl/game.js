@@ -13,7 +13,11 @@ var PubSub = require('pubsub-js');
 const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
-const map = require('mutant/map')
+const map = require('mutant/map');
+const Value = require('mutant/value');
+const computed = require('mutant/computed');
+
+const _ = require('lodash');
 
 module.exports = (sbot, myIdent, injectedApi) => {
 
@@ -26,7 +30,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
-  const myLiveGameEventsObserverable = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
 
   function getMyIdent() {
     return myIdent;
@@ -63,8 +66,13 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesInProgress(playerId) {
-    return gamesAgreedToPlaySummaries(playerId).then(summaries =>
-      summaries.filter(summary => summary.status.status === "started"));
+    var observable = Value([]);
+    gamesAgreedToPlaySummaries(playerId).then(observable.set);
+
+    var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
+    playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
+
+    return computed([observable], a => a, {comparer: compareGameSummaryLists } );
   }
 
   function getMyFinishedGames(start, finish) {
@@ -87,15 +95,29 @@ module.exports = (sbot, myIdent, injectedApi) => {
     ))
   }
 
+  function compareGameSummaryLists(list1, list2) {
+    list1 = list1 ? list1: [];
+    list2 = list2? list2: [];
+
+    var list1ids = list1.map(a => a.gameId);
+    var list2ids = list2.map(a => a.gameId);
+
+    return _.isEmpty(_.xor(list1ids, list2ids))
+  }
+
   function getGamesWhereMyMove() {
-    return getMyGamesInProgress().then(myGamesSummaries =>
+    var myGamesInProgress = getMyGamesInProgress();
+
+    var gamesWhereMyMove = computed(myGamesInProgress, myGamesSummaries =>
       myGamesSummaries.filter(summary =>
         summary.toMove === myIdent)
-    )
+    );
+
+    return computed([gamesWhereMyMove], a => a, {comparer: compareGameSummaryLists} );
   }
 
   function getSituation(gameId) {
-    return gameSSBDao.getSituation(gameId);
+    return gameSSBDao.getSituation(gamwhereMeId);
   }
 
   function getSituationObservable(gameId) {

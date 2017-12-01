@@ -87,7 +87,7 @@ module.exports = (sbot) => {
               var relatesToPlayer = msg == null || [msg.author, msg.content.invitee].indexOf(playerId) !== -1;
 
               console.log(msg);
-              console.log("relates to player: " + playerId)
+              console.log("relates to player: " + relatesToPlayer)
 
                return relatesToPlayer;
             }
