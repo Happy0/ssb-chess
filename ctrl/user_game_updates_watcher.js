@@ -3,6 +3,11 @@ var MutantPullReduce = require('mutant-pull-reduce');
 
 module.exports = (sbot) => {
 
+  const chessTypeMessages = [
+   "chess_move",
+   "chess_invite_accept",
+   "chess_game_end"];
+
   function latestGameMessageForPlayerObs(playerId) {
 
     var chessMessagesReferencingPlayer = chessMessagesForPlayerGames(playerId, Date.now());
@@ -18,7 +23,7 @@ module.exports = (sbot) => {
   function chessMessagesForPlayerGames(playerId, since) {
     var liveFeed = sbot.createFeedStream({
       live: true,
-      gt: since
+      gt: Date.now()
     })
 
     return pull(liveFeed, msgReferencesPlayerFilter(playerId))
@@ -63,10 +68,7 @@ module.exports = (sbot) => {
       return false;
     }
     else {
-      return [
-       "chess_move",
-       "chess_invite_accept",
-       "chess_game_end"].indexOf(msg.value.content.type) !== -1
+      return chessTypeMessages.indexOf(msg.value.content.type) !== -1
     }
 
   }
@@ -81,10 +83,17 @@ module.exports = (sbot) => {
               pull.filter(isChessMessage),
               pull.asyncMap(getGameInvite)
             ),
-            pull.filter(msg =>
-               msg == null ||
-                [msg.author, msg.content.invitee].indexOf !== -1)
+            pull.filter(msg => {
+              var relatesToPlayer = msg == null || [msg.author, msg.content.invitee].indexOf(playerId) !== -1;
+
+              console.log(msg);
+              console.log("relates to player: " + playerId)
+
+               return relatesToPlayer;
+            }
+
           )
+        )
   }
 
   return {

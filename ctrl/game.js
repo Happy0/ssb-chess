@@ -13,6 +13,8 @@ var PubSub = require('pubsub-js');
 const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
+const map = require('mutant/map')
+
 module.exports = (sbot, myIdent, injectedApi) => {
 
   const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
@@ -24,7 +26,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
-  var myLiveGameEventsObserverable = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+  const myLiveGameEventsObserverable = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
 
   function getMyIdent() {
     return myIdent;
