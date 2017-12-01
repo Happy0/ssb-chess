@@ -87,12 +87,17 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getFriendsObservableGames(start, end) {
+    var observable = Value([]);
+
     var start = start? start : 0;
     var end = end? end : 20
 
-    return gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
+    // todo: make this sorted / updated
+    gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
       gameIds.map(gameSSBDao.getSmallGameSummary)
-    ))
+    )).then(observable.set)
+
+    return observable;
   }
 
   function compareGameSummaryLists(list1, list2) {

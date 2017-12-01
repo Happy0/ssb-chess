@@ -28,7 +28,7 @@ module.exports = (gameCtrl, settings) => {
     name: 'Observe',
     link: "/observable",
     count: 0,
-    countUpdateFn: gameCtrl.getFriendsObservableGames,
+  //  countUpdateFn: gameCtrl.getFriendsObservableGames,
     countOnHoverOnly: true,
     countHoverText: () => `${observable.count} observable games.`
   };
