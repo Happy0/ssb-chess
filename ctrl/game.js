@@ -85,7 +85,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
     playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
 
-    return computed([observable], a => a, {comparer: compareGameSummaryLists } );
+    return computed([observable], a => a);
   }
 
   function getMyFinishedGames(start, finish) {
