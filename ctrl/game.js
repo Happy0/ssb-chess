@@ -85,7 +85,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
     playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
 
-    return computed([observable], a => a);
+    return computed([observable], a => a, {comparer: compareGameSummaryLists } );
   }
 
   function getMyFinishedGames(start, finish) {
@@ -123,13 +123,30 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return _.isEmpty(_.xor(list1ids, list2ids))
   }
 
-  function getGamesWhereMyMove() {
-    var myGamesInProgress = getMyGamesInProgress();
+  function filterGamesMyMove(gameSummaries) {
+    return gameSummaries.filter(summary =>
+      summary.toMove === myIdent
+    )
+  }
 
-    var gamesWhereMyMove = computed(myGamesInProgress, myGamesSummaries =>
-      myGamesSummaries.filter(summary =>
-        summary.toMove === myIdent)
-    );
+  function getGamesWhereMyMove() {
+    var gamesWhereMyMove = Value([]);
+
+    var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+
+    getMyGamesInProgress()(
+      myGamesSummaries => {
+        var myMove = filterGamesMyMove(myGamesSummaries);
+        gamesWhereMyMove.set(myMove);
+    });
+
+    playerGameUpdates( update => {
+        getMyGamesInProgress()(
+          myGamesSummaries => {
+            var myMove = filterGamesMyMove(myGamesSummaries);
+            gamesWhereMyMove.set(myMove);
+        })
+    })
 
     return computed([gamesWhereMyMove], a => a, {comparer: compareGameSummaryLists} );
   }
