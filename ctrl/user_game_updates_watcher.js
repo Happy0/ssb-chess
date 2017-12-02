@@ -90,17 +90,17 @@ module.exports = (sbot) => {
             ),
             pull(
               pull.filter(msg => {
-              var relatesToPlayer = msg == null || [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
+              var relatesToPlayer = msg != null && [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
 
               console.log(msg);
               console.log("relates to player: " + relatesToPlayer)
 
-               return relatesToPlayer;
+              return relatesToPlayer;
             }
 
           ),
           // See earlier hack ;x.
-          pull.map(msg => msg.originalMessage))
+          pull.map(msg => msg.originalMsg))
         )
   }
 
