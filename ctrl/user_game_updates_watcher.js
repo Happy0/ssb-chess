@@ -40,7 +40,11 @@ module.exports = (sbot) => {
       cb(null, []);
     } else {
       var gameId = msg.value.content.root;
-      sbot.get(gameId, (err, result) => getInviteOrWarn(err, result, cb));
+      sbot.get(gameId, (err, result) => {
+        // I'm so hacky :<
+        result.originalMsg = msg;
+        getInviteOrWarn(err, result, cb)
+      });
     }
   }
 
@@ -58,6 +62,7 @@ module.exports = (sbot) => {
     else if (!result.content.inviting) {
       console.warn("Unexpectedly no invitee")
       console.warn(result);
+      cb(null, null);
     } else {
       cb(null, result)
     }
@@ -83,8 +88,9 @@ module.exports = (sbot) => {
               pull.filter(isChessMessage),
               pull.asyncMap(getGameInvite)
             ),
-            pull.filter(msg => {
-              var relatesToPlayer = msg == null || [msg.author, msg.content.invitee].indexOf(playerId) !== -1;
+            pull(
+              pull.filter(msg => {
+              var relatesToPlayer = msg == null || [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
 
               console.log(msg);
               console.log("relates to player: " + relatesToPlayer)
@@ -92,7 +98,9 @@ module.exports = (sbot) => {
                return relatesToPlayer;
             }
 
-          )
+          ),
+          // See earlier hack ;x.
+          pull.map(msg => msg.originalMessage))
         )
   }
 
