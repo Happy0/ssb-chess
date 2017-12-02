@@ -51,7 +51,9 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     var challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    return observable;
+    myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
+
+    return computed([observable], a => a, {comparer: compareGameSummaryLists});
   }
 
   function pendingChallengesReceived() {
@@ -59,7 +61,9 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    return observable
+    myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
+
+    return computed([observable], a => a, {comparer: compareGameSummaryLists});
   }
 
   function getMyGamesInProgress() {
