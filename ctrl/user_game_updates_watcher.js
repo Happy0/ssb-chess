@@ -93,9 +93,6 @@ module.exports = (sbot) => {
               pull.filter(msg => {
               var relatesToPlayer = msg != null && [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
 
-              console.log(msg);
-              console.log("relates to player: " + relatesToPlayer)
-
               return relatesToPlayer;
             }
 
