@@ -36,7 +36,7 @@ module.exports = (gameCtrl) => {
       var friendId = inviteDropdown.options[inviteDropdown.selectedIndex].value;
 
       gameCtrl.inviteToPlay(friendId)
-        .then(m.redraw)
+        .then(msg => m.route.set("/games/" + btoa(msg.key)))
         .then(() => buttonElement.disabled = false);
     }
 
