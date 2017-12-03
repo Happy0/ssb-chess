@@ -87,17 +87,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return computed([observable], a => a, {comparer: compareGameSummaryLists } );
   }
 
-  function getMyFinishedGames(start, finish) {
-    return getFinishedGames(myIdent, start, finish);
-  }
-
-  function getFinishedGames(playerId, start, finish) {
-    // In the future, this would now just grab every single game then slice it
-    // but would slice in a database query instead
-    return gamesAgreedToPlaySummaries(playerId).then(summaries =>
-      summaries.filter(summary => summary.status.status !== "started").slice(start, finish));
-  }
-
   function getFriendsObservableGames(start, end) {
     var observable = Value([]);
 
@@ -171,8 +160,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
     pendingChallengesReceived: pendingChallengesReceived,
     getMyGamesInProgress: getMyGamesInProgress,
     getGamesInProgress: getGamesInProgress,
-    getFinishedGames: getFinishedGames,
-    getMyFinishedGames: getMyFinishedGames,
     getFriendsObservableGames: getFriendsObservableGames,
     getSituation: getSituation,
     getSituationObservable: getSituationObservable,

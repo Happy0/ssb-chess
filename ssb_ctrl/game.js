@@ -78,13 +78,23 @@ module.exports = (sbot, myIdent) => {
   }
 
   function findGameStatus(players, gameMessages) {
-    var result = gameMessages.find(msg => {
+    var gameFinishedMsg = gameMessages.find(msg => {
       return msg.value.content.type === "chess_game_end"
     });
 
+    var inviteAcceptMsg = gameMessages.find(msg => msg.value.content.type === "chess_invite_accept");
+
+    var gameStatus = "invited";
+    if (gameFinishedMsg) {
+      gameStatus = gameFinishedMsg.value.content.status;
+    } else if (inviteAcceptMsg) {
+      gameStatus = "started";
+    }
+
+
     const status = {
-      status: result != null && result.value.content.status ? result.value.content.status : "started",
-      winner: result != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), result) : null
+      status: gameStatus,
+      winner: gameFinishedMsg != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), gameFinishedMsg) : null
     }
 
     return status;

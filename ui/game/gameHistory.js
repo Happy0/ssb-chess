@@ -49,14 +49,16 @@ module.exports = (gameObservable, myIdent) => {
     }
 
     switch (status.status) {
+      case "invited":
+        return  m('div', {class: "ssb-chess-status-text"}, "Awaiting invite being accepted.");
       case "resigned":
-        return m('div', {class: "ssb-chess-end-text"},
+        return m('div', {class: "ssb-chess-status-text"},
           players[status.winner].name + " wins by resignation.");
       case "mate":
-        return m('div', {class: "ssb-chess-end-text"},
+        return m('div', {class: "ssb-chess-status-text"},
           players[status.winner].name + " wins.");
       case "draw":
-        return m('div', {class: "ssb-chess-end-text"}, "Draw.")
+        return m('div', {class: "ssb-chess-status-text"}, "Draw.")
       default:
         return m('div');
     }
