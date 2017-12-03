@@ -11,6 +11,12 @@ const MoveCtrl = require('./game_move');
 var PubSub = require('pubsub-js');
 
 const PlayerModelUtils = require('./player_model_utils')();
+const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
+
+const Value = require('mutant/value');
+const computed = require('mutant/computed');
+
+const _ = require('lodash');
 
 module.exports = (sbot, myIdent, injectedApi) => {
 
@@ -21,6 +27,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
+
+  const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
 
   function getMyIdent() {
     return myIdent;
@@ -35,13 +43,26 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return gameChallenger.acceptChallenge(rootGameMessage);
   }
 
+  var myGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+
   function pendingChallengesSent() {
-    var challenges = gameDb.pendingChallengesSent(myIdent);
-    return challenges;
+    var observable = Value([]);
+
+    var challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
+
+    myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
+
+    return computed([observable], a => a, {comparer: compareGameSummaryLists});
   }
 
   function pendingChallengesReceived() {
-    return gameDb.pendingChallengesReceived(myIdent);
+    var observable = Value([]);
+
+    gameDb.pendingChallengesReceived(myIdent).then(observable.set);
+
+    myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
+
+    return computed([observable], a => a, {comparer: compareGameSummaryLists});
   }
 
   function getMyGamesInProgress() {
@@ -57,8 +78,13 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesInProgress(playerId) {
-    return gamesAgreedToPlaySummaries(playerId).then(summaries =>
-      summaries.filter(summary => summary.status.status === "started"));
+    var observable = Value([]);
+    gamesAgreedToPlaySummaries(playerId).then(observable.set);
+
+    var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
+    playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
+
+    return computed([observable], a => a, {comparer: compareGameSummaryLists } );
   }
 
   function getMyFinishedGames(start, finish) {
@@ -73,19 +99,55 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getFriendsObservableGames(start, end) {
+    var observable = Value([]);
+
     var start = start? start : 0;
     var end = end? end : 20
 
-    return gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
+    // todo: make this sorted / update the observable
+    gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
       gameIds.map(gameSSBDao.getSmallGameSummary)
-    ))
+    )).then(observable.set)
+
+    return observable;
+  }
+
+  function compareGameSummaryLists(list1, list2) {
+    list1 = list1 ? list1: [];
+    list2 = list2? list2: [];
+
+    var list1ids = list1.map(a => a.gameId);
+    var list2ids = list2.map(a => a.gameId);
+
+    return _.isEmpty(_.xor(list1ids, list2ids))
+  }
+
+  function filterGamesMyMove(gameSummaries) {
+    return gameSummaries.filter(summary =>
+      summary.toMove === myIdent
+    )
   }
 
   function getGamesWhereMyMove() {
-    return getMyGamesInProgress().then(myGamesSummaries =>
-      myGamesSummaries.filter(summary =>
-        summary.toMove === myIdent)
-    )
+    var gamesWhereMyMove = Value([]);
+
+    var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+
+    getMyGamesInProgress()(
+      myGamesSummaries => {
+        var myMove = filterGamesMyMove(myGamesSummaries);
+        gamesWhereMyMove.set(myMove);
+    });
+
+    playerGameUpdates( update => {
+        getMyGamesInProgress()(
+          myGamesSummaries => {
+            var myMove = filterGamesMyMove(myGamesSummaries);
+            gamesWhereMyMove.set(myMove);
+        })
+    })
+
+    return computed([gamesWhereMyMove], a => a, {comparer: compareGameSummaryLists} );
   }
 
   function getSituation(gameId) {

@@ -83,18 +83,20 @@ module.exports = (gameCtrl, settings) => {
     ]);
   }
 
-  function updateCounts() {
-    var countPromises = navItems.map(item => item.countUpdateFn ? item.countUpdateFn().then(arr => arr.length) : Promise.resolve(0));
+  function keepCountsUpdated() {
 
-    Promise.all(countPromises).then(counts => {
+    navItems.forEach(navItem => {
+      if (navItem.countUpdateFn) {
 
-      counts.forEach((count, idx) => {
-        if (count !== navItems[idx].count) {
-          navItems[idx].count = count;
+        navItem.countUpdateFn()(items => {
+          var numItems = items.length;
+          navItem.count = numItems;
           m.redraw();
-        }
-      });
-    });
+        })
+
+      }
+    })
+
   }
 
   return {
@@ -102,10 +104,7 @@ module.exports = (gameCtrl, settings) => {
       return renderNavigation();
     },
     oncreate: () => {
-      // TODO: use observables
-      updateCounts();
-      var fiveSeconds = 5000;
-      setInterval(updateCounts, fiveSeconds);
+      keepCountsUpdated();
     },
     onremove: () => {
       Pubsub.unsubscribe(this.gameUpdatesListener);
