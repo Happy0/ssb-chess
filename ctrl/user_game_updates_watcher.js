@@ -4,6 +4,7 @@ var MutantPullReduce = require('mutant-pull-reduce');
 module.exports = (sbot) => {
 
   const chessTypeMessages = [
+   "chess_invite",
    "chess_move",
    "chess_invite_accept",
    "chess_game_end"];
@@ -100,7 +101,7 @@ module.exports = (sbot) => {
 
           ),
           // See earlier hack ;x.
-          pull.map(msg => msg.originalMsg))
+          pull.map(msg => msg.originalMsg ? msg.originalMsg : msg))
         )
   }
 
