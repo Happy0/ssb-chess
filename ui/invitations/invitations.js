@@ -60,13 +60,15 @@ module.exports = (gameCtrl) => {
     var invitesSent = gameCtrl.pendingChallengesSent();
 
     invitesReceived(received => {
-      invitesToSituations(received).then(inviteSituations => invitationsReceived = inviteSituations);
-      m.redraw();
+      invitesToSituations(received)
+        .then(inviteSituations => invitationsReceived = inviteSituations)
+        .then(m.redraw);
     })
 
     invitesSent(sent => {
-      invitesToSituations(sent).then(inviteSituations => invitationsSent = inviteSituations);
-      m.redraw();
+      invitesToSituations(sent)
+        .then(inviteSituations => invitationsSent = inviteSituations)
+        .then(m.redraw);
     })
 
   }
