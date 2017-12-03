@@ -105,9 +105,14 @@ module.exports = (sbot) => {
   return {
    /**
     * Watches for incoming updates to a player's games and sets the observable
-    * value to the last message.
+    * value to the latest chess message.
     */
    latestGameMessageForPlayerObs : latestGameMessageForPlayerObs,
+
+   /**
+   * A stream of chess game messages (excluding chat messages) for the given
+   * user after the given timestamp.
+   */
    chessMessagesForPlayerGames: chessMessagesForPlayerGames
   }
 }

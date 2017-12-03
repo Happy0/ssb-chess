@@ -13,7 +13,6 @@ var PubSub = require('pubsub-js');
 const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
-const map = require('mutant/map');
 const Value = require('mutant/value');
 const computed = require('mutant/computed');
 
