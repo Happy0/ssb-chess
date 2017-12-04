@@ -63,7 +63,8 @@ module.exports = (sbot, myIdent) => {
       toMove: gameSituation.toMove,
       status: gameSituation.status,
       lastMove: gameSituation.lastMove,
-      check: gameSituation.check
+      check: gameSituation.check,
+      lastUpdateTime: gameSituation.lastUpdateTime
     }
 
     return summary;
@@ -161,6 +162,8 @@ module.exports = (sbot, myIdent) => {
       // Sort in ascending ply so that we get a list of moves linearly
       msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
+      var latestUpdate = messages.map(msg => msg.value.timestamp).reduce((a,b) => Math.max(a,b), 0) ;
+
       var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
       var fenHistory = msgs.map(msg => msg.value.content.fen);
       fenHistory.unshift("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -185,7 +188,8 @@ module.exports = (sbot, myIdent) => {
         players: players,
         toMove: getPlayerToMove(players, pgnMoves.length),
         status: status,
-        lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null
+        lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
+        lastUpdateTime: latestUpdate
       }
     });
   }

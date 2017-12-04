@@ -84,7 +84,13 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
     playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
 
-    return computed([observable], a => a, {comparer: compareGameSummaryLists } );
+    return computed(
+      [observable],
+      a => a.sort(compareGameTimestamps),
+      {
+        comparer: compareGameSummaryLists
+      }
+    );
   }
 
   function getFriendsObservableGames(start, end) {
@@ -98,10 +104,18 @@ module.exports = (sbot, myIdent, injectedApi) => {
       gameIds.map(gameSSBDao.getSmallGameSummary)
     )).then(observable.set)
 
-    return observable;
+    return computed(
+      [observable],
+      a => a.sort(compareGameTimestamps),
+      {comparer: compareGameSummaryLists}
+    );
   }
 
   function compareGameSummaryLists(list1, list2) {
+    if (!list1 || !list2) {
+      return false;
+    }
+
     list1 = list1 ? list1: [];
     list2 = list2? list2: [];
 
@@ -115,6 +129,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return gameSummaries.filter(summary =>
       summary.toMove === myIdent
     )
+  }
+
+  function compareGameTimestamps(g1, g2) {
+    return g2.lastUpdateTime - g1.lastUpdateTime;
   }
 
   function getGamesWhereMyMove() {
@@ -136,7 +154,13 @@ module.exports = (sbot, myIdent, injectedApi) => {
         })
     })
 
-    return computed([gamesWhereMyMove], a => a, {comparer: compareGameSummaryLists} );
+    return computed([gamesWhereMyMove],
+       a => a.sort(compareGameTimestamps),
+       {
+         comparer: compareGameSummaryLists,
+         defaultValue: []
+       }
+     );
   }
 
   function getSituation(gameId) {
