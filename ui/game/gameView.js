@@ -31,7 +31,7 @@ module.exports = (gameCtrl, settings) => {
 
   var gameHistoryObs = gameHistory.getMoveSelectedObservable();
 
-  var pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, false);
+  var pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, false);
   var pieceGraveMe = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, true);
 
   var isPlayerObservingObservable = Value(false);

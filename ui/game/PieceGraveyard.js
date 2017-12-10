@@ -73,7 +73,8 @@ module.exports = (
       }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor))
     },
     oncreate: () => {
-      watchAll([chessGroundObservable, situationObservable, moveSelectedObservable], (chessground, situation, move) => {
+      watchAll([chessGroundObservable, situationObservable, moveSelectedObservable],
+         (chessground, situation, move) => {
         if (situation) {
           setPlayerColours(situation);
         }
