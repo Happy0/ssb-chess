@@ -5,6 +5,19 @@ var opposite = require('chessground/util').opposite;
 
 var R = require('ramda');
 
+/**
+ * A view of the pieces of the differences in pieces compared to the other
+ * player.
+ *
+ * @param @chessGroundObservable The chessground observable becomes populated with a value when the
+ *        board has been initialised.
+ * @param @situationObservable Fires when the game has been updated with a new move, etc. This may have
+ *         involved a piece being captured so we may have to update.
+ * @param @moveSelectedObservable Fires when the user has chosen a move in the move history,
+ *        so we display the material difference for that move in the history.
+ * @param @myIdent The user's identity (used to decide the viewing perspective of the board.)
+ * @param @bottom boolean of whether it is the bottom or top piece graveyard
+ */
 module.exports = (
   chessGroundObservable,
   situationObservable,
@@ -68,8 +81,7 @@ module.exports = (
         if (chessground) {
           var pieces = chessground.state.pieces;
           materialDiff = getMaterialDiff(pieces);
-
-          console.log(materialDiff);
+          m.redraw();
         }
       });
     }
