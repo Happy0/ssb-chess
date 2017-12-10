@@ -11,6 +11,8 @@ var computed = require("mutant/computed");
 
 var EmbeddedChat = require("ssb-embedded-chat");
 
+var PieceGraveyard = require("./PieceGraveyard");
+
 module.exports = (gameCtrl, settings) => {
 
   const myIdent = gameCtrl.getMyIdent();
@@ -18,6 +20,7 @@ module.exports = (gameCtrl, settings) => {
   var chessGround = null;
 
   var situationObservable = Value();
+  var chessGroundObservable = Value();
 
   var gameHistory = GameHistory(situationObservable, myIdent);
   var actionButtons  = ActionButtons(
@@ -25,6 +28,11 @@ module.exports = (gameCtrl, settings) => {
     myIdent,
     situationObservable
   );
+
+  var gameHistoryObs = gameHistory.getMoveSelectedObservable();
+
+  var pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, false);
+  var pieceGraveMe = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, true);
 
   var isPlayerObservingObservable = Value(false);
 
@@ -177,8 +185,10 @@ module.exports = (gameCtrl, settings) => {
         class: "ssb-chess-board-background-blue3 merida ssb-chess-game-layout"
       }, [renderChat(gameId), renderBoard(gameId),
         m('div', {class: "ssb-chess-history-area"}, [
+          m(pieceGraveOpponent),
           m(gameHistory),
-          m(actionButtons)
+          m(actionButtons),
+          m(pieceGraveMe)
         ] )]);
     },
     oninit: function(vnode) {
@@ -209,6 +219,7 @@ module.exports = (gameCtrl, settings) => {
       onceTrue(this.gameSituationObs, situation => {
         var config = situationToChessgroundConfig(situation);
         chessGround = Chessground(boardDom, config);
+        chessGroundObservable.set(chessGround);
 
         var chatElement = makeEmbeddedChat(situation);
         chatDom.appendChild(chatElement);

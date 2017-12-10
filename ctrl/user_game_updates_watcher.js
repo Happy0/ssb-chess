@@ -24,7 +24,7 @@ module.exports = (sbot) => {
   function chessMessagesForPlayerGames(playerId, since) {
     var liveFeed = sbot.createFeedStream({
       live: true,
-      gt: Date.now()
+      gt: since
     })
 
     return pull(liveFeed, msgReferencesPlayerFilter(playerId))
