@@ -81,7 +81,7 @@ module.exports = (
         if (chessground) {
           var pieces = chessground.state.pieces;
           materialDiff = getMaterialDiff(pieces);
-          m.redraw();
+          setTimeout(m.redraw);
         }
       });
     }
