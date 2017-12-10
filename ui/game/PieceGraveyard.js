@@ -3,6 +3,8 @@ var watchAll = require("mutant/watch-all");
 
 var opposite = require('chessground/util').opposite;
 
+var R = require('ramda');
+
 module.exports = (
   chessGroundObservable,
   situationObservable,
@@ -38,9 +40,24 @@ module.exports = (
       opponentColor = playerColour === "white" ? "black" : "white";
   }
 
+  function renderPiecesForColour(colour) {
+    var pieces = [];
+
+    for (var pieceName in materialDiff[colour]) {
+      var numPieces = materialDiff[colour][pieceName];
+      var repeated = R.repeat(pieceName, numPieces);
+
+      pieces = pieces.concat(repeated);
+    }
+
+    return pieces.map(p => m('mono-piece', {class: p}));
+  }
+
   return {
     view: () => {
-      return m("div", {}, "")
+      return m("div", {
+        class: "ssb-chess-graveyard",
+      }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor))
     },
     oncreate: () => {
       watchAll([chessGroundObservable, situationObservable, moveSelectedObservable], (chessground, situation, move) => {
