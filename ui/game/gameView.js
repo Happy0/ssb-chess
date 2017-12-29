@@ -34,8 +34,6 @@ module.exports = (gameCtrl, settings) => {
   var pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, false);
   var pieceGraveMe = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, true);
 
-  var isPlayerObservingObservable = Value(false);
-
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
   }
@@ -265,7 +263,12 @@ module.exports = (gameCtrl, settings) => {
     },
     onremove: function(vnode) {
 
-      this.removeWatches();
+      // Ugh, I don't understand the implications (thread wise) of the fact that
+      // the observable construction might be async after the page has been
+      // navigated away from.
+      if(this.removeWatches) {
+        this.removeWatches();
+      }
 
       PubSub.unsubscribe(this.validMovesListener);
       chessGround.destroy();

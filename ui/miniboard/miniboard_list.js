@@ -6,8 +6,8 @@ var PubSub = require("pubsub-js");
 
 /*
  * GameSummariesFunc is a function that takes no arguments, and when invoked,
- * returns a list of game summaries that should be rendered into a list of
- * miniboards.
+ * returns an observable list of game summaries that should be rendered into
+ * a list of miniboards that update as moves are made.
  */
 module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
   var gameSummaries = [];
@@ -17,7 +17,7 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
   function keepMiniboardsUpdated() {
     getGameSummariesFunc()(summaries => {
       gameSummaries = summaries;
-      m.redraw();
+      setTimeout(m.redraw)
     });
   }
 
@@ -30,9 +30,6 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
     },
     oncreate: function(e) {
       keepMiniboardsUpdated();
-    },
-    onremove: function(e) {
-      PubSub.unsubscribe(this.miniboardUpdatesListener);
     }
   }
 }
