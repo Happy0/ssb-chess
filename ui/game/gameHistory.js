@@ -143,6 +143,8 @@ module.exports = (gameObservable, myIdent) => {
       if (allArrowKeys.indexOf(evt.keyCode) !== -1) {
         moveSelectedObservable.set(moveNumberSelected);
       }
+
+      m.redraw();
     }
   }
 
