@@ -2,6 +2,7 @@ var m = require("mithril");
 var onceTrue = require('mutant/once-true');
 var Value = require('mutant/value');
 var when = require('mutant/when');
+var watch = require("mutant/watch");
 var computed = require('mutant/computed');
 
 module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
@@ -65,7 +66,8 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     // Eh, miby there's redundancy here, dunno :P
 
     return computed(moveConfirmationObservable,
-       confirmation => confirmation.moveNeedsConfirmed);
+       confirmation => confirmation.moveNeedsConfirmed
+    );
   }
 
   function usualButtons() {
@@ -82,8 +84,10 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
         when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
       );
     },
-    oncreate: function(vNode) {
-      situationObservable(situation => observing = isObserving(situation));
+    oninit: function(vNode) {
+      watch(situationObservable,
+         (situation) => observing = isObserving(situation)
+      );
     },
     showMoveConfirmation: function() {
       moveConfirmationObservable.set({
@@ -99,11 +103,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
         confirmed: false
       });
 
-      // Wrap in 'setTimeout' as we don't want an accidental redraw within a
-      // redraw as this can lead to bad behaviour
-      setTimeout(m.redraw);
-
-      return moveConfirmationObservable;
+      m.redraw();
     }
 
   }

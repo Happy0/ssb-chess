@@ -9,6 +9,8 @@ var InvitationsComponent = require('./ui/invitations/invitations');
 
 var settingsCtrl = require('./ctrl/settings')();
 
+var onceTrue = require('mutant/once-true');
+
 module.exports = (attachToElement, sbot) => {
 
   var cssFiles = [
@@ -53,7 +55,21 @@ module.exports = (attachToElement, sbot) => {
     m.route(mainBody, "/my_games", {
       "/my_games": MiniboardListComponent(gameCtrl, gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl, gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
-      "/games/:gameId": GameComponent(gameCtrl, settingsCtrl),
+      "/games/:gameId": {
+        onmatch: function(args, requestedPath) {
+          var gameId = atob(args.gameId);
+          var gameSituationObs = gameCtrl.getSituationObservable(gameId);
+
+          // Only load the game page once we have the initial game situation state.
+          // The mithril router allows us to return a component in a promise.
+          return new Promise ( (resolve, reject) => {
+            onceTrue(gameSituationObs, originalSituation => {
+              var gameComponent = GameComponent(gameCtrl, gameSituationObs, settingsCtrl);
+              resolve(gameComponent);
+            })
+          })
+        }
+      },
       "/invitations": InvitationsComponent(gameCtrl),
       "/observable": MiniboardListComponent(gameCtrl, gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent()),
       "/player/:playerId": PlayerProfileComponent(gameCtrl)
