@@ -13,13 +13,11 @@ var EmbeddedChat = require("ssb-embedded-chat");
 
 var PieceGraveyard = require("./PieceGraveyard");
 
-module.exports = (gameCtrl, settings) => {
+module.exports = (gameCtrl, situationObservable, settings) => {
 
   const myIdent = gameCtrl.getMyIdent();
 
   var chessGround = null;
-
-  var situationObservable = Value();
   var chessGroundObservable = Value();
 
   var gameHistory = GameHistory(situationObservable, myIdent);
@@ -212,72 +210,58 @@ module.exports = (gameCtrl, settings) => {
       var boardDom = document.getElementById(gameId);
       var chatDom = document.getElementById("chat-"+gameId);
 
-      this.gameSituationObs = gameCtrl.getSituationObservable(gameId);
+      var originalSituation = situationObservable();
 
-      onceTrue(this.gameSituationObs, situation => {
-        var config = situationToChessgroundConfig(situation);
-        chessGround = Chessground(boardDom, config);
-        chessGroundObservable.set(chessGround);
+      var config = situationToChessgroundConfig(originalSituation);
+      chessGround = Chessground(boardDom, config);
+      chessGroundObservable.set(chessGround);
 
-        var chatElement = makeEmbeddedChat(situation);
-        chatDom.appendChild(chatElement);
+      var chatElement = makeEmbeddedChat(originalSituation);
+      chatDom.appendChild(chatElement);
 
-        gameCtrl.getMoveCtrl().publishValidMoves(situation.gameId);
-        situationObservable.set(situation);
+      gameCtrl.getMoveCtrl().publishValidMoves(originalSituation.gameId);
 
-        this.removeWatches = watchAll([this.gameSituationObs, gameHistory.getMoveSelectedObservable()],
-          (newSituation, moveSelected) => {
-            var newConfig = situationToChessgroundConfig(newSituation);
+      this.removeWatches = watchAll([situationObservable, gameHistory.getMoveSelectedObservable()],
+        (newSituation, moveSelected) => {
+          var newConfig = situationToChessgroundConfig(newSituation);
 
-            // If the user is on the latest move, they may move and we
-            // render the game updates. Otherwise the board is read only
-            if (moveSelected !== "live") {
-              setNotMovable(newConfig);
-              newConfig.fen = newSituation.fenHistory[moveSelected];
+          // If the user is on the latest move, they may move and we
+          // render the game updates. Otherwise the board is read only
+          if (moveSelected !== "live") {
+            setNotMovable(newConfig);
+            newConfig.fen = newSituation.fenHistory[moveSelected];
 
-              if (moveSelected > 0) {
-                newConfig.lastMove = [newSituation.origDests[moveSelected -1 ].orig, newSituation.origDests[moveSelected - 1].dest];
-              } else {
-                newConfig.lastMove = null;
-              }
-
-              const colourToPlay = plyToColourToPlay(moveSelected);
-              newConfig['turnColor'] = colourToPlay;
-
-              // Remove 'check' if its in the current state until we
-              // receive an event telling us it is check as we scroll
-              // through the move history
-              newConfig.check = false;
-
-              gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId, moveSelected);
+            if (moveSelected > 0) {
+              newConfig.lastMove = [newSituation.origDests[moveSelected -1 ].orig, newSituation.origDests[moveSelected - 1].dest];
             } else {
-              gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId);
+              newConfig.lastMove = null;
             }
 
-            chessGround.set(newConfig);
-            situationObservable.set(newSituation);
-          });
+            const colourToPlay = plyToColourToPlay(moveSelected);
+            newConfig['turnColor'] = colourToPlay;
 
-      });
+            // Remove 'check' if its in the current state until we
+            // receive an event telling us it is check as we scroll
+            // through the move history
+            newConfig.check = false;
+
+            gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId, moveSelected);
+          } else {
+            gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId);
+          }
+
+          chessGround.set(newConfig);
+        });
 
     },
     onremove: function(vnode) {
 
-      // Ugh, I don't understand the implications (thread wise) of the fact that
-      // the observable construction might be async after the page has been
-      // navigated away from.
       if(this.removeWatches) {
         this.removeWatches();
       }
 
       PubSub.unsubscribe(this.validMovesListener);
       chessGround.destroy();
-
-      // Set the game history area to 'live mode' for the next game that is
-      // opened
-      gameHistory.goToLiveMode();
-
-      actionButtons.hideMoveConfirmation();
     }
   }
 

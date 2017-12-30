@@ -158,21 +158,20 @@ module.exports = (gameObservable, myIdent) => {
   function scrollToBottomIfLive() {
     if (moveNumberSelected === "live") {
       var moveListElement = document.getElementsByClassName("ssb-chess-pgn-moves-list")[0];
-      moveListElement.scrollTop = moveListElement.scrollHeight;
+      if (moveListElement) {
+        moveListElement.scrollTop = moveListElement.scrollHeight;
+      }
     }
   }
 
-  function watchForGameUpdates() {
-    gameObservable(situation => {
+  function updateModelOnGameUpdates() {
+    watch(gameObservable, (situation) => {
       if (situation) {
         pgnMoves = situation.pgnMoves;
         status = situation.status;
         players = situation.players;
 
         latestMove = situation.ply;
-
-        scrollToBottomIfLive();
-        m.redraw();
       }
     });
   }
@@ -182,11 +181,21 @@ module.exports = (gameObservable, myIdent) => {
     moveSelectedObservable.set(moveNumberSelected);
   }
 
+  function scrollToBottomOnGameUpdates() {
+    watch(gameObservable, (situation) => {
+      scrollToBottomIfLive();
+      m.redraw();
+    })
+  }
+
   return {
     view: renderHistory,
+    oninit: () => {
+      updateModelOnGameUpdates();
+    },
     oncreate: () => {
-      watchForGameUpdates();
       handleArrowKeys();
+      scrollToBottomOnGameUpdates();
     },
     getMoveSelectedObservable: getMoveSelectedObservable,
     goToLiveMode: goToLiveMode
