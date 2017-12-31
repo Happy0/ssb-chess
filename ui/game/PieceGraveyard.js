@@ -73,7 +73,7 @@ module.exports = (
       }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor))
     },
     oncreate: () => {
-      watchAll([chessGroundObservable, situationObservable, moveSelectedObservable],
+      this.removeWatches = watchAll([chessGroundObservable, situationObservable, moveSelectedObservable],
          (chessground, situation, move) => {
         if (situation) {
           setPlayerColours(situation);
@@ -82,8 +82,14 @@ module.exports = (
         if (chessground) {
           var pieces = chessground.state.pieces;
           materialDiff = getMaterialDiff(pieces);
+          m.redraw();
         }
       });
+    },
+    onremove: () => {
+      if (this.removeWatches) {
+        this.removeWatches();
+      }
     }
 
   }
