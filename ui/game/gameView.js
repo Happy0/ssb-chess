@@ -8,6 +8,7 @@ var ActionButtons = require('./gameActions');
 var Value = require("mutant/value");
 var watchAll = require("mutant/watch-all");
 var computed = require("mutant/computed");
+var Howl = require("howler").Howl;
 
 var EmbeddedChat = require("ssb-embedded-chat");
 
@@ -31,6 +32,16 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
   var pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, false);
   var pieceGraveMe = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, true);
+
+  var rootDir = __dirname.replace('/ui/game','') + "/";
+
+  var moveSound = new Howl({
+    src: [rootDir + 'assets/sounds/Move.mp3']
+  });
+
+  var captureSound = new Howl({
+    src: [rootDir + 'assets/sounds/Capture.mp3']
+  });
 
   function plyToColourToPlay(ply) {
     return ply % 2 === 0 ? "white" : "black";
@@ -198,6 +209,23 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     return chat.getChatboxElement();
   }
 
+  function playMoveSound(situation, newConfig, chessGround, moveSelected) {
+    if (newConfig.fen !== chessGround.state.fen && moveSelected !== 0) {
+
+      var pgnMove =
+        moveSelected === "live" ? situation.pgnMoves[
+          situation.pgnMoves.length - 1 ] : situation.pgnMoves[moveSelected - 1];
+
+      // Hacky way of determining if it's a capture move.
+      if (pgnMove.indexOf('x') !== -1) {
+        captureSound.play();
+      } else {
+        moveSound.play();
+      }
+
+    }
+  }
+
   return {
 
     view: function(ctrl) {
@@ -257,6 +285,10 @@ module.exports = (gameCtrl, situationObservable, settings) => {
             gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId, moveSelected);
           } else {
             gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId);
+          }
+
+          if (settings.getPlaySounds()) {
+            playMoveSound(newSituation, newConfig, chessGround, moveSelected);
           }
 
           chessGround.set(newConfig);

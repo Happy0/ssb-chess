@@ -32,8 +32,26 @@ module.exports = () => {
     }
   }
 
+  function setPlaySounds(choice) {
+    var chessSettings = getObject("ssb-chess");
+    chessSettings.playSounds = choice;
+    storeSettings(chessSettings);
+  }
+
+  function getPlaySounds() {
+    var chessSettings = getObject("ssb-chess");
+
+    if (chessSettings.playSounds === undefined || chessSettings.playSounds === null) {
+      return true;
+    } else {
+      return chessSettings.playSounds;
+    }
+  }
+
   return {
     setMoveConfirmation: setMoveConfirmation,
-    getMoveConfirmation: getMoveConfirmation
+    getMoveConfirmation: getMoveConfirmation,
+    getPlaySounds: getPlaySounds,
+    setPlaySounds: setPlaySounds
   }
 }

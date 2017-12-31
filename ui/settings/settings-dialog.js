@@ -48,6 +48,7 @@ module.exports = (settingsCtrl, onCloseDialog) => {
         labelCheckbox('Move confirmation',
          settingsCtrl.getMoveConfirmation,
           (selected) => settingsCtrl.setMoveConfirmation(selected)),
+        labelCheckbox('Game sounds', settingsCtrl.getPlaySounds, settingsCtrl.setPlaySounds),
         closeButton()
       ])
     },
