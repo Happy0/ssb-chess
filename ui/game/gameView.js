@@ -94,7 +94,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       if (value.moveConfirmed.confirmed) {
         onConfirm();
       } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
-        var oldConfig = situationToChessgroundConfig(situation);
+        var oldConfig = situationToChessgroundConfig(situation, "live");
 
         if (value.moveSelected === "live") {
           chessGround.set(oldConfig);
