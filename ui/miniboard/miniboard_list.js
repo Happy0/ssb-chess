@@ -11,14 +11,17 @@ var PubSub = require("pubsub-js");
  */
 module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
   var gameSummaries = [];
+  var gameSummariesObs = null;
 
   this.ident = ident;
 
   function keepMiniboardsUpdated() {
-    getGameSummariesFunc()(summaries => {
+    gameSummariesObs = getGameSummariesFunc()(summaries => {
       gameSummaries = summaries;
       setTimeout(m.redraw)
     });
+
+    console.log(this.test);
   }
 
   return {
@@ -30,6 +33,12 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
     },
     oncreate: function(e) {
       keepMiniboardsUpdated();
+    },
+    onremove: function(e) {
+      if (gameSummariesObs) {
+        console.log("test");
+        gameSummariesObs();
+      }
     }
   }
 }

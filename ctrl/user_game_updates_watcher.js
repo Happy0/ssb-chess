@@ -14,6 +14,7 @@ module.exports = (sbot) => {
     var chessMessagesReferencingPlayer = chessMessagesForPlayerGames(playerId, Date.now());
 
     return MutantPullReduce(chessMessagesReferencingPlayer, (state, next) => {
+      console.log(next);
       return next;
     }, {
       nextTick: true,

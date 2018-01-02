@@ -50,9 +50,18 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     var challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
+    var gameUpdates = myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
 
-    return computed([observable], a => a, {comparer: compareGameSummaryLists});
+    return computed(
+      [observable],
+      a => a,
+      {
+        comparer: compareGameSummaryLists,
+        onUnlisten: () => {
+          gameUpdates();
+          observable();
+        }
+      });
   }
 
   function pendingChallengesReceived() {
@@ -60,9 +69,18 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
+    var gameUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
 
-    return computed([observable], a => a, {comparer: compareGameSummaryLists});
+    return computed(
+      [observable],
+      a => a,
+      {
+        comparer: compareGameSummaryLists,
+        onUnlisten: () => {
+          gameUpdates();
+          observable();
+        }
+      });
   }
 
   function getMyGamesInProgress() {
@@ -88,7 +106,11 @@ module.exports = (sbot, myIdent, injectedApi) => {
       [observable],
       a => a.sort(compareGameTimestamps),
       {
-        comparer: compareGameSummaryLists
+        comparer: compareGameSummaryLists,
+        onUnlisten: () => {
+          observable();
+          playerGameUpdates();
+        }
       }
     );
   }
@@ -158,6 +180,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
        a => a.sort(compareGameTimestamps),
        {
          comparer: compareGameSummaryLists,
+         onUnlisten: () => {
+           gamesWhereMyMove();
+           playerGameUpdates();
+          },
          defaultValue: []
        }
      );

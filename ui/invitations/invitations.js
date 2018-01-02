@@ -4,6 +4,9 @@ const ChallengeComponent = require('../challenge/challenge_control');
 
 module.exports = (gameCtrl) => {
 
+  var invitesReceivedObs = null;
+  var invitesSentObs = null;
+
   var invitationsReceived = [];
   var invitationsSent = [];
 
@@ -60,13 +63,13 @@ module.exports = (gameCtrl) => {
     var invitesReceived = gameCtrl.pendingChallengesReceived();
     var invitesSent = gameCtrl.pendingChallengesSent();
 
-    invitesReceived(received => {
+    invitesReceivedObs = invitesReceived(received => {
       invitesToSituations(received)
         .then(inviteSituations => invitationsReceived = inviteSituations)
         .then(m.redraw);
     })
 
-    invitesSent(sent => {
+    invitesReceivedObs = invitesSent(sent => {
       invitesToSituations(sent)
         .then(inviteSituations => invitationsSent = inviteSituations)
         .then(m.redraw);
@@ -111,6 +114,15 @@ module.exports = (gameCtrl) => {
     },
     onremove: function(e) {
       PubSub.unsubscribe(this.miniboardUpdatesListener);
+
+      if (invitesReceivedObs) {
+        invitesReceivedObs();
+      }
+
+      if (invitesSentObs) {
+        invitesSentObs();
+      }
+
     }
   }
 }
