@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
   "main": "inject.js",
   "dependencies": {
@@ -10,7 +10,7 @@
     "howler": "^2.0.7",
     "hyperscript": "2.0.2",
     "lodash": "^4.17.4",
-    "mithril": "1.1.1",
+    "mithril": "1.1.6",
     "mutant": "3.19.0",
     "mutant-pull-reduce": "^1.1.0",
     "neodoc": "1.4.0",
