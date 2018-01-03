@@ -11,7 +11,7 @@ var Value = require('mutant/value')
 const onceTrue = require("mutant/once-true")
 
 var SocialCtrl = require("./social");
-const MutantUtils = require("./mutant_utils")();
+const MutantUtils = require("../utils/mutant_utils")();
 const ChessMsgUtils = require ("../ssb_model/chess_msg_utils")();
 
 const getFilteredBackLinks = require("./backlinks_obs")();

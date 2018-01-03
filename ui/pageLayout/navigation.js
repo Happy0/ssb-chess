@@ -8,6 +8,8 @@ module.exports = (gameCtrl, settings) => {
     name: "Games",
     link: "/my_games",
     count: 0,
+    countUpdateFn: gameCtrl.getMyGamesInProgress,
+    countOnHoverOnly: true,
     countHoverText: () => `You have ${gamesInProgress.count} games in progress.`
   };
   const gamesMyMove = {
