@@ -36,7 +36,6 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
     },
     onremove: function(e) {
       if (gameSummariesObs) {
-        console.log("test");
         gameSummariesObs();
       }
     }

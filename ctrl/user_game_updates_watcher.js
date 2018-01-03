@@ -71,6 +71,7 @@ module.exports = (sbot) => {
   }
 
   function isChessMessage(msg) {
+
     if (!msg.value || !msg.value.content) {
       return false;
     }

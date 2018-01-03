@@ -69,7 +69,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    var gameUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
+    var gameUpdates =
+      myGameUpdates(
+        update => gameDb.pendingChallengesReceived(myIdent
+      ).then(observable.set))
 
     return computed(
       [observable],
@@ -100,7 +103,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
     gamesAgreedToPlaySummaries(playerId).then(observable.set);
 
     var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
-    playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
+    var updatesListener = playerGameUpdates(
+      newUpdate =>
+       gamesAgreedToPlaySummaries(playerId).then(observable.set)
+     )
 
     return computed(
       [observable],
@@ -110,6 +116,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
         onUnlisten: () => {
           observable();
           playerGameUpdates();
+          updatesListener();
         }
       }
     );
@@ -129,7 +136,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return computed(
       [observable],
       a => a.sort(compareGameTimestamps),
-      {comparer: compareGameSummaryLists}
+      {
+        comparer: compareGameSummaryLists,
+        onUnlisten: () => observable()
+      }
     );
   }
 
@@ -158,32 +168,22 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesWhereMyMove() {
-    var gamesWhereMyMove = Value([]);
 
     var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+    var myGamesInProgress = getMyGamesInProgress();
 
-    getMyGamesInProgress()(
-      myGamesSummaries => {
-        var myMove = filterGamesMyMove(myGamesSummaries);
-        gamesWhereMyMove.set(myMove);
+    var gamesWhereMyMove = computed(
+      [
+        myGamesInProgress,
+        playerGameUpdates
+      ], (myGamesSummaries, update) => {
+        return filterGamesMyMove(myGamesSummaries);
     });
-
-    playerGameUpdates( update => {
-        getMyGamesInProgress()(
-          myGamesSummaries => {
-            var myMove = filterGamesMyMove(myGamesSummaries);
-            gamesWhereMyMove.set(myMove);
-        })
-    })
 
     return computed([gamesWhereMyMove],
        a => a.sort(compareGameTimestamps),
        {
          comparer: compareGameSummaryLists,
-         onUnlisten: () => {
-           gamesWhereMyMove();
-           playerGameUpdates();
-          },
          defaultValue: []
        }
      );
