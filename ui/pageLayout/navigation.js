@@ -91,7 +91,7 @@ module.exports = (gameCtrl, settings) => {
       if (navItem.countUpdateFn) {
 
         navItem.countUpdateFn()(items => {
-          var numItems = items.length;
+          var numItems = items ? items.length : 0;
           navItem.count = numItems;
           m.redraw();
         })

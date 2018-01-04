@@ -7,6 +7,8 @@ var computed = require('mutant/computed');
 
 module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
 
+  var watchesToClear = [];
+
   var observing = true;
 
   var moveConfirmationObservable = makeMoveObservationListener();
@@ -85,9 +87,14 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       );
     },
     oninit: function(vNode) {
-      watch(situationObservable,
+      var w = watch(situationObservable,
          (situation) => observing = isObserving(situation)
       );
+
+      watchesToClear.push(w);
+    },
+    onremove: () => {
+      watchesToClear.forEach(w => w());
     },
     showMoveConfirmation: function() {
       moveConfirmationObservable.set({

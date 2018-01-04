@@ -17,7 +17,7 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
 
   function keepMiniboardsUpdated() {
     gameSummariesObs = getGameSummariesFunc()(summaries => {
-      gameSummaries = summaries;
+      gameSummaries = summaries ? summaries : [];
       setTimeout(m.redraw)
     });
   }

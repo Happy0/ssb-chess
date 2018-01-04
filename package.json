@@ -11,7 +11,7 @@
     "hyperscript": "2.0.2",
     "lodash": "^4.17.4",
     "mithril": "1.1.6",
-    "mutant": "3.19.0",
+    "mutant": "3.22.1",
     "mutant-pull-reduce": "^1.1.0",
     "neodoc": "1.4.0",
     "patchcore": "^1.23.0",

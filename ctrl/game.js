@@ -53,6 +53,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return computed([originalChallenges, myGameUpdates], (original, newUpdate) => {
       if (newUpdate) {
         return MutantUtils.promiseToMutant(gameDb.pendingChallengesSent(myIdent));
+      } else if (!original) {
+        return [];
       } else {
         return original;
       }
@@ -66,7 +68,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return computed([originalChallenges, myGameUpdates], (original, newUpdate) => {
       if (newUpdate) {
         return MutantUtils.promiseToMutant(gameDb.pendingChallengesReceived(myIdent));
-      } else {
+      } else if (!original) {
+        return [];
+      }
+      else {
         return original;
       }
     }, {
@@ -103,6 +108,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
               summaries => summaries.sort(compareGameTimestamps)
             )
           );
+        } else if (!original) {
+          return [];
         } else {
           return original;
         }
@@ -132,9 +139,14 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function compareGameSummaryLists(list1, list2) {
-    if (!list1 || !list2) {
-      return false;
-    }
+    // temporary until i work out what's going on with the mutant comparer with
+    // a nested observable
+    return false;
+
+    console.log("list1")
+    console.log(list1)
+    console.log("list2")
+    console.log(list2)
 
     list1 = list1 ? list1 : [];
     list2 = list2 ? list2 : [];
@@ -157,10 +169,11 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   function getGamesWhereMyMove() {
     var playerGameUpdates = getPlayerGameUpdatesObservable(myIdent);
+    var gamesInProgress = getMyGamesInProgress();
 
     return computed(
-      [getMyGamesInProgress(), playerGameUpdates], (myGames, playerGameUpdates) => {
-        var myMove = filterGamesMyMove(myGames);
+      [gamesInProgress, playerGameUpdates], (myGames, playerGameUpdates) => {
+        var myMove = myGames ? filterGamesMyMove(myGames) : [];
         return myMove.sort(compareGameTimestamps);
       }, {
         comparer: compareGameSummaryLists,
