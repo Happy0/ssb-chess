@@ -55,8 +55,13 @@ module.exports = (gameCtrl) => {
   }
 
   function invitesToSituations(invites) {
-    return Promise.all(
-      invites.map(invite => gameCtrl.getSituation(invite.gameId)));
+    if (!invites) {
+      return Promise.resolve([]);
+    } else {
+      return Promise.all(
+        invites.map(invite => gameCtrl.getSituation(invite.gameId)
+      ));  
+    }
   }
 
   function keepInvitesUpdated() {
