@@ -93,7 +93,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     var unlistenUpdates = playerGameUpdates(
       newUpdate => {
-        var type = newUpdate.value.content.type;
+        var type = newUpdate.value ? newUpdate.value.content.type : null;
         if (type === "chess_move") {
           gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
             summary => {
@@ -105,7 +105,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
               }
             }
           )
-        } else if (type === "chess_invite_accept" || type === "chess_game_end") {
+        } else {
           gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)))
         }
       }
