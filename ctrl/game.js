@@ -92,50 +92,73 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var playerGameUpdates = getGameUpdatesObservable(playerId);
 
     var unlistenUpdates = playerGameUpdates(
-      newUpdate => {
-        var type = newUpdate.value ? newUpdate.value.content.type : null;
-        if (type === "chess_move") {
-          gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
-            summary => {
-              var gameId = summary.gameId;
-              var idx = observable().findIndex(summary => summary.gameId === gameId);
-
-              if (idx !== -1) {
-                observable.put(idx, summary);
-              }
-            }
-          )
-        } else {
-          gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)))
-        }
-      }
+      newUpdate => updateObservableWithGameChange(
+        () => gamesAgreedToPlaySummaries(playerId),
+        newUpdate,
+        observable)
     )
 
     return computed(
       [observable],
-      a => a.sort(compareGameTimestamps), {
+      a => a, {
         onUnlisten: unlistenUpdates
       }
     );
   }
 
   function getFriendsObservableGames(start, end) {
-    var observable = Value([]);
+    var observable = Array([]);
 
     var start = start ? start : 0;
     var end = end ? end : 20
 
     // todo: make this sorted / update the observable
-    gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
-      gameIds.map(gameSSBDao.getSmallGameSummary)
-    )).then(observable.set)
+    gameDb.getObservableGames(myIdent, start, end).then(
+      gameIds => Promise.all(
+        gameIds.map(gameSSBDao.getSmallGameSummary)
+    )).then(a => a.sort(compareGameTimestamps)).then(observable.set)
+
+    var observingUpdates = userGamesUpdateWatcher.latestGameMessageForOtherPlayersObs(myIdent);
+
+    var unlistenObservingUpdates = observingUpdates(
+      newUpdate => updateObservableWithGameChange(
+        () => gameDb.getObservableGames(myIdent, start, end).then(
+          gameIds => Promise.all(
+            gameIds.map(gameSSBDao.getSmallGameSummary)
+        )),
+        newUpdate,
+        observable)
+    )
 
     return computed(
       [observable],
       a => a.sort(compareGameTimestamps), {
-        comparer: compareGameSummaryLists
+        comparer: compareGameSummaryLists,
+        onUnlisten: unlistenObservingUpdates
       }
     );
+  }
+
+  function updateObservableWithGameChange(summaryListPromiseFn, newUpdate, observable) {
+    var type = newUpdate.value ? newUpdate.value.content.type : null;
+    if (type === "chess_move") {
+      gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
+        summary => {
+          var gameId = summary.gameId;
+          var idx = observable().findIndex(summary => summary.gameId === gameId);
+
+          if (idx !== -1) {
+            observable.put(idx, summary);
+          } else {
+            summaryListPromiseFn().then(g =>
+              observable.set(g.sort(compareGameTimestamps)
+            ))
+          }
+        }
+      )
+    } else {
+      summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)))
+    }
   }
 
   function compareGameSummaryLists(list1, list2) {
