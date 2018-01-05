@@ -56,6 +56,11 @@ module.exports = (attachToElement, sbot) => {
     var gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
     var observableGamesObs = gameCtrl.getFriendsObservableGames();
 
+    // Hack: keep observables loaded with the latest value.
+    gamesInProgressObs(e => e);
+    gamesMyMoveObs(e => e);
+    observableGamesObs(t => t);
+
     m.route(mainBody, "/my_games", {
       "/my_games": MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl, gamesMyMoveObs , gameCtrl.getMyIdent()),

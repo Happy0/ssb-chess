@@ -66,8 +66,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
 
     return computed(
-      [observable], a => a,
-      {
+      [observable], a => a, {
         comparer: compareGameSummaryLists,
         onUnlisten: unlistenUpdates
       });
@@ -95,8 +94,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     return computed(
       [observable],
-      a => a.sort(compareGameTimestamps),
-      {
+      a => a.sort(compareGameTimestamps), {
         comparer: compareGameSummaryLists,
         onUnlisten: unlistenUpdates
       }
@@ -106,8 +104,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
   function getFriendsObservableGames(start, end) {
     var observable = Value([]);
 
-    var start = start? start : 0;
-    var end = end? end : 20
+    var start = start ? start : 0;
+    var end = end ? end : 20
 
     // todo: make this sorted / update the observable
     gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
@@ -116,8 +114,9 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     return computed(
       [observable],
-      a => a.sort(compareGameTimestamps),
-      {comparer: compareGameSummaryLists}
+      a => a.sort(compareGameTimestamps), {
+        comparer: compareGameSummaryLists
+      }
     );
   }
 
@@ -126,8 +125,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
       return false;
     }
 
-    list1 = list1 ? list1: [];
-    list2 = list2? list2: [];
+    list1 = list1 ? list1 : [];
+    list2 = list2 ? list2 : [];
 
     var list1ids = list1.map(a => a.gameId);
     var list2ids = list2.map(a => a.gameId);
@@ -146,35 +145,18 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesWhereMyMove() {
-    var gamesWhereMyMove = Value([]);
 
     var playerGameUpdates = getGameUpdatesObservable(myIdent);
+    var myGamesInProgress = getMyGamesInProgress();
 
-  var w1 = getMyGamesInProgress()(
-    myGamesSummaries => {
-      var myMove = filterGamesMyMove(myGamesSummaries);
-      gamesWhereMyMove.set(myMove);
-  });
-
-  var w2 = playerGameUpdates( update => {
-      getMyGamesInProgress()(
-        myGamesSummaries => {
-          var myMove = filterGamesMyMove(myGamesSummaries);
-          gamesWhereMyMove.set(myMove);
-      })
-  })
-
-  return computed([gamesWhereMyMove],
-     a => a.sort(compareGameTimestamps),
-     {
-       comparer: compareGameSummaryLists,
-       defaultValue: [],
-       onUnlisten: () => {
-         w1();
-         w2();
-       }
-     }
-   );
+    return computed([myGamesInProgress, playerGameUpdates],
+      (games, update) => {
+        var gamesInProgress = getMyGamesInProgress();
+        return computed(
+          [gamesInProgress],
+           games => filterGamesMyMove(games).sort(compareGameTimestamps))
+      }
+    );
   }
 
   function getSituation(gameId) {
