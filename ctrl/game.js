@@ -112,7 +112,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
     var start = start ? start : 0;
     var end = end ? end : 20
 
-    // todo: make this sorted / update the observable
     gameDb.getObservableGames(myIdent, start, end).then(
       gameIds => Promise.all(
         gameIds.map(gameSSBDao.getSmallGameSummary)
