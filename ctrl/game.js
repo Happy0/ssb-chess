@@ -14,6 +14,7 @@ const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
 const Value = require('mutant/value');
+const Array = require('mutant/array');
 const computed = require('mutant/computed');
 
 const _ = require('lodash');
@@ -85,17 +86,34 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesInProgress(playerId) {
-    var observable = Value([]);
-    gamesAgreedToPlaySummaries(playerId).then(observable.set);
+    var observable = Array([]);
+    gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)));
 
     var playerGameUpdates = getGameUpdatesObservable(playerId);
 
-    var unlistenUpdates = playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
+    var unlistenUpdates = playerGameUpdates(
+      newUpdate => {
+        var type = newUpdate.value.content.type;
+        if (type === "chess_move") {
+          gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
+            summary => {
+              var gameId = summary.gameId;
+              var idx = observable().findIndex(summary => summary.gameId === gameId);
+
+              if (idx !== -1) {
+                observable.put(idx, summary);
+              }
+            }
+          )
+        } else if (type === "chess_invite_accept" || type === "chess_game_end") {
+          gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)))
+        }
+      }
+    )
 
     return computed(
       [observable],
       a => a.sort(compareGameTimestamps), {
-        comparer: compareGameSummaryLists,
         onUnlisten: unlistenUpdates
       }
     );
