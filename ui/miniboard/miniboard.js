@@ -84,6 +84,8 @@ module.exports = (gameCtrl, summary, identPerspective) => {
       // can attach chessground to our chessground container element that was
       // prepared for it during the 'view' lifecycle method.
 
+      var config = summaryToChessgroundConfig(summary);
+
       var dom = vNode.dom;
       var chessGroundParent = dom.querySelector(".ssb-chessground-container");
       chessground = Chessground(chessGroundParent, config);
