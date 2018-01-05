@@ -6,6 +6,8 @@ module.exports = (gameCtrl, summary, identPerspective) => {
 
   var chessground = null;
 
+  var observables = [];
+
   // An observer might not be in the 'players' list so we need a default
   // perspective of white for them.
   const playerColour = (summary.players[identPerspective] &&
@@ -90,13 +92,17 @@ module.exports = (gameCtrl, summary, identPerspective) => {
 
       // Listen for game updates
       var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
-      gameSummaryObservable(newSummary => {
+      var obs = gameSummaryObservable(newSummary => {
         var newConfig = summaryToChessgroundConfig(newSummary);
         chessground.set(newConfig);
       });
+
+      observables.push(obs);
     },
     onremove: function() {
       chessground.destroy();
+      observables.forEach(w => w());
+      observables = [];
     }
   }
 

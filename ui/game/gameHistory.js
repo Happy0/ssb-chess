@@ -9,6 +9,8 @@ const PlayerModelUtils = require("../../ctrl/player_model_utils")();
 
 module.exports = (gameObservable, myIdent) => {
 
+  var watchesToClear = [];
+
   var moveNumberSelected = "live";
   const moveSelectedObservable = Value(moveNumberSelected);
 
@@ -167,7 +169,7 @@ module.exports = (gameObservable, myIdent) => {
   }
 
   function updateModelOnGameUpdates() {
-    watch(gameObservable, (situation) => {
+    var w = watch(gameObservable, (situation) => {
       if (situation) {
         pgnMoves = situation.pgnMoves;
         status = situation.status;
@@ -176,6 +178,8 @@ module.exports = (gameObservable, myIdent) => {
         latestMove = situation.ply;
       }
     });
+
+    watchesToClear.push(w);
   }
 
   function goToLiveMode() {
@@ -184,10 +188,12 @@ module.exports = (gameObservable, myIdent) => {
   }
 
   function scrollToBottomOnGameUpdates() {
-    watch(gameObservable, (situation) => {
+    var w = watch(gameObservable, (situation) => {
       scrollToBottomIfLive();
       m.redraw();
-    })
+    });
+
+    watchesToClear.push(w);
   }
 
   return {
@@ -198,6 +204,10 @@ module.exports = (gameObservable, myIdent) => {
     oncreate: () => {
       handleArrowKeys();
       scrollToBottomOnGameUpdates();
+    },
+    onremove: () => {
+      watchesToClear.forEach(w => w());
+      watchesToClear = [];
     },
     getMoveSelectedObservable: getMoveSelectedObservable,
     goToLiveMode: goToLiveMode

@@ -7,6 +7,8 @@ module.exports = (gameCtrl) => {
   var invitationsReceived = [];
   var invitationsSent = [];
 
+  var watches = [];
+
   var challengeComponent = ChallengeComponent(gameCtrl);
 
   function renderAcceptOrRejectControls(gameId, inviteSent) {
@@ -60,18 +62,20 @@ module.exports = (gameCtrl) => {
     var invitesReceived = gameCtrl.pendingChallengesReceived();
     var invitesSent = gameCtrl.pendingChallengesSent();
 
-    invitesReceived(received => {
+    var w1 = invitesReceived(received => {
       invitesToSituations(received)
         .then(inviteSituations => invitationsReceived = inviteSituations)
         .then(m.redraw);
     })
 
-    invitesSent(sent => {
+    var w2 = invitesSent(sent => {
       invitesToSituations(sent)
         .then(inviteSituations => invitationsSent = inviteSituations)
         .then(m.redraw);
     })
 
+    watches.push(w1);
+    watches.push(w2);
   }
 
   function renderMiniboards(invites, sent, title) {
@@ -111,6 +115,8 @@ module.exports = (gameCtrl) => {
     },
     onremove: function(e) {
       PubSub.unsubscribe(this.miniboardUpdatesListener);
+      watches.forEach(w => w());
+      watches = [];
     }
   }
 }

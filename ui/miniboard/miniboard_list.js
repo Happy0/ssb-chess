@@ -4,18 +4,26 @@ var Miniboard = require('./miniboard');
 
 var PubSub = require("pubsub-js");
 
-/*
- * GameSummariesFunc is a function that takes no arguments, and when invoked,
- * returns an observable list of game summaries that should be rendered into
- * a list of miniboards that update as moves are made.
+var watch = require("mutant/watch");
+
+/**
+ * Takes an observable list of game summaries (non-observable inner objects)
+ * and renders them into a page of miniboards.
+ * Those miniboards create an observable to change the board when a move is
+ * made.
+ *
+ * The list of games is updated if the gameSummaryListObs fires (e.g. if a
+ * game ends or begins on a page of games a user is playing.)
  */
-module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
+module.exports = (gameCtrl, gameSummaryListObs, ident) => {
   var gameSummaries = [];
 
   this.ident = ident;
 
+  var unlistenUpdates = null;
+
   function keepMiniboardsUpdated() {
-    getGameSummariesFunc()(summaries => {
+    unlistenUpdates = watch(gameSummaryListObs, summaries => {
       gameSummaries = summaries;
       setTimeout(m.redraw)
     });
@@ -30,6 +38,9 @@ module.exports = (gameCtrl, getGameSummariesFunc, ident) => {
     },
     oncreate: function(e) {
       keepMiniboardsUpdated();
+    },
+    onremove: () => {
+      unlistenUpdates();
     }
   }
 }
