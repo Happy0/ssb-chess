@@ -14,6 +14,7 @@ const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
 const Value = require('mutant/value');
+const Array = require('mutant/array');
 const computed = require('mutant/computed');
 
 const _ = require('lodash');
@@ -50,9 +51,12 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     var challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
+    var unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
 
-    return computed([observable], a => a, {comparer: compareGameSummaryLists});
+    return computed([observable], a => a, {
+      comparer: compareGameSummaryLists,
+      onUnlisten: unlistenUpdates
+    });
   }
 
   function pendingChallengesReceived() {
@@ -60,9 +64,13 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
+    var unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
 
-    return computed([observable], a => a, {comparer: compareGameSummaryLists});
+    return computed(
+      [observable], a => a, {
+        comparer: compareGameSummaryLists,
+        onUnlisten: unlistenUpdates
+      });
   }
 
   function getMyGamesInProgress() {
@@ -78,37 +86,78 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesInProgress(playerId) {
-    var observable = Value([]);
-    gamesAgreedToPlaySummaries(playerId).then(observable.set);
+    var observable = Array([]);
+    gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)));
 
-    var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(playerId);
-    playerGameUpdates(newUpdate => gamesAgreedToPlaySummaries(playerId).then(observable.set))
+    var playerGameUpdates = getGameUpdatesObservable(playerId);
+
+    var unlistenUpdates = playerGameUpdates(
+      newUpdate => updateObservableWithGameChange(
+        () => gamesAgreedToPlaySummaries(playerId),
+        newUpdate,
+        observable)
+    )
 
     return computed(
       [observable],
-      a => a.sort(compareGameTimestamps),
-      {
-        comparer: compareGameSummaryLists
+      a => a, {
+        onUnlisten: unlistenUpdates
       }
     );
   }
 
   function getFriendsObservableGames(start, end) {
-    var observable = Value([]);
+    var observable = Array([]);
 
-    var start = start? start : 0;
-    var end = end? end : 20
+    var start = start ? start : 0;
+    var end = end ? end : 20
 
-    // todo: make this sorted / update the observable
-    gameDb.getObservableGames(myIdent, start, end).then(gameIds => Promise.all(
-      gameIds.map(gameSSBDao.getSmallGameSummary)
-    )).then(observable.set)
+    gameDb.getObservableGames(myIdent, start, end).then(
+      gameIds => Promise.all(
+        gameIds.map(gameSSBDao.getSmallGameSummary)
+    )).then(a => a.sort(compareGameTimestamps)).then(observable.set)
+
+    var observingUpdates = userGamesUpdateWatcher.latestGameMessageForOtherPlayersObs(myIdent);
+
+    var unlistenObservingUpdates = observingUpdates(
+      newUpdate => updateObservableWithGameChange(
+        () => gameDb.getObservableGames(myIdent, start, end).then(
+          gameIds => Promise.all(
+            gameIds.map(gameSSBDao.getSmallGameSummary)
+        )),
+        newUpdate,
+        observable)
+    )
 
     return computed(
       [observable],
-      a => a.sort(compareGameTimestamps),
-      {comparer: compareGameSummaryLists}
+      a => a.sort(compareGameTimestamps), {
+        comparer: compareGameSummaryLists,
+        onUnlisten: unlistenObservingUpdates
+      }
     );
+  }
+
+  function updateObservableWithGameChange(summaryListPromiseFn, newUpdate, observable) {
+    var type = newUpdate.value ? newUpdate.value.content.type : null;
+    if (type === "chess_move") {
+      gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
+        summary => {
+          var gameId = summary.gameId;
+          var idx = observable().findIndex(summary => summary.gameId === gameId);
+
+          if (idx !== -1) {
+            observable.put(idx, summary);
+          } else {
+            summaryListPromiseFn().then(g =>
+              observable.set(g.sort(compareGameTimestamps)
+            ))
+          }
+        }
+      )
+    } else {
+      summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)))
+    }
   }
 
   function compareGameSummaryLists(list1, list2) {
@@ -116,8 +165,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
       return false;
     }
 
-    list1 = list1 ? list1: [];
-    list2 = list2? list2: [];
+    list1 = list1 ? list1 : [];
+    list2 = list2 ? list2 : [];
 
     var list1ids = list1.map(a => a.gameId);
     var list2ids = list2.map(a => a.gameId);
@@ -136,31 +185,18 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesWhereMyMove() {
-    var gamesWhereMyMove = Value([]);
 
-    var playerGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+    var playerGameUpdates = getGameUpdatesObservable(myIdent);
+    var myGamesInProgress = getMyGamesInProgress();
 
-    getMyGamesInProgress()(
-      myGamesSummaries => {
-        var myMove = filterGamesMyMove(myGamesSummaries);
-        gamesWhereMyMove.set(myMove);
-    });
-
-    playerGameUpdates( update => {
-        getMyGamesInProgress()(
-          myGamesSummaries => {
-            var myMove = filterGamesMyMove(myGamesSummaries);
-            gamesWhereMyMove.set(myMove);
-        })
-    })
-
-    return computed([gamesWhereMyMove],
-       a => a.sort(compareGameTimestamps),
-       {
-         comparer: compareGameSummaryLists,
-         defaultValue: []
-       }
-     );
+    return computed([myGamesInProgress, playerGameUpdates],
+      (games, update) => {
+        var gamesInProgress = getMyGamesInProgress();
+        return computed(
+          [gamesInProgress],
+           games => filterGamesMyMove(games).sort(compareGameTimestamps))
+      }
+    );
   }
 
   function getSituation(gameId) {
@@ -173,6 +209,14 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   function getSituationSummaryObservable(gameId) {
     return gameSSBDao.getSituationSummaryObservable(gameId);
+  }
+
+  function getGameUpdatesObservable(ident) {
+    if (ident === myIdent) {
+      return myGameUpdates;
+    } else {
+      return userGamesUpdateWatcher.latestGameMessageForPlayerObs(ident);
+    }
   }
 
   return {

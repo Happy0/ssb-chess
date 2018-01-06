@@ -52,9 +52,18 @@ module.exports = (attachToElement, sbot) => {
   }
 
   function appRouter(mainBody, gameCtrl) {
+    var gamesInProgressObs = gameCtrl.getMyGamesInProgress();
+    var gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
+    var observableGamesObs = gameCtrl.getFriendsObservableGames();
+
+    // Hack: keep observables loaded with the latest value.
+    gamesInProgressObs(e => e);
+    gamesMyMoveObs(e => e);
+    observableGamesObs(t => t);
+
     m.route(mainBody, "/my_games", {
-      "/my_games": MiniboardListComponent(gameCtrl, gameCtrl.getMyGamesInProgress, gameCtrl.getMyIdent()),
-      "/games_my_move": MiniboardListComponent(gameCtrl, gameCtrl.getGamesWhereMyMove, gameCtrl.getMyIdent()),
+      "/my_games": MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
+      "/games_my_move": MiniboardListComponent(gameCtrl, gamesMyMoveObs , gameCtrl.getMyIdent()),
       "/games/:gameId": {
         onmatch: function(args, requestedPath) {
           var gameId = atob(args.gameId);
@@ -71,7 +80,7 @@ module.exports = (attachToElement, sbot) => {
         }
       },
       "/invitations": InvitationsComponent(gameCtrl),
-      "/observable": MiniboardListComponent(gameCtrl, gameCtrl.getFriendsObservableGames, gameCtrl.getMyIdent()),
+      "/observable": MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
       "/player/:playerId": PlayerProfileComponent(gameCtrl)
     })
   }

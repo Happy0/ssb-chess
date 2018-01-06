@@ -21,13 +21,48 @@ module.exports = (sbot) => {
     });
   }
 
+  function latestGameMessageForOtherPlayersObs(playerId) {
+    var observingGamesMsgs = chessMessagesForOtherPlayersGames(playerId, Date.now());
+
+    return MutantPullReduce(observingGamesMsgs, (state, next) => {
+      return next;
+    }, {
+      nextTick: true,
+      sync: true
+    });
+  }
+
   function chessMessagesForPlayerGames(playerId, since) {
     var liveFeed = sbot.createFeedStream({
       live: true,
       gt: since
     })
 
-    return pull(liveFeed, msgReferencesPlayerFilter(playerId))
+    return pull(
+      liveFeed,
+      msgMatchesChessInviteMsgFilter(
+        (msg) => inviteRelatesToPlayerGame(playerId, msg)
+      )
+     )
+  }
+
+  function chessMessagesForOtherPlayersGames(playerId, since) {
+    var liveFeed = sbot.createFeedStream({
+      live: true,
+      gt: since
+    })
+
+    return pull(
+      liveFeed,
+      msgMatchesChessInviteMsgFilter(
+        (msg) => !inviteRelatesToPlayerGame(playerId, msg)
+      )
+     )
+  }
+
+  function inviteRelatesToPlayerGame(playerId, msg) {
+    var relatesToPlayer = msg != null && [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
+    return relatesToPlayer;
   }
 
   function getGameInvite(msg, cb) {
@@ -70,6 +105,7 @@ module.exports = (sbot) => {
   }
 
   function isChessMessage(msg) {
+
     if (!msg.value || !msg.value.content) {
       return false;
     }
@@ -83,22 +119,17 @@ module.exports = (sbot) => {
     return players.indexOf(playerId) !== -1;
   }
 
-  function msgReferencesPlayerFilter(playerId) {
+  function msgMatchesChessInviteMsgFilter(chessInviteFilter) {
     return pull(
             pull(
               pull.filter(isChessMessage),
               pull.asyncMap(getGameInvite)
             ),
             pull(
-              pull.filter(msg => {
-              var relatesToPlayer = msg != null && [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
-
-              return relatesToPlayer;
-            }
-
-          ),
-          // See earlier hack ;x.
-          pull.map(msg => msg.originalMsg ? msg.originalMsg : msg))
+              pull.filter(chessInviteFilter),
+              // See earlier hack ;x.
+              pull.map(msg => msg.originalMsg ? msg.originalMsg : msg)
+            )
         )
   }
 
@@ -110,9 +141,21 @@ module.exports = (sbot) => {
    latestGameMessageForPlayerObs : latestGameMessageForPlayerObs,
 
    /**
+    * Watches for incoming updates to a games a player is not playing in and
+    * sets the observable value to the latest chess message.
+    */
+   latestGameMessageForOtherPlayersObs: latestGameMessageForOtherPlayersObs,
+
+   /**
    * A stream of chess game messages (excluding chat messages) for the given
    * user after the given timestamp.
    */
-   chessMessagesForPlayerGames: chessMessagesForPlayerGames
+   chessMessagesForPlayerGames: chessMessagesForPlayerGames,
+
+   /**
+    * A stream of chess game messages for games that the player of the
+    * given ID is not playing in.
+    */
+   chessMessagesForOtherPlayersGames: chessMessagesForOtherPlayersGames
   }
 }
