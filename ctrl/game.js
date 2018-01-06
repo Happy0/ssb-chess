@@ -186,12 +186,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
   function getGamesWhereMyMove() {
 
-    var playerGameUpdates = getGameUpdatesObservable(myIdent);
     var myGamesInProgress = getMyGamesInProgress();
 
-    return computed([myGamesInProgress, playerGameUpdates],
-      (games, update) => {
-        var gamesInProgress = getMyGamesInProgress();
+    return computed([myGamesInProgress],
+      (gamesInProgress) => {
         return computed(
           [gamesInProgress],
            games => filterGamesMyMove(games).sort(compareGameTimestamps))
