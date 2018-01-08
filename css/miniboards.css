@@ -11,9 +11,14 @@
 }
 
 .ssb-chess-miniboard-name {
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-top: 5px;
+}
+
+.ssb-chess-miniboard-time-ago {
+  padding-top: 5px;
+   font-style: italic;
 }
 
 .ssb-chess-miniboard-controls {

@@ -1,12 +1,15 @@
-var m = require("mithril");
+var m = require('mithril');
 var Chessground = require('chessground').Chessground;
 var PlayerModelUtils = require('../../ctrl/player_model_utils')();
+var timeAgo = require('./timeAgo')
 
 module.exports = (gameCtrl, summary, identPerspective) => {
 
   var chessground = null;
-
   var observables = [];
+  var lastActivityTimestamp = summary.lastUpdateTime;
+
+  var timeAgoRedrawTimer = null;
 
   // An observer might not be in the 'players' list so we need a default
   // perspective of white for them.
@@ -34,7 +37,9 @@ module.exports = (gameCtrl, summary, identPerspective) => {
     }, [m('center', {
         class: "ssb-chess-miniboard-name"
       }, renderPlayerName(leftPlayer)),
-
+      m('small', {
+        class: 'ssb-chess-miniboard-time-ago'
+      }, timeAgo(lastActivityTimestamp)()),
       m('center', {
         class: "ssb-chess-miniboard-name"
       }, renderPlayerName(rightPlayer))
@@ -92,12 +97,13 @@ module.exports = (gameCtrl, summary, identPerspective) => {
 
       // Listen for game updates
       var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
-      var obs = gameSummaryObservable(newSummary => {
+      var situationObs = gameSummaryObservable(newSummary => {
         var newConfig = summaryToChessgroundConfig(newSummary);
         chessground.set(newConfig);
+        lastActivityTimestamp = newSummary.lastUpdateTime
       });
 
-      observables.push(obs);
+      observables.push(situationObs);
     },
     onremove: function() {
       chessground.destroy();
