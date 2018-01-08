@@ -99,7 +99,6 @@ Type `chess_game_end`
   "ply": 20,
   "fen": "rnb2rk1/ppp2ppp/3p4/4p1qK/2P1n3/8/P2P1PPP/RNB2BNR w - - 2 11",
   "root": "%HGPn7yS2bjpWZndXtuusOjGXrirIIGu0XS18aY8YoFM=.sha256",
-  "winner": "@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519",
   "orig": "f6",
   "dest": "g5",
   "pgnMove": "Qg5#"
