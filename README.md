@@ -19,7 +19,33 @@ ssb-chess is currently integrated into [patchbay](https://www.github.com/ssbc/pa
 
 *Note*: since this is built on a peer 2 peer protocol, messages may be corrupted or deliberately misleading to cheat. ssb-chess doesn't validate that the client agrees a post is valid yet as it assumes your friends can be trusted.
 
-The documentation below documents the 'content' section of the [scuttlebutt messages](https://ssbc.github.io/secure-scuttlebutt/). The 'author' field is the ID of person who posted the message (made the chess move, posted the chat message, etc.)
+The documentation below documents the 'content' section of the [scuttlebutt messages](https://ssbc.github.io/secure-scuttlebutt/). The 'author' field of the outer object containing the `content` field is the ID of person who posted the message (made the chess move, posted the chat message, invited another player to a game, etc.)
+
+For example, the entire scuttlebutt message for a move could look like this:
+
+```
+{
+  "key": "%mbTncS4L6NkmWbUu28SYFR+gkS+EBXtv69qw1Nys+GA=.sha256",
+  "value": {
+    "previous": "%tAgOzYHfdUDjTCtL/WPdBFikGpi7FF1y5yluIa0L70c=.sha256",
+    "author": "@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519",
+    "sequence": 2467,
+    "timestamp": 1512721788946,
+    "hash": "sha256",
+    "content": {
+      "type": "chess_move",
+      "ply": 35,
+      "root": "%GplJjfQtF931QBN/QLb5Dbkkn7p6vPDa6GlArwx7lXs=.sha256",
+      "orig": "d6",
+      "dest": "e7",
+      "pgnMove": "dxe7",
+      "fen": "r1b2rk1/pp1pPppp/6q1/8/2Pp1B2/1Q1P2P1/PP4BP/R3R1K1 b - - 0 18"
+    },
+    "signature": "0SpisCR/celfcZsc9Bc0Ikq/12bAp2B3sNh5q0lPqTB1JsMT56rtVzxq75ly1eE3+bp+vj+XfZ262wDCNLjhDw==.sig.ed25519"
+  },
+  "timestamp": 1513461650805.013
+}
+```
 
 ## Send an Invitation to Play
 Type `chess_invite`
