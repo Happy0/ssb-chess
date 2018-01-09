@@ -1,7 +1,7 @@
 var m = require('mithril');
 var Chessground = require('chessground').Chessground;
 var PlayerModelUtils = require('../../ctrl/player_model_utils')();
-var timeAgo = require('./timeAgo')
+var timeAgo = require('./timeAgo')()
 
 module.exports = (gameCtrl, summary, identPerspective) => {
 
@@ -39,7 +39,7 @@ module.exports = (gameCtrl, summary, identPerspective) => {
       }, renderPlayerName(leftPlayer)),
       m('small', {
         class: 'ssb-chess-miniboard-time-ago'
-      }, timeAgo(lastActivityTimestamp)()),
+      }, lastActivityTimestamp ? timeAgo(lastActivityTimestamp)(): ""),
       m('center', {
         class: "ssb-chess-miniboard-name"
       }, renderPlayerName(rightPlayer))
