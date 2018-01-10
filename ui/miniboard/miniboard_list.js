@@ -18,6 +18,8 @@ var watch = require("mutant/watch");
 module.exports = (gameCtrl, gameSummaryListObs, ident) => {
   var gameSummaries = [];
 
+  var oneMinuteMillseconds = 60000;
+
   this.ident = ident;
 
   var unlistenUpdates = null;
@@ -38,8 +40,13 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
     },
     oncreate: function(e) {
       keepMiniboardsUpdated();
+
+      this.updateTimeAgoTimes = setInterval(
+        () => setTimeout(m.redraw), oneMinuteMillseconds
+      );
     },
     onremove: () => {
+      clearInterval(this.updateTimeAgoTimes);
       unlistenUpdates();
     }
   }
