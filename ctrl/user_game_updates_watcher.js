@@ -33,7 +33,7 @@ module.exports = (sbot) => {
   }
 
   function chessMessagesForPlayerGames(playerId, since) {
-    var liveFeed = sbot.createFeedStream({
+    var liveFeed = sbot.createLogStream({
       live: true,
       gt: since
     })
@@ -47,7 +47,7 @@ module.exports = (sbot) => {
   }
 
   function chessMessagesForOtherPlayersGames(playerId, since) {
-    var liveFeed = sbot.createFeedStream({
+    var liveFeed = sbot.createLogStream({
       live: true,
       gt: since
     })
