@@ -11,7 +11,12 @@ module.exports = (sbot) => {
 
   function latestGameMessageForPlayerObs(playerId) {
 
-    var chessMessagesReferencingPlayer = chessMessagesForPlayerGames(playerId, Date.now());
+    var opts = {
+      since: Date.now(),
+      reverse: false
+    }
+
+    var chessMessagesReferencingPlayer = chessMessagesForPlayerGames(playerId, opts);
 
     return MutantPullReduce(chessMessagesReferencingPlayer, (state, next) => {
       return next;
@@ -22,7 +27,13 @@ module.exports = (sbot) => {
   }
 
   function latestGameMessageForOtherPlayersObs(playerId) {
-    var observingGamesMsgs = chessMessagesForOtherPlayersGames(playerId, Date.now());
+
+    var opts = {
+      since: Date.now(),
+      reverse: false
+    }
+
+    var observingGamesMsgs = chessMessagesForOtherPlayersGames(playerId, opts);
 
     return MutantPullReduce(observingGamesMsgs, (state, next) => {
       return next;
@@ -32,10 +43,14 @@ module.exports = (sbot) => {
     });
   }
 
-  function chessMessagesForPlayerGames(playerId, since) {
+  function chessMessagesForPlayerGames(playerId, opts) {
+    var since = opts ? opts.since : null;
+    var reverse = opts ? opts.reverse : false;
+
     var liveFeed = sbot.createLogStream({
       live: true,
-      gt: since
+      gt: since,
+      reverse: reverse
     })
 
     return pull(
@@ -46,10 +61,14 @@ module.exports = (sbot) => {
      )
   }
 
-  function chessMessagesForOtherPlayersGames(playerId, since) {
+  function chessMessagesForOtherPlayersGames(playerId, opts) {
+    var since = opts ? opts.since : null;
+    var reverse = opts ? opts.reverse : false;
+
     var liveFeed = sbot.createLogStream({
       live: true,
-      gt: since
+      gt: since,
+      reverse: reverse
     })
 
     return pull(

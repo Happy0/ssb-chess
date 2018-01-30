@@ -31,17 +31,27 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       })
     }
 
-    return m('div', {class: 'ssb-chess-move-confirm-buttons'},
-      [
-        m('button', {onclick: confirmMove}, 'Confirm'),
-        m('button', {onclick: cancelMove}, 'Cancel')
-      ]
-    )
+    return m('div', {
+      class: 'ssb-chess-move-confirm-buttons'
+    }, [
+      m('button', {
+        onclick: confirmMove
+      }, 'Confirm'),
+      m('button', {
+        onclick: cancelMove
+      }, 'Cancel')
+    ])
   }
 
   function resignButton() {
-    var resignGame = () => {
-      onceTrue(situationObservable, situation => gameMoveCtrl.resignGame(situation.gameId));
+    var resignGame = (e) => {
+      onceTrue(situationObservable,
+        situation => {
+          if (situation && situation.status.status === "started") {
+            gameMoveCtrl.resignGame(situation.gameId)
+          }
+        }
+      );
     }
 
     return m('button', {
@@ -53,7 +63,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     return situation.players[myIdent] == null;
   }
 
-  function makeMoveObservationListener () {
+  function makeMoveObservationListener() {
     var value = Value();
 
     value.set({
@@ -68,27 +78,32 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     // Eh, miby there's redundancy here, dunno :P
 
     return computed(moveConfirmationObservable,
-       confirmation => confirmation.moveNeedsConfirmed
+      confirmation => confirmation.moveNeedsConfirmed
     );
   }
 
   function usualButtons() {
-    return resignButton();
+    var gameInProgress = computed(
+      situationObservable,
+      situation => situation && (situation.status.status === "started")
+    );
+
+    return when(gameInProgress, resignButton());
   }
 
   return {
     view: (vDom) => {
 
       return m('div', {
-        class: "ssb-game-actions",
-        style: observing ? "display: none;" : ""
-      },
+          class: "ssb-game-actions",
+          style: observing ? "display: none;" : ""
+        },
         when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
       );
     },
     oninit: function(vNode) {
       var w = watch(situationObservable,
-         (situation) => observing = isObserving(situation)
+        (situation) => observing = isObserving(situation)
       );
 
       watchesToClear.push(w);
@@ -96,7 +111,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     onremove: () => {
       watchesToClear.forEach(w => w());
       watchesToClear = [];
-  },
+    },
     showMoveConfirmation: function() {
       moveConfirmationObservable.set({
         moveNeedsConfirmed: true,
