@@ -15,7 +15,7 @@ module.exports = (gameCtrl, sbot) => {
       var situation = gameCtrl.getSituation(msg.value.content.root);
 
       onceTrue(situation, (gameSituation) => {
-        var opponentName = situation.players[msg.value.author] ? situation.players[msg.value.author].name : "";
+        var opponentName = gameSituation.players[msg.value.author] ? situation.players[msg.value.author].name : "";
 
         if (msg.value.content.type === "chess_move" && msg.value.author != me && msg.value.content.root) {
           var msg = "It's your move in your game against " + opponentName;
