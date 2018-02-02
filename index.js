@@ -8,8 +8,9 @@ var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
 
 var settingsCtrl = require('./ctrl/settings')();
-
 var onceTrue = require('mutant/once-true');
+
+var Notifier = require('./ui/notify/notifier');
 
 module.exports = (attachToElement, sbot) => {
 
@@ -102,6 +103,15 @@ module.exports = (attachToElement, sbot) => {
 
     renderPageTop(navDiv, gameCtrl);
 
+    // Display HTML5 notifications if the user is not viewing the chess app
+    // and one of their games has an update.
+    var notifier = Notifier(gameCtrl, sbot);
+    notifier.startNotifying();
+
     appRouter(bodyDiv, gameCtrl);
+
+
+
+
   });
 }
