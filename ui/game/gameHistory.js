@@ -7,6 +7,8 @@ const R = require("ramda");
 // todo: move this file somewhere more appropriate :P
 const PlayerModelUtils = require("../../ctrl/player_model_utils")();
 
+const UserLocationUtils = require('../viewer_perspective/user_location')();
+
 module.exports = (gameObservable, myIdent) => {
 
   var watchesToClear = [];
@@ -114,9 +116,8 @@ module.exports = (gameObservable, myIdent) => {
     const down = 40;
 
     document.onkeydown = function(evt) {
-      if (hasChatInputBoxFocused()) {
-        // When a user is editting text in the chat box and moving their cursor with the
-        // arrow keys, we don't want to scroll through the history
+
+      if (!UserLocationUtils.chessAppIsVisible() || hasChatInputBoxFocused()) {
         return;
       }
 
