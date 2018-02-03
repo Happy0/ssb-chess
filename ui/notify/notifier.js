@@ -58,7 +58,7 @@ module.exports = (gameCtrl, sbot) => {
 
     var gameUpdateStream = userGamesWatcher.chessMessagesForPlayerGames(gameCtrl.getMyIdent(), opts);
 
-    pull(gameUpdateStream, pull.drain((msg) => notifyIfRelevant(msg, "baws")));
+    pull(gameUpdateStream, pull.drain((msg) => notifyIfRelevant(msg)));
   }
 
   return {
