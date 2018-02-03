@@ -87,6 +87,8 @@ module.exports = (sbot) => {
   function getGameInvite(msg, cb) {
 
     if (msg.value.content.type === "chess_invite") {
+      // Ugh, hackiness =p.
+      msg.value.originalMsg = msg;
       return getInviteOrWarn(null, msg.value, cb)
     }
     else if (!msg.value || !msg.value.content || !msg.value.content.root) {

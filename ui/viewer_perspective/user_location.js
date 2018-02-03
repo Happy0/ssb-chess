@@ -12,7 +12,7 @@ module.exports = () => {
     } else {
       var element = topLevelElementArr[0];
 
-      return isVisible(element);
+      return document.hasFocus() && isVisible(element);
     }
 
   }
@@ -24,7 +24,18 @@ module.exports = () => {
     return true;
   }
 
+  /**
+   * Applies the function argument if the chess app is not currently visible
+   * to the user.
+   */
+  function ifChessAppNotVisible(fn) {
+    if (!chessAppIsVisible()) {
+      fn();
+    }
+  }
+
   return {
-    chessAppIsVisible: chessAppIsVisible
+    chessAppIsVisible: chessAppIsVisible,
+    ifChessAppNotVisible: ifChessAppNotVisible
   }
 }
