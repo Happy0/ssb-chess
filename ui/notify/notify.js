@@ -2,16 +2,15 @@ module.exports = () => {
 
   function displayNotification(text, onclick) {
     var options = {
-      body: text
+      body: text,
+      requireInteraction: true
     }
 
     var n = new Notification("Scuttlebutt Chess", options);
-    
+
     if (onclick) {
         n.onclick = onclick;
     }
-
-    setTimeout(n.close.bind(n), 10000);
   }
 
   function showNotification(text, onclick) {
