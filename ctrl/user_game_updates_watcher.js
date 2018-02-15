@@ -154,6 +154,12 @@ module.exports = (sbot) => {
         )
   }
 
+  function getRingBufferGameMsgsForPlayer(id, msgTypes, size) {
+    var stream = chessMessagesForPlayerGames(id);
+
+    
+  }
+
   return {
    /**
     * Watches for incoming updates to a player's games and sets the observable
@@ -166,6 +172,14 @@ module.exports = (sbot) => {
     * sets the observable value to the latest chess message.
     */
    latestGameMessageForOtherPlayersObs: latestGameMessageForOtherPlayersObs,
+
+   /**
+    * Get a ring buffer of game messages of a given type concerning a player's game.
+    * @playerId the id of the player to track game messages for.
+    * @msgs an array of game type messages to fill the buffer with, and a size for the
+    * @size The size of the ring buffer.
+    */
+   getRingBufferGameMsgsForPlayer: getRingBufferGameMsgsForPlayer,
 
    /**
    * A stream of chess game messages (excluding chat messages) for the given
