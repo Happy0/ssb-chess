@@ -1,4 +1,6 @@
+var concatStreams = require('pull-cat')
 var pull = require('pull-stream');
+var MutantArray = require('mutant/array');
 var MutantPullReduce = require('mutant-pull-reduce');
 
 module.exports = (sbot) => {
@@ -47,8 +49,11 @@ module.exports = (sbot) => {
     var since = opts ? opts.since : null;
     var reverse = opts ? opts.reverse : false;
 
+    // Default to live
+    var liveStream = (opts && (opts.live !== undefined && opts.live !== null )) ? opts.live : true
+
     var liveFeed = sbot.createLogStream({
-      live: true,
+      live: liveStream,
       gt: since,
       reverse: reverse
     })
@@ -155,9 +160,48 @@ module.exports = (sbot) => {
   }
 
   function getRingBufferGameMsgsForPlayer(id, msgTypes, size) {
-    var stream = chessMessagesForPlayerGames(id);
+    var nonLiveStream = chessMessagesForPlayerGames(id, {
+      live: false,
+      reverse: true
+    });
 
-    
+    var liveStream = chessMessagesForPlayerGames(id, {
+      live: true,
+      since: Date.now()
+    });
+
+    var filterStream = (stream) => pull(
+      stream,
+      pull.filter(
+        (msg) => msgTypes.indexOf(msg.value.content.type) !== -1
+      )
+    )
+
+    var oldEntries = pull(filterStream(nonLiveStream), pull.take(size));
+    var liveEntries = pull(filterStream(liveStream));
+
+    // Take a limited amount of old messages and then add any new live messages to
+    // the top of the observable list
+    var stream = concatStreams(oldEntries, liveEntries);
+
+    var obsArray = MutantArray([]);
+
+    var pushToFront = false;
+    pull(stream, pull.drain((msg) => {
+      if (msg.sync) {
+        // When we have reached messages arriving live in the stream, we start
+        // push to the front of the array rather than the end so the newest
+        // messages are at the top
+        pushToFront = true;
+      } else if (pushToFront) {
+        obsArray.insert(msg, 0);
+      } else {
+        obsArray.push(msg)
+      }
+
+    }))
+
+    return obsArray;
   }
 
   return {
