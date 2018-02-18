@@ -56,6 +56,9 @@ module.exports = (attachToElement, sbot) => {
     var gamesInProgressObs = gameCtrl.getMyGamesInProgress();
     var gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
     var observableGamesObs = gameCtrl.getFriendsObservableGames();
+    var userRecentActivity = gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
+
+    userRecentActivity(stuff => console.log(stuff))
 
     // Hack: keep observables loaded with the latest value.
     gamesInProgressObs(e => e);

@@ -1,4 +1,4 @@
-var concatStreams = require('pull-cat')
+  var concatStreams = require('pull-cat')
 var pull = require('pull-stream');
 var MutantArray = require('mutant/array');
 var MutantPullReduce = require('mutant-pull-reduce');
@@ -182,7 +182,7 @@ module.exports = (sbot) => {
 
     // Take a limited amount of old messages and then add any new live messages to
     // the top of the observable list
-    var stream = concatStreams(oldEntries, liveEntries);
+    var stream = concatStreams([oldEntries, liveEntries]);
 
     var obsArray = MutantArray([]);
 

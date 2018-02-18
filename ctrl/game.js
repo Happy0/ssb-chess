@@ -7,6 +7,7 @@ const GameDb = require('../db/game_db');
 const SocialCtrl = require('./social');
 const PlayerCtrl = require('./player');
 const MoveCtrl = require('./game_move');
+const RecentActivityCtrl = require('./recentActivityCtrl');
 
 var PubSub = require('pubsub-js');
 
@@ -30,6 +31,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
+  const recentActivityCtrl = RecentActivityCtrl(userGamesUpdateWatcher, myIdent);
 
   function getMyIdent() {
     return myIdent;
@@ -233,6 +235,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     getMoveCtrl: () => moveCtrl,
     getSocialCtrl: () => socialCtrl,
     getPlayerCtrl: () => playerCtrl,
+    getRecentActivityCtrl: () => recentActivityCtrl,
     getSbot: () => sbot
   }
 
