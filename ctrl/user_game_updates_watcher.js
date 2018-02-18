@@ -48,6 +48,7 @@ module.exports = (sbot) => {
   function chessMessagesForPlayerGames(playerId, opts) {
     var since = opts ? opts.since : null;
     var reverse = opts ? opts.reverse : false;
+    var messageTypes = opts && opts.messageTypes ? opts.messageTypes : chessTypeMessages;
 
     // Default to live
     var liveStream = (opts && (opts.live !== undefined && opts.live !== null )) ? opts.live : true
@@ -61,7 +62,8 @@ module.exports = (sbot) => {
     return pull(
       liveFeed,
       msgMatchesChessInviteMsgFilter(
-        (msg) => inviteRelatesToPlayerGame(playerId, msg)
+        (msg) => inviteRelatesToPlayerGame(playerId, msg),
+        messageTypes
       )
      )
   }
@@ -69,6 +71,7 @@ module.exports = (sbot) => {
   function chessMessagesForOtherPlayersGames(playerId, opts) {
     var since = opts ? opts.since : null;
     var reverse = opts ? opts.reverse : false;
+    var messageTypes = opts && opts.messageTypes ? opts.messageTypes : chessTypeMessages;
 
     var liveFeed = sbot.createLogStream({
       live: true,
@@ -79,7 +82,8 @@ module.exports = (sbot) => {
     return pull(
       liveFeed,
       msgMatchesChessInviteMsgFilter(
-        (msg) => !inviteRelatesToPlayerGame(playerId, msg)
+        (msg) => !inviteRelatesToPlayerGame(playerId, msg),
+        messageTypes
       )
      )
   }
@@ -130,13 +134,13 @@ module.exports = (sbot) => {
     }
   }
 
-  function isChessMessage(msg) {
+  function isChessMessage(msg, msgTypes) {
 
     if (!msg.value || !msg.value.content) {
       return false;
     }
     else {
-      return chessTypeMessages.indexOf(msg.value.content.type) !== -1
+      return msgTypes.indexOf(msg.value.content.type) !== -1
     }
 
   }
@@ -145,10 +149,10 @@ module.exports = (sbot) => {
     return players.indexOf(playerId) !== -1;
   }
 
-  function msgMatchesChessInviteMsgFilter(chessInviteFilter) {
+  function msgMatchesChessInviteMsgFilter(chessInviteFilter, messageTypes) {
     return pull(
             pull(
-              pull.filter(isChessMessage),
+              pull.filter(msg => isChessMessage(msg, messageTypes)),
               pull.asyncMap(getGameInvite)
             ),
             pull(
@@ -162,30 +166,26 @@ module.exports = (sbot) => {
   function getRingBufferGameMsgsForPlayer(id, msgTypes, size) {
     var nonLiveStream = chessMessagesForPlayerGames(id, {
       live: false,
-      reverse: true
+      reverse: true,
+      messageTypes: msgTypes
     });
 
     var liveStream = chessMessagesForPlayerGames(id, {
       live: true,
-      since: Date.now()
+      since: Date.now(),
+      messageTypes: msgTypes
     });
 
-    var filterStream = (stream) => pull(
-      stream,
-      pull.filter(
-        (msg) => msgTypes.indexOf(msg.value.content.type) !== -1
-      )
-    )
 
-    var oldEntries = pull(filterStream(nonLiveStream), pull.take(size));
-    var liveEntries = pull(filterStream(liveStream));
+    var oldEntries = pull(nonLiveStream, pull.take(size));
 
     // Take a limited amount of old messages and then add any new live messages to
     // the top of the observable list
-    var stream = concatStreams([oldEntries, liveEntries]);
+    var stream = concatStreams([oldEntries, liveStream]);
 
     var obsArray = MutantArray([]);
 
+    var count = 0;
     var pushToFront = false;
     pull(stream, pull.drain((msg) => {
       if (msg.sync) {
@@ -195,9 +195,17 @@ module.exports = (sbot) => {
         pushToFront = true;
       } else if (pushToFront) {
         obsArray.insert(msg, 0);
+
+        if (count > size) {
+          // Remove the oldest entry if we have reached capacity.
+          obsArray.pop();
+        }
+
       } else {
         obsArray.push(msg)
       }
+
+      count++;
 
     }))
 
