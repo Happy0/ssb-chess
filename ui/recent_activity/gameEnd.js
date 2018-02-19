@@ -11,6 +11,49 @@ module.exports = (msg, situation, myIdent) => {
     return m('div', 'Loading...');
   }
 
+  function renderMateMessage(gameState) {
+
+    var otherPlayer = gameState.getOtherPlayer(gameState.status.winner);
+    var name = otherPlayer ? otherPlayer.name : "";
+    if (gameState.status.winner === myIdent) {
+      return m('div', "You won your game against " + name )
+    } else if (gameState.hasPlayer(myIdent)) {
+      return m('div', "You lost your name against " + name);
+    } else {
+      var winnerName = gameState.players[gameState.status.winner].name
+      return m('div', winnerName + " won their game against " + name);
+    }
+  }
+
+  function renderResignMessage(gameState) {
+    var otherPlayer = gameState.getOtherPlayer(gameState.status.winner);
+    var name = otherPlayer ? otherPlayer.name : "";
+
+    if (gameState.status.winner === myIdent) {
+      return('div', name + " resigned their game against you.")
+    } else if (gameState.hasPlayer(myIdent)) {
+      return('div', "You resigned your game against " + name)
+    } else {
+      var winnerName = gameState.players[gameState.status.winner].name
+      return m('div', winnerName + " won their game against " + name);
+    }
+  }
+
+  function renderDrawMessage(gameState) {
+    
+  }
+
+  function renderInformation(gameState) {
+    if (gameState.status.status === "mate") {
+      return renderMateMessage(gameState);
+    }
+    else if (gameState.status.status === "resigned") {
+      return renderResignMessage(gameState);
+    } else {
+
+    }
+  }
+
   function render() {
     if (!situation) {
       return loading()
@@ -21,7 +64,7 @@ module.exports = (msg, situation, myIdent) => {
 
       return m('div', {class: "ssb-chess-game-end-notification"}, [
         m(Miniboard(computed([situation], s=>s), situation, myIdent, opts)),
-        m('div', JSON.stringify(situation.status))
+        m('div', renderInformation(situation))
       ]);
     }
   }
