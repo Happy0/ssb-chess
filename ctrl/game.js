@@ -31,7 +31,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
-  const recentActivityCtrl = RecentActivityCtrl(userGamesUpdateWatcher, myIdent);
+  const recentActivityCtrl = RecentActivityCtrl(userGamesUpdateWatcher, getSituationObservable, myIdent);
 
   function getMyIdent() {
     return myIdent;

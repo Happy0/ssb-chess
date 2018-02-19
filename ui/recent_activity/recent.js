@@ -1,5 +1,6 @@
 var m = require('mithril');
 var gameEndActivity = require('./gameEnd');
+var watch = require('mutant/watch')
 
 /**
  * A component to render updates about chess games based on the supplied observable
@@ -18,28 +19,29 @@ var gameEndActivity = require('./gameEnd');
 module.exports = (gameCtrl, recentGameMessagesObs) => {
 
   var messages = [];
+  var watches = [];
 
   var renderers = {
     "chess_game_end": renderGameEndMsg
   }
 
-  function renderGameEndMsg(msg) {
-    return m('div', m(gameEndActivity(msg, gameCtrl.getMyIdent(), gameCtrl.getSituationObservable(msg.value.content.root))));
+  function renderGameEndMsg(entry) {
+    return m('div', m(gameEndActivity(entry.msg, entry.situation, gameCtrl.getMyIdent())));
   }
 
-  function renderMessage(msg) {
-    var renderer = renderers[msg.value.content.type];
+  function renderMessage(entry) {
+    var renderer = renderers[entry.msg.value.content.type];
 
     if (renderer) {
-      return renderer(msg);
+      return renderer(entry);
     } else {
-      console.log("Unexpected recent.js msg: " + msg );
+      console.log("Unexpected recent.js msg: " + entry );
       return m('div');
     }
   }
 
-  function canRender(msg) {
-    var type = msg.value.content.type;
+  function canRender(entry) {
+    var type = entry.msg.value.content.type;
     return renderers.hasOwnProperty(type);
   }
 
@@ -52,12 +54,17 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
   return {
     view: () => renderMessages(),
     oncreate: () => {
-      recentGameMessagesObs(
+      var obs = watch(recentGameMessagesObs,
         gameMessages => {
           messages = gameMessages;
           m.redraw();
         }
       )
+
+      watches.push(obs);
+    },
+    onremove: () => {
+      watches.forEach(w => w());
     }
   }
 }

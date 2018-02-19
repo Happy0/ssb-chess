@@ -146,11 +146,12 @@ module.exports = (sbot) => {
           )
   }
 
-  function getRingBufferGameMsgsForPlayer(id, msgTypes, size) {
+  function getRingBufferGameMsgsForPlayer(id, getSituationObservable, msgTypes, size, opts) {
+    var since = opts ? opts.since : null;
 
     var nonLiveMsgSources = msgTypes.map(type =>
        pull(
-         sbot.messagesByType({type : type}),
+         sbot.messagesByType({type : type, reverse: true, gte: since}),
          msgMatchesFilter(id, true, msgTypes)
        )
      );
@@ -178,13 +179,22 @@ module.exports = (sbot) => {
     var pushToFront = false;
     pull(stream, pull.drain((msg) => {
 
+      var situationObs = getSituationObservable(msg.value.content.root);
+
+      var entry = computed([situationObs], situation => {
+        return {
+          msg: msg,
+          situation: situation
+        }
+      })
+
       if (msg.sync) {
         // When we have reached messages arriving live in the stream, we start
         // push to the front of the array rather than the end so the newest
         // messages are at the top
         pushToFront = true;
       } else if (pushToFront) {
-        obsArray.insert(msg, 0);
+        obsArray.insert(entry, 0);
 
         if (count > size) {
           // Remove the oldest entry if we have reached capacity.
@@ -192,7 +202,7 @@ module.exports = (sbot) => {
         }
 
       } else {
-        obsArray.push(msg)
+        obsArray.push(entry)
       }
 
       count++;
@@ -201,7 +211,7 @@ module.exports = (sbot) => {
 
     // Sort in descending order
     return computed([obsArray], array =>
-       array.sort( (a,b) => b.value.timestamp < a.value.timestamp) );
+       array.sort( (a,b) => b.msg.value.timestamp < a.msg.value.timestamp) );
   }
 
   return {
