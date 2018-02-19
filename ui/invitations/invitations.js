@@ -45,10 +45,12 @@ module.exports = (gameCtrl) => {
 
   function renderInvite(gameSummary, sent) {
 
+    var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(gameSummary.gameId);
+
     return m('div', {
       class: "ssb-chess-miniboard"
     }, [
-      m(Miniboard(gameCtrl, gameSummary, gameCtrl.getMyIdent())),
+      m(Miniboard(gameSummaryObservable, gameSummary, gameCtrl.getMyIdent())),
       renderAcceptOrRejectControls(gameSummary.gameId, sent)
     ]);
   }

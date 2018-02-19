@@ -3,7 +3,7 @@ var Chessground = require('chessground').Chessground;
 var PlayerModelUtils = require('../../ctrl/player_model_utils')();
 var timeAgo = require('./timeAgo')()
 
-module.exports = (gameCtrl, summary, identPerspective) => {
+module.exports = (gameSummaryObservable, summary, identPerspective, opts) => {
 
   var chessground = null;
   var observables = [];
@@ -25,36 +25,41 @@ module.exports = (gameCtrl, summary, identPerspective) => {
   }
 
   function renderSummaryBottom() {
+    if (!(opts && opts.small)) {
+      var coloursNames = PlayerModelUtils.coloursToPlayer(summary.players);
+      var otherPlayerColour = playerColour == "white" ? "black" : "white";
 
-    var coloursNames = PlayerModelUtils.coloursToPlayer(summary.players);
-    var otherPlayerColour = playerColour == "white" ? "black" : "white";
+      var leftPlayer = coloursNames[playerColour];
+      var rightPlayer = coloursNames[otherPlayerColour];
 
-    var leftPlayer = coloursNames[playerColour];
-    var rightPlayer = coloursNames[otherPlayerColour];
+      return m('div', {
+        class: 'ssb-chess-miniboard-bottom'
+      }, [m('center', {
+          class: "ssb-chess-miniboard-name"
+        }, renderPlayerName(leftPlayer)),
+        m('small', {
+          class: 'ssb-chess-miniboard-time-ago'
+        }, lastActivityTimestamp ? timeAgo(lastActivityTimestamp)(): ""),
+        m('center', {
+          class: "ssb-chess-miniboard-name"
+        }, renderPlayerName(rightPlayer))
+      ])
 
-    return m('div', {
-      class: 'ssb-chess-miniboard-bottom'
-    }, [m('center', {
-        class: "ssb-chess-miniboard-name"
-      }, renderPlayerName(leftPlayer)),
-      m('small', {
-        class: 'ssb-chess-miniboard-time-ago'
-      }, lastActivityTimestamp ? timeAgo(lastActivityTimestamp)(): ""),
-      m('center', {
-        class: "ssb-chess-miniboard-name"
-      }, renderPlayerName(rightPlayer))
-    ])
+    } else {
+      return m('div');
+    }
   }
 
   function renderSummary() {
 
     var observing = Object.keys(summary.players).indexOf(identPerspective) === -1;
+    var boardSizeClass = opts && opts.small ? "ssb-chess-board-small" : "ssb-chess-board-medium";
 
     return m('div', {
       class: "ssb-chess-miniboard ssb-chess-board-background-blue3 merida"
     }, [
       m('a[href=' + '/games/' + btoa(summary.gameId) + "?observing=" + observing + ']', {
-        class: "ssb-chessground-container",
+        class: "ssb-chessground-container cg-board-wrap " + boardSizeClass,
         title: summary.gameId,
         id: summary.gameId,
         oncreate: m.route.link
@@ -96,7 +101,7 @@ module.exports = (gameCtrl, summary, identPerspective) => {
       chessground = Chessground(chessGroundParent, config);
 
       // Listen for game updates
-      var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
+
       var situationObs = gameSummaryObservable(newSummary => {
         var newConfig = summaryToChessgroundConfig(newSummary);
         chessground.set(newConfig);
@@ -106,7 +111,10 @@ module.exports = (gameCtrl, summary, identPerspective) => {
       observables.push(situationObs);
     },
     onremove: function() {
-      chessground.destroy();
+      if (chessground) {
+        chessground.destroy();
+      }
+
       observables.forEach(w => w());
       observables = [];
     }

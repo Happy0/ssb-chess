@@ -206,7 +206,6 @@ module.exports = (sbot) => {
       }
 
       count++;
-
     }))
 
     // Sort in descending order
