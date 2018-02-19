@@ -1,5 +1,8 @@
-  var concatStreams = require('pull-cat')
+var asyncRemove = require('pull-async-filter');
+var concatStreams = require('pull-cat');
+var computed = require('mutant/computed');
 var pull = require('pull-stream');
+var many = require('pull-many')
 var MutantArray = require('mutant/array');
 var MutantPullReduce = require('mutant-pull-reduce');
 
@@ -61,8 +64,9 @@ module.exports = (sbot) => {
 
     return pull(
       liveFeed,
-      msgMatchesChessInviteMsgFilter(
-        (msg) => inviteRelatesToPlayerGame(playerId, msg),
+      msgMatchesFilter(
+        playerId,
+        true,
         messageTypes
       )
      )
@@ -81,56 +85,25 @@ module.exports = (sbot) => {
 
     return pull(
       liveFeed,
-      msgMatchesChessInviteMsgFilter(
-        (msg) => !inviteRelatesToPlayerGame(playerId, msg),
+      msgMatchesFilter(
+        playerId,
+        false,
         messageTypes
       )
      )
   }
 
-  function inviteRelatesToPlayerGame(playerId, msg) {
-    var relatesToPlayer = msg != null && [msg.author, msg.content.inviting].indexOf(playerId) !== -1;
-    return relatesToPlayer;
-  }
-
-  function getGameInvite(msg, cb) {
+  function getGameId(msg) {
 
     if (msg.value.content.type === "chess_invite") {
-      // Ugh, hackiness =p.
-      msg.value.originalMsg = msg;
-      return getInviteOrWarn(null, msg.value, cb)
+      return msg.key;
     }
     else if (!msg.value || !msg.value.content || !msg.value.content.root) {
       console.warn("No root found for chess message ");
       console.warn(msg);
-      cb(null, []);
+      return null;
     } else {
-      var gameId = msg.value.content.root;
-      sbot.get(gameId, (err, result) => {
-        // I'm so hacky :<
-        result.originalMsg = msg;
-        getInviteOrWarn(err, result, cb)
-      });
-    }
-  }
-
-  function getInviteOrWarn(err, result, cb) {
-    if (err) {
-        console.warn("Error while retrieving game invite message");
-        console.warn(err);
-        cb(null, null);
-    }
-    else if (result.content.type !== "chess_invite") {
-      console.warn("Unexpectedly not a chess invite root ");
-      console.warn(result);
-      cb(null, null);
-    }
-    else if (!result.content.inviting) {
-      console.warn("Unexpectedly no invitee")
-      console.warn(result);
-      cb(null, null);
-    } else {
-      cb(null, result)
+      return msg.value.content.root;
     }
   }
 
@@ -149,26 +122,38 @@ module.exports = (sbot) => {
     return players.indexOf(playerId) !== -1;
   }
 
-  function msgMatchesChessInviteMsgFilter(chessInviteFilter, messageTypes) {
+  function msgMatchesFilter(playerId, playerShouldBeInGame, messageTypes) {
     return pull(
-            pull(
-              pull.filter(msg => isChessMessage(msg, messageTypes)),
-              pull.asyncMap(getGameInvite)
-            ),
-            pull(
-              pull.filter(chessInviteFilter),
-              // See earlier hack ;x.
-              pull.map(msg => msg.originalMsg ? msg.originalMsg : msg)
+              pull(
+                pull.filter(msg => isChessMessage(msg, messageTypes)),
+                asyncRemove((msg, cb) => {
+                var gameId = getGameId(msg);
+
+                if (gameId == null) {
+                  cb(null, false);
+                } else {
+                  sbot.ssbChessIndex.gameHasPlayer(gameId, playerId, (err, result) => {
+                    if (playerShouldBeInGame) {
+                      cb(err, !result);
+                    } else {
+                      cb(err, result);
+                    }
+
+                  })
+                }
+              })
             )
-        )
+          )
   }
 
   function getRingBufferGameMsgsForPlayer(id, msgTypes, size) {
-    var nonLiveStream = chessMessagesForPlayerGames(id, {
-      live: false,
-      reverse: true,
-      messageTypes: msgTypes
-    });
+
+    var nonLiveMsgSources = msgTypes.map(type =>
+       pull(
+         sbot.messagesByType({type : type}),
+         msgMatchesFilter(id, true, msgTypes)
+       )
+     );
 
     var liveStream = chessMessagesForPlayerGames(id, {
       live: true,
@@ -177,7 +162,11 @@ module.exports = (sbot) => {
       messageTypes: msgTypes
     });
 
-    var oldEntries = pull(nonLiveStream, pull.take(size));
+    var oldEntries = pull(
+      pull(
+        many(nonLiveMsgSources)),
+        pull.take(size)
+      );
 
     // Take a limited amount of old messages and then add any new live messages to
     // the top of the observable list
@@ -188,6 +177,7 @@ module.exports = (sbot) => {
     var count = 0;
     var pushToFront = false;
     pull(stream, pull.drain((msg) => {
+
       if (msg.sync) {
         // When we have reached messages arriving live in the stream, we start
         // push to the front of the array rather than the end so the newest
@@ -209,7 +199,9 @@ module.exports = (sbot) => {
 
     }))
 
-    return obsArray;
+    // Sort in descending order
+    return computed([obsArray], array =>
+       array.sort( (a,b) => b.value.timestamp < a.value.timestamp) );
   }
 
   return {
