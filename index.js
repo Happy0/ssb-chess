@@ -6,6 +6,7 @@ var NavigationBar = require('./ui/pageLayout/navigation');
 var GameComponent = require('./ui/game/gameView');
 var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
+var RecentActivityComponent = require('./ui/recent_activity/recent');
 
 var settingsCtrl = require('./ctrl/settings')();
 var onceTrue = require('mutant/once-true');
@@ -58,12 +59,11 @@ module.exports = (attachToElement, sbot) => {
     var observableGamesObs = gameCtrl.getFriendsObservableGames();
     var userRecentActivity = gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
 
-    userRecentActivity(stuff => console.log(stuff))
-
     // Hack: keep observables loaded with the latest value.
     gamesInProgressObs(e => e);
     gamesMyMoveObs(e => e);
     observableGamesObs(t => t);
+    userRecentActivity(t => t);
 
     m.route(mainBody, "/my_games", {
       "/my_games": MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
@@ -84,6 +84,7 @@ module.exports = (attachToElement, sbot) => {
         }
       },
       "/invitations": InvitationsComponent(gameCtrl),
+      "/activity": RecentActivityComponent(gameCtrl, userRecentActivity),
       "/observable": MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
       "/player/:playerId": PlayerProfileComponent(gameCtrl)
     })

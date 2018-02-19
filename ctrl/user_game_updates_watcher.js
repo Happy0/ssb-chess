@@ -172,10 +172,10 @@ module.exports = (sbot) => {
 
     var liveStream = chessMessagesForPlayerGames(id, {
       live: true,
-      since: Date.now(),
+      // Go Back a minute in case we missed any while loading the old ones.
+      since: Date.now() - 60000,
       messageTypes: msgTypes
     });
-
 
     var oldEntries = pull(nonLiveStream, pull.take(size));
 
