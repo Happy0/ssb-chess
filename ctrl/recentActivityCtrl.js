@@ -1,6 +1,7 @@
 var computed = require('mutant/computed');
 var MutantArray = require('mutant/array');
 var Value = require('mutant/value');
+var userViewingGame = require('./userViewingGame')();
 
 module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
 
@@ -30,15 +31,33 @@ module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
     unseenNotifications: () => {
       var recentActivity = getRecentActivity();
 
-      return computed( [recentActivity, lastSeenObs], activityMessages => {
-        var lastSeenStr = localStorage.getItem('last_seen_notification');
+      var unseen = computed( [recentActivity, lastSeenObs], activityMessages => {
+        var lastSeenStr = localStorage.getItem('ssb_chess_last_seen_notification');
         var lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
 
         return activityMessages.filter(entry => entry.msg.value.timestamp > lastSeen);
       });
+
+      return computed([unseen], unseenMessages => {
+
+        // If the user is already viewing the game, don't up the count.
+        var currentGame = userViewingGame.getCurrentGame();
+        if (currentGame && unseenMessages.indexOf(entry => entry.msg.value.content.root === currentGame)) {
+          var removed = unseenMessages.splice(unseenMessages.indexOf(entry => entry.msg.value.content.root === currentGame), 1)[0];
+
+          // If it's the only one that was in the list, make sure the user won't see it when they open the app again
+          if (unseenMessages.length === 0) {
+            var timeStamp = entry.msg.value.timestamp;
+            localStorage.setItem('ssb_chess_last_seen_notification', timeStamp);
+          }
+
+        }
+
+        return unseenMessages;
+      })
     },
     setLastseenMessage: (timeStamp) => {
-      localStorage.setItem('last_seen_notification', timeStamp);
+      localStorage.setItem('ssb_chess_last_seen_notification', timeStamp);
 
       // Reset the count to 0 if we're already viewing the page.
       lastSeenObs.set(timeStamp);

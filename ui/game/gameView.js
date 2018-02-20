@@ -295,7 +295,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
           chessGround.set(newConfig);
         });
 
-        PubSub.published("viewing_game", {
+        PubSub.publish("viewing_game", {
           gameId: gameId
         })
 

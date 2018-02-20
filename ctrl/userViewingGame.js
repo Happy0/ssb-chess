@@ -21,6 +21,6 @@ module.exports = () => {
   })
 
   return {
-    getCurrentGame: () => currentGameId;
+    getCurrentGame: () => currentGameId
   }
 }
