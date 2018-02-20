@@ -33,11 +33,11 @@ module.exports = (gameCtrl, settings) => {
     countHoverText: () => `${observable.count} observable games.`
   };
   const recent = {
-    name: 'Activity',
+    name: 'Recent Activity',
     link: '/activity',
     count: 0,
-    countUpdateFn: gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames,
-    countHoverText: () => `${recent.count} <change me>`
+    countUpdateFn: gameCtrl.getRecentActivityCtrl().unseenNotifications,
+    countHoverText: () => 'Recent Activity'
   }
 
   var navItems = [gamesInProgress, gamesMyMove, invitations, observable, recent];

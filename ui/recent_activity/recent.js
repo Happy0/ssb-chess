@@ -38,7 +38,7 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
     var renderer = renderers[entry.msg.value.content.type];
 
     if (renderer) {
-      return renderer(entry);
+      return m('div', {class: 'ssb-chess-game-activity-notification'}, renderer(entry));
     } else {
       console.log("Unexpected recent.js msg: " + entry );
       return m('div');
@@ -57,11 +57,16 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
   }
 
   return {
-    view: () => renderMessages(),
+    view: () => m('div', {class: 'ssb-chess-game-notifications'}, renderMessages()),
     oncreate: () => {
       var obs = watch(recentGameMessagesObs,
         gameMessages => {
           messages = gameMessages;
+
+          if (messages && messages.length > 0) {
+            gameCtrl.getRecentActivityCtrl().setLastseenMessage(messages[0].msg.value.timestamp)  
+          }
+
           m.redraw();
         }
       )

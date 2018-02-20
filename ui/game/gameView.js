@@ -295,6 +295,10 @@ module.exports = (gameCtrl, situationObservable, settings) => {
           chessGround.set(newConfig);
         });
 
+        PubSub.published("viewing_game", {
+          gameId: gameId
+        })
+
     },
     onremove: function(vnode) {
 
@@ -304,6 +308,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
       PubSub.unsubscribe(this.validMovesListener);
       chessGround.destroy();
+
+      PubSub.publish("exited_game");
     }
   }
 

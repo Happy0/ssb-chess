@@ -28,7 +28,8 @@ module.exports = (attachToElement, sbot) => {
     "./css/game.css",
     "./css/historyArea.css",
     "./css/playerProfiles.css",
-    "./css/actionButtons.css"
+    "./css/actionButtons.css",
+    "./css/activity.css"
   ];
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
@@ -113,9 +114,6 @@ module.exports = (attachToElement, sbot) => {
     notifier.startNotifying();
 
     appRouter(bodyDiv, gameCtrl);
-
-
-
 
   });
 }

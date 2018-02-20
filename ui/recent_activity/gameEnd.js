@@ -13,7 +13,7 @@ module.exports = (msg, situation, myIdent) => {
 
   function renderMateMessage(gameState) {
 
-    var otherPlayer = gameState.getOtherPlayer(gameState.status.winner);
+    var otherPlayer = gameState.getOtherPlayer(myIdent);
     var name = otherPlayer ? otherPlayer.name : "";
     if (gameState.status.winner === myIdent) {
       return m('div', "You won your game against " + name )
@@ -21,12 +21,13 @@ module.exports = (msg, situation, myIdent) => {
       return m('div', "You lost your name against " + name);
     } else {
       var winnerName = gameState.players[gameState.status.winner].name
-      return m('div', winnerName + " won their game against " + name);
+      var otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
+      return m('div', winnerName + " won their game against " + otherPlayer);
     }
   }
 
   function renderResignMessage(gameState) {
-    var otherPlayer = gameState.getOtherPlayer(gameState.status.winner);
+    var otherPlayer = gameState.getOtherPlayer(myIdent);
     var name = otherPlayer ? otherPlayer.name : "";
 
     if (gameState.status.winner === myIdent) {
@@ -34,21 +35,23 @@ module.exports = (msg, situation, myIdent) => {
     } else if (gameState.hasPlayer(myIdent)) {
       return('div', "You resigned your game against " + name)
     } else {
-      var winnerName = gameState.players[gameState.status.winner].name
-      return m('div', winnerName + " won their game against " + name);
+      var winnerName = gameState.players[gameState.status.winner].name;
+      var otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
+
+      return m('div', winnerName + " won their game against " + otherPlayer);
     }
   }
 
   function renderDrawMessage(gameState) {
-    
+
   }
 
   function renderInformation(gameState) {
     if (gameState.status.status === "mate") {
-      return renderMateMessage(gameState);
+      return m('div', {class: 'ssb-chess-game-activity-notification-text'}, renderMateMessage(gameState));
     }
     else if (gameState.status.status === "resigned") {
-      return renderResignMessage(gameState);
+    return m('div', {class: 'ssb-chess-game-activity-notification-text'}, renderResignMessage(gameState));
     } else {
 
     }
@@ -63,8 +66,8 @@ module.exports = (msg, situation, myIdent) => {
       }
 
       return m('div', {class: "ssb-chess-game-end-notification"}, [
-        m(Miniboard(computed([situation], s=>s), situation, myIdent, opts)),
-        m('div', renderInformation(situation))
+        m('div', m(Miniboard(computed([situation], s=>s), situation, myIdent, opts))),
+        renderInformation(situation)
       ]);
     }
   }

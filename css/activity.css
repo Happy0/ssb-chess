@@ -1,0 +1,16 @@
+.ssb-chess-game-notifications {
+  width: 600px;
+  margin: auto;
+}
+
+.ssb-chess-game-end-notification {
+  display: flex;
+}
+
+.ssb-chess-game-activity-notification-text {
+  margin-top: 10%;
+  flex: 2;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 90px;       /* the same as your div height */
+}

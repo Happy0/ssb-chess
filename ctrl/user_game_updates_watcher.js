@@ -210,7 +210,7 @@ module.exports = (sbot) => {
 
     // Sort in descending order
     return computed([obsArray], array =>
-       array.sort( (a,b) => b.msg.value.timestamp < a.msg.value.timestamp) );
+       array.sort( (a,b) => b.msg.value.timestamp > a.msg.value.timestamp) );
   }
 
   return {
