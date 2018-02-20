@@ -35,7 +35,7 @@ module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
         var lastSeenStr = localStorage.getItem('ssb_chess_last_seen_notification');
         var lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
 
-        return activityMessages.filter(entry => entry.msg.value.timestamp > lastSeen);
+        return activityMessages.filter(entry => entry.msg.timestamp > lastSeen);
       });
 
       return computed([unseen], unseenMessages => {
@@ -43,12 +43,11 @@ module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
         // If the user is already viewing the game, don't up the count.
         var currentGame = userViewingGame.getCurrentGame();
         if (currentGame && unseenMessages.indexOf(entry => entry.msg.value.content.root === currentGame) !== -1) {
-          var removed = unseenMessages.splice(unseenMessages.indexOf(entry => entry.msg.value.content.root === currentGame), 1)[0];
+          unseenMessages.splice(unseenMessages.indexOf(entry => entry.msg.value.content.root === currentGame), 1);
 
           // If it's the only one that was in the list, make sure the user won't see it when they open the app again
           if (unseenMessages.length === 0) {
-            var timeStamp = removed.msg.value.timestamp;
-            localStorage.setItem('ssb_chess_last_seen_notification', timeStamp);
+            localStorage.setItem('ssb_chess_last_seen_notification', Date.now());
           }
 
         }

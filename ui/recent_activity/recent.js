@@ -64,7 +64,7 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
           messages = gameMessages;
 
           if (messages && messages.length > 0) {
-            gameCtrl.getRecentActivityCtrl().setLastseenMessage(messages[0].msg.value.timestamp)  
+            gameCtrl.getRecentActivityCtrl().setLastseenMessage(messages[0].msg.timestamp)  
           }
 
           m.redraw();
