@@ -18,8 +18,10 @@ module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
     })
   }
 
+  var activityObs = userGamesUpdateWatcher.getRingBufferGameMsgsForPlayer(myIdent, getSituationObs, ["chess_game_end"], 10)
+
   function getRecentActivity() {
-    return userGamesUpdateWatcher.getRingBufferGameMsgsForPlayer(myIdent, getSituationObs, ["chess_game_end"], 10)
+    return activityObs;
   }
 
   var lastSeenObs = Value();
