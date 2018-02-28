@@ -114,6 +114,5 @@ module.exports = (attachToElement, sbot) => {
     notifier.startNotifying();
 
     appRouter(bodyDiv, gameCtrl);
-
   });
 }
