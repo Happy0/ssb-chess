@@ -134,7 +134,9 @@ Type `chess_game_end`
 ## Chess Chat
 Type `ssb_chess_chat`
 
-*Note*: the content of the message is encrypted using [`sbot.private.publish`](https://ssbc.github.io/docs/scuttlebot/howto-publish-encrypted-messages.html) with an array of the IDs of the players of the game as the `recipients` parameter.
+*Note*: If this is a private message between the two players in the game, the content of the message is encrypted using [`sbot.private.publish`](https://ssbc.github.io/docs/scuttlebot/howto-publish-encrypted-messages.html) with an array of the IDs of the players of the game as the `recipients` parameter.
+
+If it is not a private message, it is a public message in the observer chat between spectators of the game. This shouldn't be displayed to the two players playing (or only displayed after the game has finished) so that the game isn't interfered with. Obviously a player could look at the raw feed to see what other people are saying about the game, but it's better to not make the chat easily visible.
 
 ### Fields
 * root - the original game invite message key.
