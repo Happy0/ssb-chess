@@ -6,6 +6,7 @@ var NavigationBar = require('./ui/pageLayout/navigation');
 var GameComponent = require('./ui/game/gameView');
 var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
+var RecentActivityComponent = require('./ui/recent_activity/recent');
 
 var settingsCtrl = require('./ctrl/settings')();
 var onceTrue = require('mutant/once-true');
@@ -27,7 +28,8 @@ module.exports = (attachToElement, sbot) => {
     "./css/game.css",
     "./css/historyArea.css",
     "./css/playerProfiles.css",
-    "./css/actionButtons.css"
+    "./css/actionButtons.css",
+    "./css/activity.css"
   ];
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
@@ -56,11 +58,13 @@ module.exports = (attachToElement, sbot) => {
     var gamesInProgressObs = gameCtrl.getMyGamesInProgress();
     var gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
     var observableGamesObs = gameCtrl.getFriendsObservableGames();
+    var userRecentActivity = gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
 
     // Hack: keep observables loaded with the latest value.
     gamesInProgressObs(e => e);
     gamesMyMoveObs(e => e);
     observableGamesObs(t => t);
+    userRecentActivity(t => t);
 
     m.route(mainBody, "/my_games", {
       "/my_games": MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
@@ -81,6 +85,7 @@ module.exports = (attachToElement, sbot) => {
         }
       },
       "/invitations": InvitationsComponent(gameCtrl),
+      "/activity": RecentActivityComponent(gameCtrl, userRecentActivity),
       "/observable": MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
       "/player/:playerId": PlayerProfileComponent(gameCtrl)
     })
@@ -109,9 +114,5 @@ module.exports = (attachToElement, sbot) => {
     notifier.startNotifying();
 
     appRouter(bodyDiv, gameCtrl);
-
-
-
-
   });
 }

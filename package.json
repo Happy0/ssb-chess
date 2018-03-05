@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "2.1.8",
+  "version": "2.2.0",
   "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
   "main": "inject.js",
   "dependencies": {
@@ -17,6 +17,9 @@
     "patchcore": "^1.23.0",
     "pubsub-js": "1.5.7",
     "pull-abortable": "4.1.1",
+    "pull-async-filter": "^1.0.0",
+    "pull-cat": "^1.1.11",
+    "pull-many": "^1.0.8",
     "pull-scroll": "1.0.9",
     "pull-stream": "3.6.0",
     "ramda": "0.24.1",

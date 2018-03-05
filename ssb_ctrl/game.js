@@ -189,7 +189,17 @@ module.exports = (sbot, myIdent) => {
         toMove: getPlayerToMove(players, pgnMoves.length),
         status: status,
         lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
-        lastUpdateTime: latestUpdate
+        lastUpdateTime: latestUpdate,
+        hasPlayer: function (id) {
+          return this.players[id] != null;
+        },
+        getOtherPlayer: function (id) {
+          for (var k in this.players) {
+            if (k !== id) {
+              return this.players[k];
+            }
+          }
+        }
       }
     });
   }

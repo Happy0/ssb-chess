@@ -36,7 +36,14 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
       return m("div", {
           class: "ssb-chess-miniboards"
         },
-        gameSummaries.map(summary => m(Miniboard(gameCtrl, summary, this.ident))));
+        gameSummaries.map(summary => {
+          var situationObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
+
+          return m(
+            Miniboard(situationObservable, summary, this.ident)
+          )
+        })
+      )
     },
     oncreate: function(e) {
       keepMiniboardsUpdated();

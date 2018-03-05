@@ -5,9 +5,18 @@
 }
 
 .ssb-chess-miniboard {
-  width: 320px;
   margin: 2%;
   justify-content: center;
+}
+
+.cg-board-wrap.ssb-chess-board-small {
+  width: 220px;
+  height: 220px;
+}
+
+.cg-board-wrap.ssb-chess-board-medium {
+  width: 320px;
+  height: 320px;
 }
 
 .ssb-chess-miniboard-name {

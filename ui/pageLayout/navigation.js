@@ -32,8 +32,15 @@ module.exports = (gameCtrl, settings) => {
     countOnHoverOnly: true,
     countHoverText: () => `${observable.count} observable games.`
   };
+  const recent = {
+    name: 'Recent Activity',
+    link: '/activity',
+    count: 0,
+    countUpdateFn: gameCtrl.getRecentActivityCtrl().unseenNotifications,
+    countHoverText: () => 'Recent Activity'
+  }
 
-  var navItems = [gamesInProgress, gamesMyMove, invitations, observable];
+  var navItems = [gamesInProgress, gamesMyMove, invitations, observable, recent];
 
   function renderNavItem(navItem) {
     return m('span', {
