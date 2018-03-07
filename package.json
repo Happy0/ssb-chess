@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Multiplayer chess built on top of the secure-skuttlebutt platform.",
   "main": "inject.js",
   "dependencies": {
@@ -25,7 +25,7 @@
     "ramda": "0.24.1",
     "scuttlebot": "10.2.1",
     "ssb-backlinks": "^0.4.1",
-    "ssb-embedded-chat": "1.1.0",
+    "ssb-embedded-chat": "1.1.1",
     "ssb-links": "^2.0.0",
     "ssb-query": "1.0.0",
     "tiny-worker": "2.1.1",
