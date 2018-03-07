@@ -35,7 +35,7 @@ module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
 
       var unseen = computed( [recentActivity, lastSeenObs], activityMessages => {
         var lastSeenStr = localStorage.getItem('ssb_chess_last_seen_notification');
-        var lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
+        var lastSeen = lastSeenStr ? parseFloat(lastSeenStr) : 0;
 
         return activityMessages.filter(entry => entry.msg.timestamp > lastSeen);
       });
