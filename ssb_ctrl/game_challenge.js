@@ -25,7 +25,10 @@ module.exports = (sbot, myIdent) => {
     console.log("Accepting challenge. Root game message is: " + gameRootMessage);
     const post = {
       'type': 'chess_invite_accept',
-      'root': gameRootMessage
+      'root': gameRootMessage,
+       // Used for ssb-ooo which allows clients to request messages from peers
+       // that are outside their follow graph.
+      'branch': gameRootMessage
     }
 
     return new Promise((resolve, reject) => {

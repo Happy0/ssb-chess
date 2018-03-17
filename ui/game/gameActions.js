@@ -48,7 +48,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       onceTrue(situationObservable,
         situation => {
           if (situation && situation.status.status === "started") {
-            gameMoveCtrl.resignGame(situation.gameId)
+            gameMoveCtrl.resignGame(situation.gameId, situation.latestUpdateMsg)
           }
         }
       );

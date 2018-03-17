@@ -39,7 +39,8 @@ For example, the entire scuttlebutt message for a move could look like this:
       "orig": "d6",
       "dest": "e7",
       "pgnMove": "dxe7",
-      "fen": "r1b2rk1/pp1pPppp/6q1/8/2Pp1B2/1Q1P2P1/PP4BP/R3R1K1 b - - 0 18"
+      "fen": "r1b2rk1/pp1pPppp/6q1/8/2Pp1B2/1Q1P2P1/PP4BP/R3R1K1 b - - 0 18",
+      "branch": "%FvjrSmC/02bneFhr1/xZz9K5HQezQBTI4nEyG3rQ7FM=.sha256"
     },
     "signature": "0SpisCR/celfcZsc9Bc0Ikq/12bAp2B3sNh5q0lPqTB1JsMT56rtVzxq75ly1eE3+bp+vj+XfZ262wDCNLjhDw==.sig.ed25519"
   },
@@ -68,11 +69,14 @@ Type `chess_invite_accept`
 
 ### Fields
 * root - the key of the invitiation message that is being accepted.
+* branch - the key of the invitiation message that is being accepted. This is used to support ssb-ooo, which allows clients to
+           request messages that are not visible in their follow graph. This helps clients observe the game, even if the user isn't close to one of the players in the follow graph.
 
 ```javascript
 {
       "type": "chess_invite_accept",
-      "root": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256"
+      "root": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256",
+      "branch": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256"
     }
 ```
 A player may accept an invite they have received by sending a message of type ```chess_invite_accept``` linking back to the key of the original game invitation message.
@@ -84,6 +88,8 @@ Type `chess_move`
 
 ### Fields
 * root - the original game invite message key.
+* branch - the key of the previous move that the move is being made in response to. This is used to support ssb-ooo, which allows clients to
+           request messages that are not visible in their follow graph. This helps clients observe the game, even if the user isn't close to one of the players in the follow graph.
 * ply - the move number
 * orig - the origin square
 * dest - the destination square
@@ -96,6 +102,7 @@ Type `chess_move`
   "type": "chess_move",
   "ply": 26,
   "root": "%WbzP0UxevK8j4g6CdLmgFnsjblnW0EVp/u6phVD5Y/4=.sha256",
+  "branch": "%FvjrSmC/02bneFhr1/xZz9K5HQezQBTI4nEyG3rQ7FM=.sha256",
   "orig": "b2",
   "dest": "c1",
   "pgnMove": "bxc1=B",
@@ -108,6 +115,8 @@ Type `chess_game_end`
 
 ### Fields
 * root - the original game invite message key.
+* branch - the key of the previous move that the end of the game is in response to. This is used to support ssb-ooo, which allows clients to
+           request messages that are not visible in their follow graph. This helps clients observe the game, even if the user isn't close to one of the players in the follow graph.
 * status - the status the game ended with. May be one of the following: `mate | draw | resigned`.
 * ply (optional - may be omitted for resignations) - the move number
 * orig (optional - may be omitted for resignations) - the origin square
@@ -125,6 +134,7 @@ Type `chess_game_end`
   "ply": 20,
   "fen": "rnb2rk1/ppp2ppp/3p4/4p1qK/2P1n3/8/P2P1PPP/RNB2BNR w - - 2 11",
   "root": "%HGPn7yS2bjpWZndXtuusOjGXrirIIGu0XS18aY8YoFM=.sha256",
+  "branch": "%FvjrSmC/02bneFhr1/xZz9K5HQezQBTI4nEyG3rQ7FM=.sha256",
   "orig": "f6",
   "dest": "g5",
   "pgnMove": "Qg5#"
