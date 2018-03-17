@@ -26,7 +26,8 @@ module.exports = (gameSSBDao, myIdent) => {
             gameRootMessage: gameRootMessage,
             originSquare: originSquare,
             destinationSquare: destinationSquare,
-            players: situation.players
+            players: situation.players,
+            respondsTo: situation.latestUpdateMsg
           }
 
         });
@@ -35,8 +36,8 @@ module.exports = (gameSSBDao, myIdent) => {
     });
   }
 
-  function resignGame(gameId) {
-    return gameSSBDao.resignGame(gameId);
+  function resignGame(gameId, respondsTo) {
+    return gameSSBDao.resignGame(gameId, respondsTo);
   }
 
   function publishValidMoves(gameId, ply) {
@@ -88,6 +89,7 @@ module.exports = (gameSSBDao, myIdent) => {
       var ply = e.data.payload.situation.ply;
       var fen = e.data.payload.situation.fen;
       var players = e.data.reqid.players;
+      var respondsTo = e.data.reqid.respondsTo;
 
       var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
@@ -96,11 +98,13 @@ module.exports = (gameSSBDao, myIdent) => {
       var winnerId = winner ? coloursToPlayer[winner].id : null;
 
       gameSSBDao.endGame(gameRootMessage, status.name, winnerId, fen, ply,
-        originSquare, destinationSquare, pgnMove).then(dc => {
+        originSquare, destinationSquare, pgnMove, respondsTo).then(dc => {
         gameSSBDao.getSituation(gameRootMessage).then(situation =>
           PubSub.publish("game_end", situation))
       });
     } else {
+
+      var respondsTo = e.data.reqid.respondsTo;
 
       gameSSBDao.makeMove(
         gameRootMessage,
@@ -109,7 +113,8 @@ module.exports = (gameSSBDao, myIdent) => {
         destinationSquare,
         e.data.payload.situation.promotion,
         e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
-        e.data.payload.situation.fen
+        e.data.payload.situation.fen,
+        respondsTo
       ).then(dc => {
         gameSSBDao.getSituation(gameRootMessage).then(situation => PubSub.publish("move", situation));
       });

@@ -162,7 +162,7 @@ module.exports = (sbot, myIdent) => {
       // Sort in ascending ply so that we get a list of moves linearly
       msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
-      var latestUpdate = messages.map(msg => msg.value.timestamp).reduce((a,b) => Math.max(a,b), 0) ;
+      var latestUpdate = messages.reduce(msgWithBiggestTimestamp, null) ;
 
       var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
       var fenHistory = msgs.map(msg => msg.value.content.fen);
@@ -189,7 +189,8 @@ module.exports = (sbot, myIdent) => {
         toMove: getPlayerToMove(players, pgnMoves.length),
         status: status,
         lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
-        lastUpdateTime: latestUpdate,
+        lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
+        latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
         hasPlayer: function (id) {
           return this.players[id] != null;
         },
@@ -202,6 +203,18 @@ module.exports = (sbot, myIdent) => {
         }
       }
     });
+  }
+
+  function msgWithBiggestTimestamp(msg1, msg2) {
+    if (msg1 == null) {
+      return msg2;
+    } else if (msg2 == null) {
+      return msg1;
+    } else if (msg1.value.timestamp > msg2.value.timestamp) {
+      return msg1;
+    } else {
+      return msg2;
+    }
   }
 
   function getSituationSummaryObservable(gameRootMessage) {
@@ -218,7 +231,7 @@ module.exports = (sbot, myIdent) => {
     return MutantUtils.mutantToPromise(getSituationObservable(gameRootMessage));
   }
 
-  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen) {
+  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen, respondsTo) {
     const post = {
       type: 'chess_move',
       ply: ply,
@@ -231,6 +244,10 @@ module.exports = (sbot, myIdent) => {
 
     if (promotion) {
       post['promotion'] = promotion;
+    }
+
+    if (respondsTo) {
+      post['branch'] = respondsTo
     }
 
     return new Promise((resolve, reject) => {
@@ -251,12 +268,14 @@ module.exports = (sbot, myIdent) => {
     }
   }
 
-  function resignGame(gameRootMessage) {
+  function resignGame(gameRootMessage, repsondsTo) {
     const post = {
       type: 'chess_game_end',
       status: "resigned",
       root: gameRootMessage
     };
+
+    addPropertyIfNotEmpty(post, "branch", respondsTo);
 
     return new Promise( (resolve, reject) => {
       sbot.publish(post, (err, msg) => {
@@ -269,7 +288,7 @@ module.exports = (sbot, myIdent) => {
     })
   }
 
-  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove) {
+  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove, respondsTo) {
     return new Promise((resolve, reject) => {
 
       const post = {
@@ -287,6 +306,7 @@ module.exports = (sbot, myIdent) => {
       addPropertyIfNotEmpty(post, "orig", originSquare);
       addPropertyIfNotEmpty(post, "dest", destinationSquare);
       addPropertyIfNotEmpty(post, "pgnMove", pgnMove);
+      addPropertyIfNotEmpty(post, "branch", respondsTo)
 
       sbot.publish(post, function(err, msg) {
         if (err) {
