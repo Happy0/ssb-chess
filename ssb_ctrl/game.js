@@ -268,7 +268,7 @@ module.exports = (sbot, myIdent) => {
     }
   }
 
-  function resignGame(gameRootMessage, repsondsTo) {
+  function resignGame(gameRootMessage, respondsTo) {
     const post = {
       type: 'chess_game_end',
       status: "resigned",
