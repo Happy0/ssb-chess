@@ -9,10 +9,15 @@ module.exports = (gameCtrl) => {
 
   function renderFinishedGameSummary(gameSummary, playerId) {
     var dom = document.createElement('div');
-    dom.className = "ssb-chess-profile-game-summary"
+    dom.className = "ssb-chess-profile-game-summary";
 
-    var miniboard = Miniboard(gameCtrl, gameSummary, playerId);
-    m.render(dom, m(miniboard));
+    var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(gameSummary.gameId);
+
+    var miniboard = Miniboard(gameSummaryObservable, gameSummary, playerId);
+
+    var board = m(miniboard);
+
+    m.render(dom, board);
 
     return dom;
   }
