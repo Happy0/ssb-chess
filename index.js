@@ -122,7 +122,7 @@ module.exports = (attachToElement, sbot, opts = {}) => {
   return {
     goToGame: (gameId) => {
       var gameRoute = `/games/${btoa(gameId)}`;
-    //  m.route.set(gameRoute);
+      m.route.set(gameRoute);
     }
   }
 
