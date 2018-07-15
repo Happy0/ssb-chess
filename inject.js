@@ -1,27 +1,26 @@
 const nest = require('depnest');
 const { h, onceTrue } = require('mutant');
+const get = require('lodash/get');
 // const { isMsg } = require('ssb-ref')
 
 const index = require('./index');
 
 exports.gives = nest({
   'app.html.menuItem': true,
-  'app.page.chessIndex': true,
   'router.sync.routes': true,
 })
 
 exports.needs = nest({
-  'app.page.chessIndex': 'first',
+  'app.sync.locationId': 'first',
   'sbot.obs.connection': 'first'
 });
 
 exports.create = function(api) {
-  const topLevelDomElement = h('div.ssb-chess-container', { title: '/chess' })
+  // var topLevelDomElement
   var pageLoaded = false;
 
   return nest({
     'app.html.menuItem': menuItem,
-    'app.page.chessIndex': chessIndex,
     'router.sync.routes': routes,
   })
 
@@ -35,32 +34,57 @@ exports.create = function(api) {
   }
 
   function chessIndex(location) {
-    if (pageLoaded) {
-      return topLevelDomElement;
-    }
+    const topLevelDomElement = ChessContainer(location);
 
-    onceTrue(api.sbot.obs.connection(), (sbot) => {
-
+    onceTrue(api.sbot.obs.connection, (sbot) => {
       index(topLevelDomElement, sbot);
 
       pageLoaded = true;
     });
 
-    return topLevelDomElement;
+    return topLevelDomElement
+  }
+
+  function chessShow(location) {
+    const rootEl = ChessContainer(location);
+
+    onceTrue(api.sbot.obs.connection, (sbot) => {
+      index(rootEl, sbot, { initialView: `/games/${btoa(location.game)}` });
+    });
+
+    return rootEl
   }
 
   function routes (sofar = []) {
-    const pages = api.app.page
-
     // loc = location, an object with all the info required to specify a location
     const routes = [
-//    [ loc => loc.page === 'chessGame' && isMsg(loc.game), pages.chessGame ], // example
-//    [ loc => loc.page === 'chess' && isMsg(loc.game), pages.chessGame ],     // alternative
-
-      [ loc => loc.page === 'chess', pages.chessIndex ],
+      [ loc => loc.page === 'chess', chessIndex ],
+      [ loc => isChessMsg(loc), chessShow],
     ]
 
     // this stacks chess routes below routes loaded by depject so far (polite)
     return [...sofar, ...routes]
   }
+
+
+  function ChessContainer (location) {
+    const root = h('div.ssb-chess-container')
+    root.title = location.page
+      ? '/chess'
+      : `/chess/${getRoot(location)}`
+
+    root.id = api.app.sync.locationId(location)
+
+    return root
 }
+}
+
+function isChessMsg (loc) {
+  const type = get(loc, ['value', 'content', 'type'], '');
+  return type.startsWith('chess');
+}
+
+function getRoot (msg) {
+  return get(msg, ['value', 'content', 'root'], msg.key)
+}
+

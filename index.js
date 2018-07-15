@@ -13,7 +13,8 @@ var onceTrue = require('mutant/once-true');
 
 var Notifier = require('./ui/notify/notifier');
 
-module.exports = (attachToElement, sbot) => {
+module.exports = (attachToElement, sbot, opts = {}) => {
+  var { initialView } = opts
 
   var cssFiles = [
     "./css/global.css",
@@ -66,7 +67,9 @@ module.exports = (attachToElement, sbot) => {
     observableGamesObs(t => t);
     userRecentActivity(t => t);
 
-    m.route(mainBody, "/my_games", {
+    var defaultView = initialView || "/my_games"
+
+    m.route(mainBody, defaultView, {
       "/my_games": MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
       "/games_my_move": MiniboardListComponent(gameCtrl, gamesMyMoveObs , gameCtrl.getMyIdent()),
       "/games/:gameId": {
