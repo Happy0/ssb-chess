@@ -47,9 +47,10 @@ exports.create = function(api) {
 
   function chessShow(location) {
     const rootEl = ChessContainer(location);
+    const gameId = location.key;
 
     onceTrue(api.sbot.obs.connection, (sbot) => {
-      index(rootEl, sbot, { initialView: `/games/${btoa(location.game)}` });
+      index(rootEl, sbot, { initialView: `/games/${btoa(gameId)}` });
     });
 
     return rootEl
@@ -87,4 +88,3 @@ function isChessMsg (loc) {
 function getRoot (msg) {
   return get(msg, ['value', 'content', 'root'], msg.key)
 }
-
