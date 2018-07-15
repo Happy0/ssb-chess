@@ -1,6 +1,7 @@
 const nest = require('depnest');
 const { h, onceTrue } = require('mutant');
 const get = require('lodash/get');
+const m = require('mithril');
 // const { isMsg } = require('ssb-ref')
 
 const index = require('./index');
@@ -16,8 +17,10 @@ exports.needs = nest({
 });
 
 exports.create = function(api) {
-  // var topLevelDomElement
+
   var pageLoaded = false;
+  var topLevelDomElement = null;
+  var app = null;
 
   return nest({
     'app.html.menuItem': menuItem,
@@ -34,26 +37,50 @@ exports.create = function(api) {
   }
 
   function chessIndex(location) {
-    const topLevelDomElement = ChessContainer(location);
 
-    onceTrue(api.sbot.obs.connection, (sbot) => {
-      index(topLevelDomElement, sbot);
-
+    // We only create the app once (for now.)
+    if (pageLoaded) {
+      topLevelDomElement.title = `/chess`;
+      topLevelDomElement.id = api.app.sync.locationId(location);
+      return topLevelDomElement;
+    } else {
+      topLevelDomElement = ChessContainer(location);
       pageLoaded = true;
-    });
 
-    return topLevelDomElement
+      onceTrue(api.sbot.obs.connection, (sbot) => {
+        app = index(topLevelDomElement, sbot);
+      });
+
+      return topLevelDomElement
+    }
   }
 
   function chessShow(location) {
-    const rootEl = ChessContainer(location);
+
     const gameId = location.key;
 
-    onceTrue(api.sbot.obs.connection, (sbot) => {
-      index(rootEl, sbot, { initialView: `/games/${btoa(gameId)}` });
-    });
+    // If the app is already open, route to the game, otherwise open the app at the
+    // page
+    if (pageLoaded) {
+      app.goToGame(gameId);
+      topLevelDomElement.title = `/chess/${getRoot(location)}`;
+      topLevelDomElement.id = api.app.sync.locationId(location);
 
-    return rootEl
+      return topLevelDomElement;
+    } else {
+
+      var destinationRoute = `/games/${btoa(gameId)}`;
+
+      topLevelDomElement = ChessContainer(location);
+      pageLoaded = true;
+
+      onceTrue(api.sbot.obs.connection, (sbot) => {
+        app = index(topLevelDomElement, sbot, { initialView: destinationRoute });
+      });
+
+      return topLevelDomElement;
+    }
+
   }
 
   function routes (sofar = []) {
@@ -77,7 +104,7 @@ exports.create = function(api) {
     root.id = api.app.sync.locationId(location)
 
     return root
-}
+  }
 }
 
 function isChessMsg (loc) {
