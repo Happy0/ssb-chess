@@ -40,6 +40,7 @@ exports.create = function(api) {
   function chessIndex() {
     // We only create the app once (for now.)
     if (pageLoaded) {
+      topLevelDomElement.title = '/chess';
       return topLevelDomElement;
     } else {
       pageLoaded = true;
