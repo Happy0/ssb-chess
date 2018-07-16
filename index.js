@@ -118,4 +118,13 @@ module.exports = (attachToElement, sbot, opts = {}) => {
 
     appRouter(bodyDiv, gameCtrl);
   });
+
+  return {
+    goToGame: (gameId) => {
+      var gameRoute = `/games/${btoa(gameId)}`;
+      m.route.set(gameRoute);
+    }
+  }
+
+
 }
