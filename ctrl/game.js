@@ -15,7 +15,7 @@ const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
 const Value = require('mutant/value');
-const Array = require('mutant/array');
+const MutantArray = require('mutant/array');
 const computed = require('mutant/computed');
 
 const _ = require('lodash');
@@ -88,7 +88,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesInProgress(playerId) {
-    var observable = Array([]);
+    var observable = MutantArray([]);
     gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)));
 
     var playerGameUpdates = getGameUpdatesObservable(playerId);
@@ -109,7 +109,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getFriendsObservableGames(start, end) {
-    var observable = Array([]);
+    var observable = MutantArray([]);
 
     var start = start ? start : 0;
     var end = end ? end : 20
