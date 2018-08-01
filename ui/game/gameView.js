@@ -24,6 +24,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
   var gameHistory = GameHistory(situationObservable, myIdent);
   var actionButtons  = ActionButtons(
     gameCtrl.getMoveCtrl(),
+    gameCtrl.getPgnCtrl(),
     myIdent,
     situationObservable
   );

@@ -164,9 +164,11 @@ module.exports = (sbot, myIdent) => {
 
       var latestUpdate = messages.reduce(msgWithBiggestTimestamp, null) ;
 
+      var startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
       var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
       var fenHistory = msgs.map(msg => msg.value.content.fen);
-      fenHistory.unshift("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+      fenHistory.unshift(startFen);
 
       var status = findGameStatus(players, messages);
 
@@ -184,13 +186,22 @@ module.exports = (sbot, myIdent) => {
         ply: pgnMoves.length,
         origDests: origDests,
         check: isCheck,
-        fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
         players: players,
         toMove: getPlayerToMove(players, pgnMoves.length),
         status: status,
         lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
         lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
         latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
+        getInitialFen: function () {
+          return startFen;
+        },
+        getWhitePlayer: function () {
+          return Object.values(this.players).find(player => player.colour === "white");
+        },
+        getBlackPlayer: function () {
+          return Object.values(this.players).find(player => player.colour === "black");
+        },
         hasPlayer: function (id) {
           return this.players[id] != null;
         },

@@ -8,6 +8,7 @@ const SocialCtrl = require('./social');
 const PlayerCtrl = require('./player');
 const MoveCtrl = require('./game_move');
 const RecentActivityCtrl = require('./recentActivityCtrl');
+const PgnCtrl = require('./pgn');
 
 var PubSub = require('pubsub-js');
 
@@ -26,6 +27,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   const gameChallenger = GameChallenger(sbot, myIdent);
   const gameDb = GameDb(sbot);
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
+  const pgnCtrl = PgnCtrl(gameSSBDao);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
@@ -204,6 +206,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getSituationObservable(gameId) {
+
     return gameSSBDao.getSituationObservable(gameId);
   }
 
@@ -236,6 +239,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     getSocialCtrl: () => socialCtrl,
     getPlayerCtrl: () => playerCtrl,
     getRecentActivityCtrl: () => recentActivityCtrl,
+    getPgnCtrl: () => pgnCtrl,
     getSbot: () => sbot
   }
 
