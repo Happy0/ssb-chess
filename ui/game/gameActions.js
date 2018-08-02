@@ -113,12 +113,16 @@ module.exports = (gameMoveCtrl, pgnCtrl, myIdent, situationObservable) => {
   return {
     view: (vDom) => {
 
-      return m('div', {
-          class: "ssb-game-actions",
-          style: observing ? "display: none;" : ""
-        },
-        when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
-      );
+      if (observing) {
+        return postGameButtons();
+      }
+      else {
+        return m('div', {
+            class: "ssb-game-actions"
+          },
+          when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
+        );
+      }
     },
     oninit: function(vNode) {
       var w = watch(situationObservable,
