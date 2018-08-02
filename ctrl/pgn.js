@@ -19,11 +19,17 @@ module.exports = (gameSSBDao, chessWorker) => {
     })
   }
 
+  function addChessSite(pgn) {
+    // TODO : make pull request on scalachessjs to paramaterise this.
+    return pgn.replace(`[Site "https://lichess.org"]`, `[Site "ssb-chess (https://github.com/happy0/ssb-chess)"]`  )
+  }
+
   function handlePgnResponse(event, gameId, resolve, reject) {
     if (event.data.topic === "pgnDump" && event.data.reqid.gameRootMessage === gameId ) {
-        resolve(event.data.payload.pgn);
+      var pgnText = addChessSite(event.data.payload.pgn);
+      resolve(pgnText);
     } else if (event.error === "error") {
-        reject(event.error);
+      reject(event.error);
     }
   }
 

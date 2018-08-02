@@ -7,6 +7,7 @@ var GameComponent = require('./ui/game/gameView');
 var PlayerProfileComponent = require('./ui/player/player_profile');
 var InvitationsComponent = require('./ui/invitations/invitations');
 var RecentActivityComponent = require('./ui/recent_activity/recent');
+var PgnExportComponent = require('./ui/export/pgnExport');
 
 var settingsCtrl = require('./ctrl/settings')();
 var onceTrue = require('mutant/once-true');
@@ -30,7 +31,8 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     "./css/historyArea.css",
     "./css/playerProfiles.css",
     "./css/actionButtons.css",
-    "./css/activity.css"
+    "./css/activity.css",
+    "./css/pgnExport.css",
   ];
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
@@ -90,7 +92,15 @@ module.exports = (attachToElement, sbot, opts = {}) => {
       "/invitations": InvitationsComponent(gameCtrl),
       "/activity": RecentActivityComponent(gameCtrl, userRecentActivity),
       "/observable": MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
-      "/player/:playerId": PlayerProfileComponent(gameCtrl)
+      "/player/:playerId": PlayerProfileComponent(gameCtrl),
+      "/games/:gameId/pgn/:pgnText": {
+        onmatch: function(args, requestedPath) {
+          var gameId = atob(args.gameId);
+          var pgn = atob(args.pgnText);
+
+          return PgnExportComponent(gameId, pgn);
+        }
+      }
     })
   }
 

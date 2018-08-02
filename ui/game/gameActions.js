@@ -58,10 +58,9 @@ module.exports = (gameMoveCtrl, pgnCtrl, myIdent, situationObservable) => {
   }
 
   function handlePgnExport(gameId) {
-    pgnCtrl.getPgnExport(gameId).then( pgn => {
-
-      // TODO: handle in a way that's electron compatible (and ideally browser too.)
-      console.log(pgn);
+    pgnCtrl.getPgnExport(gameId).then( pgnText => {
+      var url = "/games/" + btoa(gameId) + "/pgn/" + btoa(pgnText);
+      m.route.set(url);
     });
   }
 
@@ -75,8 +74,8 @@ module.exports = (gameMoveCtrl, pgnCtrl, myIdent, situationObservable) => {
 
     return m('button', {
       onclick: exportPgn,
-      title: 'Save PGN.'
-    }, 'Save PGN')
+      title: 'Export game.'
+    }, 'Export game')
   }
 
   function isObserving(situation) {
