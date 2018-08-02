@@ -93,12 +93,12 @@ module.exports = (attachToElement, sbot, opts = {}) => {
       "/activity": RecentActivityComponent(gameCtrl, userRecentActivity),
       "/observable": MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
       "/player/:playerId": PlayerProfileComponent(gameCtrl),
-      "/games/:gameId/pgn/:pgnText": {
+      "/games/:gameId/pgn": {
         onmatch: function(args, requestedPath) {
           var gameId = atob(args.gameId);
-          var pgn = atob(args.pgnText);
-
-          return PgnExportComponent(gameId, pgn);
+          return gameCtrl.getPgnCtrl()
+                          .getPgnExport(gameId)
+                          .then(pgnText => PgnExportComponent(gameId, pgnText));
         }
       }
     })

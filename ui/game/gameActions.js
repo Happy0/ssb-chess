@@ -5,7 +5,7 @@ var when = require('mutant/when');
 var watch = require("mutant/watch");
 var computed = require('mutant/computed');
 
-module.exports = (gameMoveCtrl, pgnCtrl, myIdent, situationObservable) => {
+module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
 
   var watchesToClear = [];
 
@@ -58,9 +58,10 @@ module.exports = (gameMoveCtrl, pgnCtrl, myIdent, situationObservable) => {
   }
 
   function handlePgnExport(gameId) {
-    pgnCtrl.getPgnExport(gameId).then( pgnText => {
-      var url = "/games/" + btoa(gameId) + "/pgn/" + btoa(pgnText);
-      m.route.set(url);
+    var url = "/games/:gameId/pgn";
+
+    m.route.set(url, {
+      gameId: btoa(gameId)
     });
   }
 
