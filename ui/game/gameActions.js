@@ -5,7 +5,7 @@ var when = require('mutant/when');
 var watch = require("mutant/watch");
 var computed = require('mutant/computed');
 
-module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
+module.exports = (gameMoveCtrl, pgnCtrl, myIdent, situationObservable) => {
 
   var watchesToClear = [];
 
@@ -16,7 +16,6 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
   function moveConfirmButtons() {
 
     var confirmMove = () => {
-      console.log("confirmed move");
       moveConfirmationObservable.set({
         moveNeedsConfirmed: false,
         confirmed: true
@@ -24,7 +23,6 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     }
 
     var cancelMove = () => {
-      console.log("Cancelled move.");
       moveConfirmationObservable.set({
         moveNeedsConfirmed: false,
         confirmed: false
@@ -59,6 +57,27 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     }, 'Resign');
   }
 
+  function handlePgnExport(gameId) {
+    pgnCtrl.getPgnExport(gameId).then( pgnText => {
+      var url = "/games/" + btoa(gameId) + "/pgn/" + btoa(pgnText);
+      m.route.set(url);
+    });
+  }
+
+  function postGameButtons() {
+
+    const exportPgn = () => {
+      onceTrue(situationObservable, situation => {
+        handlePgnExport(situation.gameId)
+      });
+    }
+
+    return m('button', {
+      onclick: exportPgn,
+      title: 'Export game.'
+    }, 'Export game')
+  }
+
   function isObserving(situation) {
     return situation.players[myIdent] == null;
   }
@@ -88,18 +107,22 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       situation => situation && (situation.status.status === "started")
     );
 
-    return when(gameInProgress, resignButton());
+    return when(gameInProgress, resignButton(), postGameButtons());
   }
 
   return {
     view: (vDom) => {
 
-      return m('div', {
-          class: "ssb-game-actions",
-          style: observing ? "display: none;" : ""
-        },
-        when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
-      );
+      if (observing) {
+        return postGameButtons();
+      }
+      else {
+        return m('div', {
+            class: "ssb-game-actions"
+          },
+          when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
+        );
+      }
     },
     oninit: function(vNode) {
       var w = watch(situationObservable,
