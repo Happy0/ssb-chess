@@ -17,11 +17,7 @@ var Notifier = require('./ui/notify/notifier');
 module.exports = (attachToElement, sbot, opts = {}) => {
   var { initialView } = opts
 
-  if ( sbot['chess-db'] ) {
-    sbot.ssbChessIndex = sbot['chess-db']
-  } else if (!sbot.ssbChessIndex && !sbot['chess-db'] ) {
-    throw new Error('Missing plugin ssb-chess-db')
-  }
+  setUpGamesIndex();
 
   var cssFiles = [
     "./css/global.css",
@@ -40,6 +36,18 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     "./css/activity.css",
     "./css/pgnExport.css",
   ];
+
+  function setUpGamesIndex() {
+    // In older versions of ssb-chess-db, the plugin was given 'ssbChessIndex'
+    // as a name. This caused issues when loading the plugin into a standalone
+    // scuttlebot ( https://github.com/Happy0/ssb-chess-db/issues/1 )
+    // We deal with this old name for backwards compatibility.
+    if ( sbot['chess-db'] ) {
+      sbot.ssbChessIndex = sbot['chess-db']
+    } else if (!sbot.ssbChessIndex && !sbot['chess-db'] ) {
+      throw new Error('Missing plugin ssb-chess-db')
+    }
+  }
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
   function cssFilesToStyleTag(dom) {

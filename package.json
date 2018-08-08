@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "2.2.11",
+  "version": "2.2.12",
   "description": "Multiplayer chess built on top of the scuttlebutt platform (https://www.scuttlebutt.nz).",
   "main": "inject.js",
   "dependencies": {
