@@ -17,6 +17,12 @@ var Notifier = require('./ui/notify/notifier');
 module.exports = (attachToElement, sbot, opts = {}) => {
   var { initialView } = opts
 
+  if ( sbot['chess-db'] ) {
+    sbot.ssbChessIndex = sbot['chess-db']
+  } else if (!sbot.ssbChessIndex && !sbot['chess-db'] ) {
+    throw new Error('Missing plugin ssb-chess-db')
+  }
+
   var cssFiles = [
     "./css/global.css",
     "./css/chessground/assets/chessground.css",
