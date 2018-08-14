@@ -18,7 +18,7 @@ module.exports = (msg, situation, myIdent) => {
     if (gameState.status.winner === myIdent) {
       return m('div', "You won your game against " + name )
     } else if (gameState.hasPlayer(myIdent)) {
-      return m('div', "You lost your name against " + name);
+      return m('div', "You lost your game against " + name);
     } else {
       var winnerName = gameState.players[gameState.status.winner].name
       var otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
