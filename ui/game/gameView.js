@@ -293,7 +293,12 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       if(this.removeWatches) {
         this.removeWatches();
       }
-      chessGround.destroy();
+
+      if (chessGround) {
+        // Yuck. This has been null for people at this stage before. Perhaps onremove
+        // can be called before oncreate in edge cases?
+        chessGround.destroy();
+      }
 
       PubSub.publish("exited_game");
     }
