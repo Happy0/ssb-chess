@@ -1,8 +1,8 @@
-var m = require("mithril");
-var Chessground = require('chessground').Chessground;
-var Miniboard = require('./miniboard');
+const m = require('mithril');
+const Chessground = require('chessground').Chessground;
+const watch = require('mutant/watch');
+const Miniboard = require('./miniboard');
 
-var watch = require("mutant/watch");
 
 /**
  * Takes an observable list of game summaries (non-observable inner objects)
@@ -14,45 +14,42 @@ var watch = require("mutant/watch");
  * game ends or begins on a page of games a user is playing.)
  */
 module.exports = (gameCtrl, gameSummaryListObs, ident) => {
-  var gameSummaries = [];
+  let gameSummaries = [];
 
-  var oneMinuteMillseconds = 60000;
+  const oneMinuteMillseconds = 60000;
 
   this.ident = ident;
 
-  var unlistenUpdates = null;
+  let unlistenUpdates = null;
 
   function keepMiniboardsUpdated() {
-    unlistenUpdates = watch(gameSummaryListObs, summaries => {
+    unlistenUpdates = watch(gameSummaryListObs, (summaries) => {
       gameSummaries = summaries;
-      setTimeout(m.redraw)
+      setTimeout(m.redraw);
     });
   }
 
   return {
-    view: () => {
-      return m("div", {
-          class: "ssb-chess-miniboards"
-        },
-        gameSummaries.map(summary => {
-          var situationObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
-
-          return m(
-            Miniboard(situationObservable, summary, this.ident)
-          )
-        })
-      )
+    view: () => m('div', {
+      class: 'ssb-chess-miniboards',
     },
-    oncreate: function(e) {
+    gameSummaries.map((summary) => {
+      const situationObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
+
+      return m(
+        Miniboard(situationObservable, summary, this.ident),
+      );
+    })),
+    oncreate(e) {
       keepMiniboardsUpdated();
 
       this.updateTimeAgoTimes = setInterval(
-        () => setTimeout(m.redraw), oneMinuteMillseconds
+        () => setTimeout(m.redraw), oneMinuteMillseconds,
       );
     },
     onremove: () => {
       clearInterval(this.updateTimeAgoTimes);
       unlistenUpdates();
-    }
-  }
-}
+    },
+  };
+};

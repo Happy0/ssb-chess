@@ -1,40 +1,40 @@
-var GameCtrl = require('./ctrl/game');
-var m = require("mithril");
+const m = require('mithril');
+const GameCtrl = require('./ctrl/game');
 
-var MiniboardListComponent = require('./ui/miniboard/miniboard_list');
-var NavigationBar = require('./ui/pageLayout/navigation');
-var GameComponent = require('./ui/game/gameView');
-var PlayerProfileComponent = require('./ui/player/player_profile');
-var InvitationsComponent = require('./ui/invitations/invitations');
-var RecentActivityComponent = require('./ui/recent_activity/recent');
-var PgnExportComponent = require('./ui/export/pgnExport');
+const MiniboardListComponent = require('./ui/miniboard/miniboard_list');
+const NavigationBar = require('./ui/pageLayout/navigation');
+const GameComponent = require('./ui/game/gameView');
+const PlayerProfileComponent = require('./ui/player/player_profile');
+const InvitationsComponent = require('./ui/invitations/invitations');
+const RecentActivityComponent = require('./ui/recent_activity/recent');
+const PgnExportComponent = require('./ui/export/pgnExport');
 
-var settingsCtrl = require('./ctrl/settings')();
-var onceTrue = require('mutant/once-true');
+const settingsCtrl = require('./ctrl/settings')();
+const onceTrue = require('mutant/once-true');
 
-var Notifier = require('./ui/notify/notifier');
+const Notifier = require('./ui/notify/notifier');
 
 module.exports = (attachToElement, sbot, opts = {}) => {
-  var { initialView } = opts
+  const { initialView } = opts;
 
   setUpGamesIndex();
 
-  var cssFiles = [
-    "./css/global.css",
-    "./css/chessground/assets/chessground.css",
-    "./css/chessground/assets/theme.css",
-    "./css/board-theme.css",
-    "./css/miniboards.css",
-    "./css/largeBoard.css",
-    "./css/invites.css",
-    "./css/loading.css",
-    "./css/promote.css",
-    "./css/game.css",
-    "./css/historyArea.css",
-    "./css/playerProfiles.css",
-    "./css/actionButtons.css",
-    "./css/activity.css",
-    "./css/pgnExport.css",
+  const cssFiles = [
+    './css/global.css',
+    './css/chessground/assets/chessground.css',
+    './css/chessground/assets/theme.css',
+    './css/board-theme.css',
+    './css/miniboards.css',
+    './css/largeBoard.css',
+    './css/invites.css',
+    './css/loading.css',
+    './css/promote.css',
+    './css/game.css',
+    './css/historyArea.css',
+    './css/playerProfiles.css',
+    './css/actionButtons.css',
+    './css/activity.css',
+    './css/pgnExport.css',
   ];
 
   function setUpGamesIndex() {
@@ -42,40 +42,39 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     // as a name. This caused issues when loading the plugin into a standalone
     // scuttlebot ( https://github.com/Happy0/ssb-chess-db/issues/1 )
     // We deal with this old name for backwards compatibility.
-    if ( sbot['chess-db'] ) {
-      sbot.ssbChessIndex = sbot['chess-db']
-    } else if (!sbot.ssbChessIndex && !sbot['chess-db'] ) {
-      throw new Error('Missing plugin ssb-chess-db')
+    if (sbot['chess-db']) {
+      sbot.ssbChessIndex = sbot['chess-db'];
+    } else if (!sbot.ssbChessIndex && !sbot['chess-db']) {
+      throw new Error('Missing plugin ssb-chess-db');
     }
   }
 
   // h4cky0 strikes again? mebbe there's a better way? ;x
   function cssFilesToStyleTag(dom) {
-    var rootDir = __dirname + "/";
+    const rootDir = `${__dirname}/`;
 
-    var styles = m('div', {}, cssFiles.map(file => m('link', {rel: 'stylesheet', 'href': rootDir + file})))
+    const styles = m('div', {}, cssFiles.map(file => m('link', { rel: 'stylesheet', href: rootDir + file })));
 
     m.render(dom, styles);
   }
 
   function renderPageTop(parent, gameCtrl) {
+    const navBar = NavigationBar(gameCtrl, settingsCtrl);
 
-    var navBar = NavigationBar(gameCtrl, settingsCtrl);
-
-    var TopComponent = {
-      view: () => m('div',[
-        m(navBar)
-      ])
+    const TopComponent = {
+      view: () => m('div', [
+        m(navBar),
+      ]),
     };
 
     m.mount(parent, TopComponent);
   }
 
   function appRouter(mainBody, gameCtrl) {
-    var gamesInProgressObs = gameCtrl.getMyGamesInProgress();
-    var gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
-    var observableGamesObs = gameCtrl.getFriendsObservableGames();
-    var userRecentActivity = gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
+    const gamesInProgressObs = gameCtrl.getMyGamesInProgress();
+    const gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
+    const observableGamesObs = gameCtrl.getFriendsObservableGames();
+    const userRecentActivity = gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
 
     // Hack: keep observables loaded with the latest value.
     gamesInProgressObs(e => e);
@@ -83,50 +82,50 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     observableGamesObs(t => t);
     userRecentActivity(t => t);
 
-    var defaultView = initialView || "/my_games"
+    const defaultView = initialView || '/my_games';
 
     m.route(mainBody, defaultView, {
-      "/my_games": MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
-      "/games_my_move": MiniboardListComponent(gameCtrl, gamesMyMoveObs , gameCtrl.getMyIdent()),
-      "/games/:gameId": {
-        onmatch: function(args, requestedPath) {
-          var gameId = atob(args.gameId);
-          var gameSituationObs = gameCtrl.getSituationObservable(gameId);
+      '/my_games': MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
+      '/games_my_move': MiniboardListComponent(gameCtrl, gamesMyMoveObs, gameCtrl.getMyIdent()),
+      '/games/:gameId': {
+        onmatch(args, requestedPath) {
+          const gameId = atob(args.gameId);
+          const gameSituationObs = gameCtrl.getSituationObservable(gameId);
 
           // Only load the game page once we have the initial game situation state.
           // The mithril router allows us to return a component in a promise.
-          return new Promise ( (resolve, reject) => {
-            onceTrue(gameSituationObs, originalSituation => {
-              var gameComponent = GameComponent(gameCtrl, gameSituationObs, settingsCtrl);
+          return new Promise((resolve, reject) => {
+            onceTrue(gameSituationObs, (originalSituation) => {
+              const gameComponent = GameComponent(gameCtrl, gameSituationObs, settingsCtrl);
               resolve(gameComponent);
-            })
-          })
-        }
+            });
+          });
+        },
       },
-      "/invitations": InvitationsComponent(gameCtrl),
-      "/activity": RecentActivityComponent(gameCtrl, userRecentActivity),
-      "/observable": MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
-      "/player/:playerId": PlayerProfileComponent(gameCtrl),
-      "/games/:gameId/pgn": {
-        onmatch: function(args, requestedPath) {
-          var gameId = atob(args.gameId);
+      '/invitations': InvitationsComponent(gameCtrl),
+      '/activity': RecentActivityComponent(gameCtrl, userRecentActivity),
+      '/observable': MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
+      '/player/:playerId': PlayerProfileComponent(gameCtrl),
+      '/games/:gameId/pgn': {
+        onmatch(args, requestedPath) {
+          const gameId = atob(args.gameId);
           return gameCtrl.getPgnCtrl()
-                          .getPgnExport(gameId)
-                          .then(pgnText => PgnExportComponent(gameId, pgnText));
-        }
-      }
-    })
+            .getPgnExport(gameId)
+            .then(pgnText => PgnExportComponent(gameId, pgnText));
+        },
+      },
+    });
   }
 
   sbot.whoami((err, ident) => {
     const gameCtrl = GameCtrl(sbot, ident.id);
 
     const mainBody = attachToElement;
-    const navDiv = document.createElement("div");
-    navDiv.id = "ssb-nav";
-    const bodyDiv = document.createElement("div");
+    const navDiv = document.createElement('div');
+    navDiv.id = 'ssb-nav';
+    const bodyDiv = document.createElement('div');
 
-    const cssDiv = document.createElement("div");
+    const cssDiv = document.createElement('div');
     cssFilesToStyleTag(cssDiv);
 
     mainBody.appendChild(cssDiv);
@@ -137,7 +136,7 @@ module.exports = (attachToElement, sbot, opts = {}) => {
 
     // Display HTML5 notifications if the user is not viewing the chess app
     // and one of their games has an update.
-    var notifier = Notifier(gameCtrl, sbot);
+    const notifier = Notifier(gameCtrl, sbot);
     notifier.startNotifying();
 
     appRouter(bodyDiv, gameCtrl);
@@ -145,10 +144,8 @@ module.exports = (attachToElement, sbot, opts = {}) => {
 
   return {
     goToGame: (gameId) => {
-      var gameRoute = `/games/${btoa(gameId)}`;
+      const gameRoute = `/games/${btoa(gameId)}`;
       m.route.set(gameRoute);
-    }
-  }
-
-
-}
+    },
+  };
+};

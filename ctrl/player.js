@@ -1,7 +1,6 @@
-var pull = require("pull-stream");
+const pull = require('pull-stream');
 
 module.exports = (sbot, gameDb, gameSsbCtrl) => {
-
   function endedGamesPagesSource(playerId) {
     return gameDb.getGamesFinished(playerId);
   }
@@ -13,16 +12,15 @@ module.exports = (sbot, gameDb, gameSsbCtrl) => {
   }
 
   function endedGamesSummariesSource(playerId) {
-    var endedGamesSrc = endedGamesPagesSource(playerId);
+    const endedGamesSrc = endedGamesPagesSource(playerId);
 
-    var flatStream = pull(endedGamesSrc, pull.flatten());
+    const flatStream = pull(endedGamesSrc, pull.flatten());
 
     return pull(flatStream, pull.asyncMap(getGameSummaryCb));
   }
 
 
   return {
-    endedGamesSummariesSource: endedGamesSummariesSource
-  }
-
-}
+    endedGamesSummariesSource,
+  };
+};

@@ -1,34 +1,30 @@
-const PlayerModelUtils = require("./player_model_utils")();
+const PlayerModelUtils = require('./player_model_utils')();
 
 module.exports = (gameSSBDao, myIdent, chessWorker) => {
-
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
-
-    gameSSBDao.getSituation(gameRootMessage).then(situation => {
+    gameSSBDao.getSituation(gameRootMessage).then((situation) => {
       if (situation.toMove !== myIdent) {
-        console.log("Not " + myIdent + " to move");
+        console.log(`Not ${myIdent} to move`);
       } else {
-
         const pgnMoves = situation.pgnMoves;
         chessWorker.postMessage({
-          'topic': 'move',
-          'payload': {
-            'fen': situation.fen,
-            'pgnMoves': pgnMoves,
-            'orig': originSquare,
-            'dest': destinationSquare,
-            'promotion': promoteTo
+          topic: 'move',
+          payload: {
+            fen: situation.fen,
+            pgnMoves,
+            orig: originSquare,
+            dest: destinationSquare,
+            promotion: promoteTo,
           },
           reqid: {
-            gameRootMessage: gameRootMessage,
-            originSquare: originSquare,
-            destinationSquare: destinationSquare,
+            gameRootMessage,
+            originSquare,
+            destinationSquare,
             players: situation.players,
-            respondsTo: situation.latestUpdateMsg
-          }
+            respondsTo: situation.latestUpdateMsg,
+          },
 
         });
-
       }
     });
   }
@@ -43,25 +39,25 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     const gameRootMessage = e.data.reqid.gameRootMessage;
     const originSquare = e.data.reqid.originSquare;
     const destinationSquare = e.data.reqid.destinationSquare;
+    let respondsTo;
 
     if (e.data.payload.error) {
-      console.log("move error");
+      console.log('move error');
       console.dir(e);
-      PubSub.publish("move_error", e.data.payload.error);
+      PubSub.publish('move_error', e.data.payload.error);
     } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
+      const status = e.data.payload.situation.status;
+      const winner = e.data.payload.situation.winner;
+      const ply = e.data.payload.situation.ply;
+      const fen = e.data.payload.situation.fen;
+      const players = e.data.reqid.players;
+      respondsTo = e.data.reqid.respondsTo;
 
-      var status = e.data.payload.situation.status;
-      var winner = e.data.payload.situation.winner;
-      var ply = e.data.payload.situation.ply;
-      var fen = e.data.payload.situation.fen;
-      var players = e.data.reqid.players;
-      var respondsTo = e.data.reqid.respondsTo;
+      const pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
-      var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
+      const coloursToPlayer = PlayerModelUtils.coloursToPlayer(players);
 
-      var coloursToPlayer = PlayerModelUtils.coloursToPlayer(players);
-
-      var winnerId = winner ? coloursToPlayer[winner].id : null;
+      const winnerId = winner ? coloursToPlayer[winner].id : null;
 
       gameSSBDao.endGame(
         gameRootMessage,
@@ -72,10 +68,10 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
         originSquare,
         destinationSquare,
         pgnMove,
-        respondsTo);
+        respondsTo,
+      );
     } else if (e.data.topic === 'move') {
-
-      var respondsTo = e.data.reqid.respondsTo;
+      respondsTo = e.data.reqid.respondsTo;
 
       gameSSBDao.makeMove(
         gameRootMessage,
@@ -85,7 +81,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
         e.data.payload.situation.promotion,
         e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
         e.data.payload.situation.fen,
-        respondsTo
+        respondsTo,
       );
     }
   }
@@ -93,7 +89,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
   chessWorker.addEventListener('message', handleChessWorkerResponse);
 
   return {
-    makeMove: makeMove,
-    resignGame: resignGame
-  }
-}
+    makeMove,
+    resignGame,
+  };
+};

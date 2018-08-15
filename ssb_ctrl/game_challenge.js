@@ -1,61 +1,57 @@
-const pull = require("pull-stream");
+const pull = require('pull-stream');
 const About = require('ssb-ooo-about');
 const Promise = require('bluebird');
 
 module.exports = (sbot, myIdent) => {
-
-  var about = About(sbot, {});
-  var getLatestAboutMsgIds = Promise.promisify(about.async.getLatestMsgIds);
+  const about = About(sbot, {});
+  const getLatestAboutMsgIds = Promise.promisify(about.async.getLatestMsgIds);
 
   function inviteToPlay(invitingPubKey, asWhite) {
-
     return new Promise((resolve, reject) => {
-
       // Give some messages that give both player's latest 'about' messages
       // so that their name (about about) can be displayed to spectators who
       // don't have one of the players in their follow graph using ssb-ooo.
-      var aboutMsgs = Promise.all(
+      const aboutMsgs = Promise.all(
         [
           getLatestAboutMsgIds(invitingPubKey),
-          getLatestAboutMsgIds(myIdent)
-        ]).then(arr => arr.reduce((a, b) => a.concat(b), []));
+          getLatestAboutMsgIds(myIdent),
+        ],
+      ).then(arr => arr.reduce((a, b) => a.concat(b), []));
 
-      aboutMsgs.then(aboutInfo => {
+      aboutMsgs.then((aboutInfo) => {
         const post = {
-          'type': 'chess_invite',
-          'inviting': invitingPubKey,
-          'myColor': asWhite ? 'white' : 'black'
-        }
+          type: 'chess_invite',
+          inviting: invitingPubKey,
+          myColor: asWhite ? 'white' : 'black',
+        };
 
         if (aboutInfo && aboutInfo.length != 0) {
-          post['branch'] = aboutInfo;
+          post.branch = aboutInfo;
         }
 
-        sbot.publish(post, function(err, msg) {
+        sbot.publish(post, (err, msg) => {
           if (err) {
             reject(err);
           } else {
             resolve(msg);
           }
         });
-
       });
-
     });
   }
 
   function acceptChallenge(gameRootMessage) {
-    console.log("Accepting challenge. Root game message is: " + gameRootMessage);
+    console.log(`Accepting challenge. Root game message is: ${gameRootMessage}`);
     const post = {
-      'type': 'chess_invite_accept',
-      'root': gameRootMessage,
+      type: 'chess_invite_accept',
+      root: gameRootMessage,
       // Used for ssb-ooo which allows clients to request messages from peers
       // that are outside their follow graph.
-      'branch': gameRootMessage
-    }
+      branch: gameRootMessage,
+    };
 
     return new Promise((resolve, reject) => {
-      sbot.publish(post, function(err, msg) {
+      sbot.publish(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {
@@ -66,7 +62,7 @@ module.exports = (sbot, myIdent) => {
   }
 
   return {
-    inviteToPlay: inviteToPlay,
-    acceptChallenge: acceptChallenge
-  }
-}
+    inviteToPlay,
+    acceptChallenge,
+  };
+};

@@ -10,7 +10,7 @@ const destination = './dist';
 
 function onError(error) {
   return gutil.log(gutil.colors.red(error.message));
-};
+}
 
 function build(debug) {
   return browserify('src/main.ts', {

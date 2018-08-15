@@ -3,7 +3,6 @@ const computed = require('mutant/computed');
 const Value = require('mutant/value');
 
 module.exports = (chessWorker) => {
-
   // A map of observables that are currently awaiting a response from the asynchronous
   // chess logic webworker.
   const awaitingWorkerResponses = {};
@@ -13,28 +12,26 @@ module.exports = (chessWorker) => {
    *         user
    */
   function validMovesForSituationObs(situationObs) {
+    return computed([situationObs], (situation) => {
+      const destsObs = Value({});
 
-    return computed([situationObs], situation => {
-
-      let destsObs = Value({});
-
-      let key = getDestsKey(situation.gameId, situation.ply);
+      const key = getDestsKey(situation.gameId, situation.ply);
 
       awaitingWorkerResponses[key] = destsObs;
 
       chessWorker.postMessage({
         topic: 'dests',
         payload: {
-          fen: situation.fen
+          fen: situation.fen,
         },
         reqid: {
           gameRootMessage: situation.gameId,
-          ply: situation.ply
-        }
-      })
+          ply: situation.ply,
+        },
+      });
 
       return destsObs;
-    })
+    });
   }
 
   /**
@@ -44,9 +41,9 @@ module.exports = (chessWorker) => {
   function canClaimDrawObs(situationObs) {
     // TODO: test this, use this to expose 'claim draw' button
 
-    return computed([situationObs], situation => {
-      let drawObs = Value({});
-      let key = getDrawKey(situation.gameId, situation.ply);
+    return computed([situationObs], (situation) => {
+      const drawObs = Value({});
+      const key = getDrawKey(situation.gameId, situation.ply);
 
       awaitingWorkerResponses[key] = drawObs;
 
@@ -54,13 +51,13 @@ module.exports = (chessWorker) => {
         topic: 'threefoldTest',
         payload: {
           initialFen: situation.getInitialFen(),
-          pgnMoves: situation.pgnMoves
+          pgnMoves: situation.pgnMoves,
         },
         reqid: {
           gameRootMessage: situation.gameId,
-          ply: situation.ply
-        }
-      })
+          ply: situation.ply,
+        },
+      });
 
       return drawObs;
     });
@@ -70,47 +67,44 @@ module.exports = (chessWorker) => {
   // awaiting the response
   function listenForWorkerResults() {
     chessWorker.addEventListener('message', (event) => {
+      const gameId = event.data.reqid.gameRootMessage;
+      const ply = event.data.reqid.ply;
 
-      var gameId = event.data.reqid.gameRootMessage;
-      var ply = event.data.reqid.ply;
-
-      if (event.data.topic === "dests") {
-        let destsMapKey = getDestsKey(gameId, ply);
-        let awaitingDestsObs = get(awaitingWorkerResponses, destsMapKey);
+      if (event.data.topic === 'dests') {
+        const destsMapKey = getDestsKey(gameId, ply);
+        const awaitingDestsObs = get(awaitingWorkerResponses, destsMapKey);
 
         if (awaitingDestsObs) {
-          let validDests = event.data.payload.dests;
+          const validDests = event.data.payload.dests;
           awaitingDestsObs.set(validDests);
-          delete awaitingWorkerResponses [destsMapKey];
+          delete awaitingWorkerResponses[destsMapKey];
         }
+      } else if (event.data.topic === 'threefoldTest') {
+        const canDrawKey = getDrawKey(gameId, ply);
 
-      } else if (event.data.topic === "threefoldTest") {
-        let canDrawKey = getDrawKey(gameId, ply);
-
-        let awaitingCanDraw = get(awaitingWorkerResponses, canDrawKey);
+        const awaitingCanDraw = get(awaitingWorkerResponses, canDrawKey);
 
         if (awaitingCanDraw) {
-          let canClaimDraw = event.data.payload.threefoldRepetition;
+          const canClaimDraw = event.data.payload.threefoldRepetition;
           awaitingCanDraw.set(canClaimDraw);
           delete awaitingWorkerResponses[canDrawKey];
         }
       }
-
     });
   }
 
-  function getDestsKey (gameId, ply) {
+  function getDestsKey(gameId, ply) {
     return `${gameId}.${ply}.dests`;
   }
 
-  function getDrawKey (gameId, ply) {
+  function getDrawKey(gameId, ply) {
     return `${gameId}.${ply}.canClaimDraw`;
   }
 
   listenForWorkerResults();
 
   return {
-    validMovesForSituationObs: validMovesForSituationObs,
-    canClaimDrawObs: canClaimDrawObs
-  }
-}
+    validMovesForSituationObs,
+    canClaimDrawObs,
+  };
+};

@@ -1,9 +1,9 @@
-var m = require("mithril");
-var watchAll = require("mutant/watch-all");
+const m = require('mithril');
+const watchAll = require('mutant/watch-all');
 
-var opposite = require('chessground/util').opposite;
+const opposite = require('chessground/util').opposite;
 
-var R = require('ramda');
+const R = require('ramda');
 
 /**
  * A view of the pieces of the differences in pieces compared to the other
@@ -23,24 +23,28 @@ module.exports = (
   situationObservable,
   moveSelectedObservable,
   myIdent,
-  bottom) => {
+  bottom,
+) => {
+  let materialDiff = {};
 
-  var materialDiff = {};
-
-  var playerColour = null;
-  var opponentColor = null;
+  let playerColour = null;
+  let opponentColor = null;
 
   // Copied from lila (lichess) and translated to JavaScript from typescript :P
   // https://github.com/ornicar/lila/blob/c72ca979a846304a772e1c4f2b0d1851b076849d/ui/round/src/util.ts#L49
   function getMaterialDiff(pieces) {
-
-    var diff = {
-      white: { king: 0, queen: 0, rook: 0, bishop: 0, knight: 0, pawn: 0 },
-      black: { king: 0, queen: 0, rook: 0, bishop: 0, knight: 0, pawn: 0 },
+    const diff = {
+      white: {
+        king: 0, queen: 0, rook: 0, bishop: 0, knight: 0, pawn: 0,
+      },
+      black: {
+        king: 0, queen: 0, rook: 0, bishop: 0, knight: 0, pawn: 0,
+      },
     };
 
-    for (let k in pieces) {
-      const p = pieces[k], them = diff[opposite(p.color)];
+    for (const k in pieces) {
+      const p = pieces[k]; const
+        them = diff[opposite(p.color)];
       if (them[p.role] > 0) them[p.role]--;
       else diff[p.color][p.role]++;
     }
@@ -49,48 +53,46 @@ module.exports = (
   }
 
   function setPlayerColours(situation) {
-      playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
-      opponentColor = playerColour === "white" ? "black" : "white";
+    playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
+    opponentColor = playerColour === 'white' ? 'black' : 'white';
   }
 
   function renderPiecesForColour(colour) {
-    var pieces = [];
+    let pieces = [];
 
-    for (var pieceName in materialDiff[colour]) {
-      var numPieces = materialDiff[colour][pieceName];
-      var repeated = R.repeat(pieceName, numPieces);
+    for (const pieceName in materialDiff[colour]) {
+      const numPieces = materialDiff[colour][pieceName];
+      const repeated = R.repeat(pieceName, numPieces);
 
       pieces = pieces.concat(repeated);
     }
 
-    return pieces.map(p => m('mono-piece', {class: p}));
+    return pieces.map(p => m('mono-piece', { class: p }));
   }
 
   return {
-    view: () => {
-      return m("div", {
-        class: "ssb-chess-graveyard",
-      }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor))
-    },
+    view: () => m('div', {
+      class: 'ssb-chess-graveyard',
+    }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor)),
     oncreate: () => {
       this.removeWatches = watchAll([chessGroundObservable, situationObservable, moveSelectedObservable],
-         (chessground, situation, move) => {
-        if (situation) {
-          setPlayerColours(situation);
-        }
+        (chessground, situation, move) => {
+          if (situation) {
+            setPlayerColours(situation);
+          }
 
-        if (chessground) {
-          var pieces = chessground.state.pieces;
-          materialDiff = getMaterialDiff(pieces);
-          m.redraw();
-        }
-      });
+          if (chessground) {
+            const pieces = chessground.state.pieces;
+            materialDiff = getMaterialDiff(pieces);
+            m.redraw();
+          }
+        });
     },
     onremove: () => {
       if (this.removeWatches) {
         this.removeWatches();
       }
-    }
+    },
 
-  }
-}
+  };
+};

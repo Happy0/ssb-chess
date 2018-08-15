@@ -1,61 +1,57 @@
-const filter = require('pull-stream/throughs/filter')
-const pull = require("pull-stream");
-const map = require("pull-stream/throughs/map");
-const collect = require("pull-stream/sinks/collect");
+const filter = require('pull-stream/throughs/filter');
+const pull = require('pull-stream');
+const map = require('pull-stream/throughs/map');
+const collect = require('pull-stream/sinks/collect');
 
 const nest = require('depnest');
 
-const computed = require("mutant/computed");
-const when = require("mutant/when");
-var Value = require('mutant/value')
-const onceTrue = require("mutant/once-true")
+const computed = require('mutant/computed');
+const when = require('mutant/when');
+const Value = require('mutant/value');
+const onceTrue = require('mutant/once-true');
 
-var SocialCtrl = require("./social");
-const MutantUtils = require("./mutant_utils")();
-const ChessMsgUtils = require ("../ssb_model/chess_msg_utils")();
+const SocialCtrl = require('./social');
+const MutantUtils = require('./mutant_utils')();
+const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 
-const getFilteredBackLinks = require("./backlinks_obs")();
-const combine = require("depject");
+const getFilteredBackLinks = require('./backlinks_obs')();
+const combine = require('depject');
 
 module.exports = (sbot, myIdent) => {
-
   const socialCtrl = SocialCtrl(sbot);
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
-      sbot.get(gameRootMessage, function(error, result) {
+      sbot.get(gameRootMessage, (error, result) => {
         if (error) {
-          reject(error)
+          reject(error);
         } else {
           const authorId = result.author;
           const invited = result.content.inviting;
 
-          const authorColour = result.content.myColor === "white" ? result.content.myColor : "black";
+          const authorColour = result.content.myColor === 'white' ? result.content.myColor : 'black';
           const players = {};
 
-          var names = Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName));
-          names.then(names => {
+          const names = Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName));
+          names.then((names) => {
             players[authorId] = {};
             players[authorId].colour = authorColour;
             players[authorId].name = names[0];
             players[authorId].id = authorId;
 
             players[invited] = {};
-            players[invited].colour = authorColour === "white" ? "black" : "white";
+            players[invited].colour = authorColour === 'white' ? 'black' : 'white';
             players[invited].name = names[1];
             players[invited].id = invited;
 
             resolve(players);
-
           });
         }
       });
-
-    })
+    });
   }
 
   function situationToSummary(gameSituation) {
-
     const summary = {
       gameId: gameSituation.gameId,
       fen: gameSituation.fen,
@@ -64,8 +60,8 @@ module.exports = (sbot, myIdent) => {
       status: gameSituation.status,
       lastMove: gameSituation.lastMove,
       check: gameSituation.check,
-      lastUpdateTime: gameSituation.lastUpdateTime
-    }
+      lastUpdateTime: gameSituation.lastUpdateTime,
+    };
 
     return summary;
   }
@@ -79,46 +75,43 @@ module.exports = (sbot, myIdent) => {
   }
 
   function findGameStatus(players, gameMessages) {
-    var gameFinishedMsg = gameMessages.find(msg => {
-      return msg.value.content.type === "chess_game_end"
-    });
+    const gameFinishedMsg = gameMessages.find(msg => msg.value.content.type === 'chess_game_end');
 
-    var inviteAcceptMsg = gameMessages.find(msg => msg.value.content.type === "chess_invite_accept");
+    const inviteAcceptMsg = gameMessages.find(msg => msg.value.content.type === 'chess_invite_accept');
 
-    var gameStatus = "invited";
+    let gameStatus = 'invited';
     if (gameFinishedMsg) {
       gameStatus = gameFinishedMsg.value.content.status;
     } else if (inviteAcceptMsg) {
-      gameStatus = "started";
+      gameStatus = 'started';
     }
 
 
     const status = {
       status: gameStatus,
-      winner: gameFinishedMsg != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), gameFinishedMsg) : null
-    }
+      winner: gameFinishedMsg != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), gameFinishedMsg) : null,
+    };
 
     return status;
   }
 
   function filterByPlayerMoves(players, messages) {
-    return messages.filter(msg => players.hasOwnProperty(msg.value.author) &&
-      (msg.value.content.type === "chess_move" ||
-        (msg.value.content.type === "chess_game_end" && msg.value.content.orig != null)));
+    return messages.filter(msg => players.hasOwnProperty(msg.value.author)
+      && (msg.value.content.type === 'chess_move'
+        || (msg.value.content.type === 'chess_game_end' && msg.value.content.orig != null)));
   }
 
   function getPlayerToMove(players, numMoves) {
-    const colourToMove = numMoves % 2 === 0 ? "white" : "black";
+    const colourToMove = numMoves % 2 === 0 ? 'white' : 'black';
 
     const playerIds = Object.keys(players);
 
-    for (var i = 0; i < playerIds.length; i++) {
+    for (let i = 0; i < playerIds.length; i++) {
       if (players[playerIds[i]].colour === colourToMove) {
         return playerIds[i];
       }
     }
-
-  };
+  }
 
   /**
   * Returns 'true' if the given scuttlebutt message is something that changes
@@ -129,118 +122,115 @@ module.exports = (sbot, myIdent) => {
     if (!msg.value || !msg.value.content) {
       return false;
     }
-    else {
-      var relevantMessageTypes = [
-        "chess_invite",
-        "chess_invite_accept",
-        "chess_move",
-        "chess_game_end"];
 
-        var messageType = msg.value.content.type;
-        var isSituationMsg = relevantMessageTypes.find(msg => msg === messageType)
-        return isSituationMsg !== undefined;
-    }
+    const relevantMessageTypes = [
+      'chess_invite',
+      'chess_invite_accept',
+      'chess_move',
+      'chess_game_end'];
+
+    const messageType = msg.value.content.type;
+    const isSituationMsg = relevantMessageTypes.find(msg => msg === messageType);
+    return isSituationMsg !== undefined;
   }
 
   function getSituationObservable(gameRootMessage) {
     const gameMessages = getFilteredBackLinks(gameRootMessage, {
-        filter: isSituationalChessMessage
+      filter: isSituationalChessMessage,
     });
 
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
     return computed([players, gameMessages.sync, gameMessages],
-       (players, synced, messages) => {
-      if (!players || !synced) return null;
+      (players, synced, messages) => {
+        if (!players || !synced) return null;
 
-      // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
-      // to 'move messages';
-      var msgs = filterByPlayerMoves(players, messages);
-      if (!msgs) msgs = [];
-      if (!messages) messages = [];
+        // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
+        // to 'move messages';
+        let msgs = filterByPlayerMoves(players, messages);
+        if (!msgs) msgs = [];
+        if (!messages) messages = [];
 
-      // Sort in ascending ply so that we get a list of moves linearly
-      msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
+        // Sort in ascending ply so that we get a list of moves linearly
+        msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
-      var latestUpdate = messages.reduce(msgWithBiggestTimestamp, null) ;
+        const latestUpdate = messages.reduce(msgWithBiggestTimestamp, null);
 
-      var startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const startFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-      var pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
-      var fenHistory = msgs.map(msg => msg.value.content.fen);
-      fenHistory.unshift(startFen);
+        const pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
+        const fenHistory = msgs.map(msg => msg.value.content.fen);
+        fenHistory.unshift(startFen);
 
-      var status = findGameStatus(players, messages);
+        const status = findGameStatus(players, messages);
 
-      var origDests = msgs.map(msg => ({
-        'orig': msg.value.content.orig,
-        'dest': msg.value.content.dest
-      }));
+        const origDests = msgs.map(msg => ({
+          orig: msg.value.content.orig,
+          dest: msg.value.content.dest,
+        }));
 
-      var isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
-      var isCheckmate = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('#') !== -1 : false;
+        const isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
+        const isCheckmate = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('#') !== -1 : false;
 
-      return {
-        gameId: gameRootMessage,
-        pgnMoves: pgnMoves,
-        fenHistory: fenHistory,
-        ply: pgnMoves.length,
-        origDests: origDests,
-        check: isCheck || isCheckmate,
-        fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
-        players: players,
-        toMove: getPlayerToMove(players, pgnMoves.length),
-        status: status,
-        lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
-        lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
-        latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
-        isCheckOnMoveNumber: function(moveNumber) {
-          var arrIdx = moveNumber - 1;
-          return this.pgnMoves[arrIdx] != null && (this.pgnMoves[arrIdx].indexOf("+") !== -1 || this.pgnMoves[arrIdx].indexOf("#") !== -1);
-        },
-        getInitialFen: function () {
-          return startFen;
-        },
-        getWhitePlayer: function () {
-          return Object.values(this.players).find(player => player.colour === "white");
-        },
-        getBlackPlayer: function () {
-          return Object.values(this.players).find(player => player.colour === "black");
-        },
-        hasPlayer: function (id) {
-          return this.players[id] != null;
-        },
-        getOtherPlayer: function (id) {
-          for (var k in this.players) {
-            if (k !== id) {
-              return this.players[k];
+        return {
+          gameId: gameRootMessage,
+          pgnMoves,
+          fenHistory,
+          ply: pgnMoves.length,
+          origDests,
+          check: isCheck || isCheckmate,
+          fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
+          players,
+          toMove: getPlayerToMove(players, pgnMoves.length),
+          status,
+          lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
+          lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
+          latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
+          isCheckOnMoveNumber(moveNumber) {
+            const arrIdx = moveNumber - 1;
+            return this.pgnMoves[arrIdx] != null && (this.pgnMoves[arrIdx].indexOf('+') !== -1 || this.pgnMoves[arrIdx].indexOf('#') !== -1);
+          },
+          getInitialFen() {
+            return startFen;
+          },
+          getWhitePlayer() {
+            return Object.values(this.players).find(player => player.colour === 'white');
+          },
+          getBlackPlayer() {
+            return Object.values(this.players).find(player => player.colour === 'black');
+          },
+          hasPlayer(id) {
+            return this.players[id] != null;
+          },
+          getOtherPlayer(id) {
+            for (const k in this.players) {
+              if (k !== id) {
+                return this.players[k];
+              }
             }
-          }
-        }
-      }
-    });
+          },
+        };
+      });
   }
 
   function msgWithBiggestTimestamp(msg1, msg2) {
     if (msg1 == null) {
       return msg2;
-    } else if (msg2 == null) {
+    } if (msg2 == null) {
       return msg1;
-    } else if (msg1.value.timestamp > msg2.value.timestamp) {
+    } if (msg1.value.timestamp > msg2.value.timestamp) {
       return msg1;
-    } else {
-      return msg2;
     }
+    return msg2;
   }
 
   function getSituationSummaryObservable(gameRootMessage) {
-    return computed([getSituationObservable(gameRootMessage)], situation => {
+    return computed([getSituationObservable(gameRootMessage)], (situation) => {
       if (situation == null) {
         return null;
-      } else {
-        return situationToSummary(situation);
       }
-    })
+      return situationToSummary(situation);
+    });
   }
 
   function getSituation(gameRootMessage) {
@@ -250,100 +240,96 @@ module.exports = (sbot, myIdent) => {
   function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen, respondsTo) {
     const post = {
       type: 'chess_move',
-      ply: ply,
+      ply,
       root: gameRootMessage,
       orig: originSquare,
       dest: destinationSquare,
-      pgnMove: pgnMove,
-      fen: fen
-    }
+      pgnMove,
+      fen,
+    };
 
     if (promotion) {
-      post['promotion'] = promotion;
+      post.promotion = promotion;
     }
 
     if (respondsTo) {
-      post['branch'] = respondsTo
+      post.branch = respondsTo;
     }
 
     return new Promise((resolve, reject) => {
-
-      sbot.publish(post, function(err, msg) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(msg);
-        }
-      });
-    })
-  }
-
-  function addPropertyIfNotEmpty(obj, key, value) {
-    if (value) {
-      obj[key] = value
-    }
-  }
-
-  function resignGame(gameRootMessage, respondsTo) {
-    const post = {
-      type: 'chess_game_end',
-      status: "resigned",
-      root: gameRootMessage
-    };
-
-    addPropertyIfNotEmpty(post, "branch", respondsTo);
-
-    return new Promise( (resolve, reject) => {
       sbot.publish(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {
           resolve(msg);
         }
-      })
-    })
+      });
+    });
   }
 
-  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove, respondsTo) {
+  function addPropertyIfNotEmpty(obj, key, value) {
+    if (value) {
+      obj[key] = value;
+    }
+  }
+
+  function resignGame(gameRootMessage, respondsTo) {
+    const post = {
+      type: 'chess_game_end',
+      status: 'resigned',
+      root: gameRootMessage,
+    };
+
+    addPropertyIfNotEmpty(post, 'branch', respondsTo);
+
     return new Promise((resolve, reject) => {
-
-      const post = {
-        type: 'chess_game_end',
-        status: status,
-        ply: ply,
-        fen: fen,
-        root: gameRootMessage
-      };
-
-      // If game aborted or agreed to draw / claimed draw, some of these
-      // properties might not be relevant
-      addPropertyIfNotEmpty(post, "winner", winner);
-      addPropertyIfNotEmpty(post, "ply", ply);
-      addPropertyIfNotEmpty(post, "orig", originSquare);
-      addPropertyIfNotEmpty(post, "dest", destinationSquare);
-      addPropertyIfNotEmpty(post, "pgnMove", pgnMove);
-      addPropertyIfNotEmpty(post, "branch", respondsTo)
-
-      sbot.publish(post, function(err, msg) {
+      sbot.publish(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {
           resolve(msg);
         }
       });
+    });
+  }
 
+  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove, respondsTo) {
+    return new Promise((resolve, reject) => {
+      const post = {
+        type: 'chess_game_end',
+        status,
+        ply,
+        fen,
+        root: gameRootMessage,
+      };
+
+      // If game aborted or agreed to draw / claimed draw, some of these
+      // properties might not be relevant
+      addPropertyIfNotEmpty(post, 'winner', winner);
+      addPropertyIfNotEmpty(post, 'ply', ply);
+      addPropertyIfNotEmpty(post, 'orig', originSquare);
+      addPropertyIfNotEmpty(post, 'dest', destinationSquare);
+      addPropertyIfNotEmpty(post, 'pgnMove', pgnMove);
+      addPropertyIfNotEmpty(post, 'branch', respondsTo);
+
+      sbot.publish(post, (err, msg) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(msg);
+        }
+      });
     });
   }
 
   return {
-    getPlayers: getPlayers,
-    getSituation: getSituation,
-    getSituationObservable: getSituationObservable,
-    getSituationSummaryObservable: getSituationSummaryObservable,
-    getSmallGameSummary: getSmallGameSummary,
-    makeMove: makeMove,
-    resignGame: resignGame,
-    endGame: endGame
-  }
-
-}
+    getPlayers,
+    getSituation,
+    getSituationObservable,
+    getSituationSummaryObservable,
+    getSmallGameSummary,
+    makeMove,
+    resignGame,
+    endGame,
+  };
+};

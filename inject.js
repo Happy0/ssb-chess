@@ -10,31 +10,31 @@ exports.gives = nest({
   'app.html.menuItem': true,
   'app.sync.locationId': true,
   'router.sync.routes': true,
-})
+});
 
 exports.needs = nest({
   'app.sync.locationId': 'first',
-  'sbot.obs.connection': 'first'
+  'sbot.obs.connection': 'first',
 });
 
-exports.create = function(api) {
-  var pageLoaded = false;
-  var topLevelDomElement = ChessContainer()
-  var app = null;
+exports.create = function (api) {
+  let pageLoaded = false;
+  const topLevelDomElement = ChessContainer();
+  let app = null;
 
   return nest({
     'app.html.menuItem': menuItem,
     'app.sync.locationId': locationId,
     'router.sync.routes': routes,
-  })
+  });
 
   function menuItem(handleClick) {
     return h('a', {
       style: {
-        order: 0
+        order: 0,
       },
-      'ev-click': () => handleClick({ page: 'chess' })
-    }, '/chess')
+      'ev-click': () => handleClick({ page: 'chess' }),
+    }, '/chess');
   }
 
   function chessIndex() {
@@ -42,15 +42,14 @@ exports.create = function(api) {
     if (pageLoaded) {
       topLevelDomElement.title = '/chess';
       return topLevelDomElement;
-    } else {
-      pageLoaded = true;
-
-      onceTrue(api.sbot.obs.connection, (sbot) => {
-        app = index(topLevelDomElement, sbot);
-      });
-
-      return topLevelDomElement
     }
+    pageLoaded = true;
+
+    onceTrue(api.sbot.obs.connection, (sbot) => {
+      app = index(topLevelDomElement, sbot);
+    });
+
+    return topLevelDomElement;
   }
 
   function chessShow(location) {
@@ -64,57 +63,55 @@ exports.create = function(api) {
       topLevelDomElement.title = `/chess/${getRoot(location)}`;
 
       return topLevelDomElement;
-    } else {
-      var destinationRoute = `/games/${btoa(gameId)}`;
-
-      pageLoaded = true;
-
-      onceTrue(api.sbot.obs.connection, (sbot) => {
-        app = index(topLevelDomElement, sbot, { initialView: destinationRoute });
-      });
-
-      return topLevelDomElement;
     }
+    const destinationRoute = `/games/${btoa(gameId)}`;
 
+    pageLoaded = true;
+
+    onceTrue(api.sbot.obs.connection, (sbot) => {
+      app = index(topLevelDomElement, sbot, { initialView: destinationRoute });
+    });
+
+    return topLevelDomElement;
   }
 
-  function routes (sofar = []) {
+  function routes(sofar = []) {
     // loc = location, an object with all the info required to specify a location
     const routes = [
-      [ loc => loc.page === 'chess', chessIndex ],
-      [ loc => isChessMsg(loc), chessShow],
-    ]
+      [loc => loc.page === 'chess', chessIndex],
+      [loc => isChessMsg(loc), chessShow],
+    ];
 
     // this stacks chess routes below routes loaded by depject so far (polite)
-    return [...sofar, ...routes]
+    return [...sofar, ...routes];
   }
 
 
-  function ChessContainer () {
-    const root = h('div.ssb-chess-container')
+  function ChessContainer() {
+    const root = h('div.ssb-chess-container');
     // root.title = location.page
-      // ? '/chess'
-      // : `/chess/${getRoot(location)}`
+    // ? '/chess'
+    // : `/chess/${getRoot(location)}`
 
     // root.id = api.app.sync.locationId(location)
-    
-    root.title = '/chess'
-    root.id = JSON.stringify({ page: 'chess' })
 
-    return root
+    root.title = '/chess';
+    root.id = JSON.stringify({ page: 'chess' });
+
+    return root;
   }
+};
+
+function locationId(location) {
+  if (location.page === 'chess') return JSON.stringify({ page: 'chess' });
+  if (isChessMsg(location)) return JSON.stringify({ page: 'chess' });
 }
 
-function locationId (location) {
-  if (location.page === 'chess') return JSON.stringify({ page: 'chess' })
-  if (isChessMsg(location)) return JSON.stringify({ page: 'chess' })
-}
-
-function isChessMsg (loc) {
+function isChessMsg(loc) {
   const type = get(loc, ['value', 'content', 'type'], '');
   return type.startsWith('chess');
 }
 
-function getRoot (msg) {
-  return get(msg, ['value', 'content', 'root'], msg.key)
+function getRoot(msg) {
+  return get(msg, ['value', 'content', 'root'], msg.key);
 }

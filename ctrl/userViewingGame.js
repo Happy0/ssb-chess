@@ -1,14 +1,13 @@
-var PubSub = require('pubsub-js');
+const PubSub = require('pubsub-js');
 
 module.exports = () => {
+  let currentGameId = null;
 
-  var currentGameId = null;
-
-  function lookingAtGame (gameId) {
+  function lookingAtGame(gameId) {
     currentGameId = gameId;
   }
 
-  function notLookingAtGame () {
+  function notLookingAtGame() {
     currentGameId = null;
   }
 
@@ -18,9 +17,9 @@ module.exports = () => {
 
   PubSub.subscribe('exited_game', () => {
     notLookingAtGame();
-  })
+  });
 
   return {
-    getCurrentGame: () => currentGameId
-  }
-}
+    getCurrentGame: () => currentGameId,
+  };
+};

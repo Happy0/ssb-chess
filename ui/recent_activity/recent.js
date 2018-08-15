@@ -1,6 +1,6 @@
-var m = require('mithril');
-var gameEndActivity = require('./gameEnd');
-var watch = require('mutant/watch')
+const m = require('mithril');
+const watch = require('mutant/watch');
+const gameEndActivity = require('./gameEnd');
 
 /**
  * A component to render updates about chess games based on the supplied observable
@@ -22,31 +22,29 @@ var watch = require('mutant/watch')
 
  */
 module.exports = (gameCtrl, recentGameMessagesObs) => {
+  let messages = [];
+  const watches = [];
 
-  var messages = [];
-  var watches = [];
-
-  var renderers = {
-    "chess_game_end": renderGameEndMsg
-  }
+  const renderers = {
+    chess_game_end: renderGameEndMsg,
+  };
 
   function renderGameEndMsg(entry) {
     return m('div', m(gameEndActivity(entry.msg, entry.situation, gameCtrl.getMyIdent())));
   }
 
   function renderMessage(entry) {
-    var renderer = renderers[entry.msg.value.content.type];
+    const renderer = renderers[entry.msg.value.content.type];
 
     if (renderer) {
-      return m('div', {class: 'ssb-chess-game-activity-notification'}, renderer(entry));
-    } else {
-      console.log("Unexpected recent.js msg: " + entry );
-      return m('div');
+      return m('div', { class: 'ssb-chess-game-activity-notification' }, renderer(entry));
     }
+    console.log(`Unexpected recent.js msg: ${entry}`);
+    return m('div');
   }
 
   function canRender(entry) {
-    var type = entry.msg.value.content.type;
+    const type = entry.msg.value.content.type;
     return renderers.hasOwnProperty(type);
   }
 
@@ -57,24 +55,23 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
   }
 
   return {
-    view: () => m('div', {class: 'ssb-chess-game-notifications'}, renderMessages()),
+    view: () => m('div', { class: 'ssb-chess-game-notifications' }, renderMessages()),
     oncreate: () => {
-      var obs = watch(recentGameMessagesObs,
-        gameMessages => {
+      const obs = watch(recentGameMessagesObs,
+        (gameMessages) => {
           messages = gameMessages;
 
           if (messages && messages.length > 0) {
-            gameCtrl.getRecentActivityCtrl().setLastseenMessage(messages[0].msg.timestamp)  
+            gameCtrl.getRecentActivityCtrl().setLastseenMessage(messages[0].msg.timestamp);
           }
 
           m.redraw();
-        }
-      )
+        });
 
       watches.push(obs);
     },
     onremove: () => {
       watches.forEach(w => w());
-    }
-  }
-}
+    },
+  };
+};

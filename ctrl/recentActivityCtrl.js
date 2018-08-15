@@ -1,50 +1,44 @@
-var computed = require('mutant/computed');
-var MutantArray = require('mutant/array');
-var Value = require('mutant/value');
-var userViewingGame = require('./userViewingGame')();
+const computed = require('mutant/computed');
+const MutantArray = require('mutant/array');
+const Value = require('mutant/value');
+const userViewingGame = require('./userViewingGame')();
 
 module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
-
   function msgAndSituationObs(msg) {
-    var gameId = msg.value.content.root;
+    const gameId = msg.value.content.root;
 
-    var situationObs = getSituationObs(gameId);
+    const situationObs = getSituationObs(gameId);
 
-    return computed([situationObs], situation => {
-      return {
-        msg: msg,
-        situation: situation
-      }
-    })
+    return computed([situationObs], situation => ({
+      msg,
+      situation,
+    }));
   }
 
-  var activityObs = userGamesUpdateWatcher.getRingBufferGameMsgsForPlayer(myIdent, getSituationObs, ["chess_game_end"], 10)
+  const activityObs = userGamesUpdateWatcher.getRingBufferGameMsgsForPlayer(myIdent, getSituationObs, ['chess_game_end'], 10);
 
   function getRecentActivity() {
     return activityObs;
   }
 
-  var lastSeenObs = Value();
+  const lastSeenObs = Value();
 
   return {
-    getRecentActivityForUserGames: () => {
-      return getRecentActivity();
-    },
+    getRecentActivityForUserGames: () => getRecentActivity(),
     unseenNotifications: () => {
-      var recentActivity = getRecentActivity();
+      const recentActivity = getRecentActivity();
 
-      var unseen = computed( [recentActivity, lastSeenObs], activityMessages => {
-        var lastSeenStr = localStorage.getItem('ssb_chess_last_seen_notification');
-        var lastSeen = lastSeenStr ? parseFloat(lastSeenStr) : 0;
+      const unseen = computed([recentActivity, lastSeenObs], (activityMessages) => {
+        const lastSeenStr = localStorage.getItem('ssb_chess_last_seen_notification');
+        const lastSeen = lastSeenStr ? parseFloat(lastSeenStr) : 0;
 
         return activityMessages.filter(entry => entry.msg.timestamp > lastSeen);
       });
 
-      return computed([unseen], unseenMessages => {
-
+      return computed([unseen], (unseenMessages) => {
         // If the user is already viewing the game, don't up the count.
-        var currentGame = userViewingGame.getCurrentGame();
-        var msgIndex = unseenMessages.findIndex(entry => entry.msg.value.content.root === currentGame);
+        const currentGame = userViewingGame.getCurrentGame();
+        const msgIndex = unseenMessages.findIndex(entry => entry.msg.value.content.root === currentGame);
 
         if (currentGame && (msgIndex !== -1)) {
           unseenMessages.splice(msgIndex, 1);
@@ -53,18 +47,17 @@ module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
           if (unseenMessages.length === 0) {
             localStorage.setItem('ssb_chess_last_seen_notification', Date.now());
           }
-
         }
 
         return unseenMessages;
-      })
+      });
     },
     setLastseenMessage: (timeStamp) => {
       localStorage.setItem('ssb_chess_last_seen_notification', timeStamp);
 
       // Reset the count to 0 if we're already viewing the page.
       lastSeenObs.set(timeStamp);
-    }
+    },
 
-  }
-}
+  };
+};

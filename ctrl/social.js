@@ -1,7 +1,6 @@
-var SocialCtrl = require("../ssb_ctrl/social");
+const SocialCtrl = require('../ssb_ctrl/social');
 
 module.exports = (sbot, myIdent) => {
-
   const socialCtrl = SocialCtrl(sbot, myIdent);
 
   function followingMe() {
@@ -14,39 +13,35 @@ module.exports = (sbot, myIdent) => {
 
   function identWithDisplayName(ident) {
     return socialCtrl.getPlayerDisplayName(ident).then(name => ({
-      'ident': ident,
-      'displayName': name
+      ident,
+      displayName: name,
     }));
   }
 
   function friends() {
-    var iFollow = followedByMe();
-    var followsMe = followingMe();
+    const iFollow = followedByMe();
+    const followsMe = followingMe();
 
-    return Promise.all([iFollow, followsMe]).then(results => {
-      var following = results[0];
-      var followedBy = results[1];
+    return Promise.all([iFollow, followsMe]).then((results) => {
+      const following = results[0];
+      const followedBy = results[1];
 
-      return following.filter(function(n) {
-        return followedBy.indexOf(n) !== -1;
-      });
-    })
-
+      return following.filter(n => followedBy.indexOf(n) !== -1);
+    });
   }
 
   function friendsWithNames() {
-    return friends().then(palaroonis => {
-      var namesWithIdents = palaroonis.map(identWithDisplayName);
+    return friends().then((palaroonis) => {
+      const namesWithIdents = palaroonis.map(identWithDisplayName);
 
-      return Promise.all(namesWithIdents)
+      return Promise.all(namesWithIdents);
     });
   }
 
   return {
-    followingMe: followingMe,
-    followedByMe: followedByMe,
-    friends: friends,
-    friendsWithNames: friendsWithNames
-  }
-
-}
+    followingMe,
+    followedByMe,
+    friends,
+    friendsWithNames,
+  };
+};
