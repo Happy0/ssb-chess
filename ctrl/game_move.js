@@ -1,9 +1,6 @@
 const PlayerModelUtils = require("./player_model_utils")();
 
-module.exports = (gameSSBDao, myIdent) => {
-
-  var rootDir = __dirname.replace("ctrl","") + "/";
-  const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
+module.exports = (gameSSBDao, myIdent, chessWorker) => {
 
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
 
@@ -40,25 +37,6 @@ module.exports = (gameSSBDao, myIdent) => {
     return gameSSBDao.resignGame(gameId, respondsTo);
   }
 
-  function publishValidMoves(gameId, ply) {
-
-    gameSSBDao.getSituation(gameId).then(situation => {
-
-      var gameFen = ply != null ? situation.fenHistory[ply] : situation.fen;
-
-      chessWorker.postMessage({
-        topic: 'init',
-        payload: {
-          'fen': gameFen
-        },
-        reqid: {
-          gameRootMessage: situation.gameId
-        }
-      })
-
-    });
-  }
-
   function handleChessWorkerResponse(e) {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
@@ -70,19 +48,7 @@ module.exports = (gameSSBDao, myIdent) => {
       console.log("move error");
       console.dir(e);
       PubSub.publish("move_error", e.data.payload.error);
-    } else if (e.data.topic === 'init') {
-
-      var gameId = e.data.reqid.gameRootMessage;
-      var validDests = e.data.payload.setup.dests;
-      var isCheck = e.data.payload.setup.check;
-
-      PubSub.publish("valid_moves", {
-        gameId: gameId,
-        validMoves: validDests,
-        check: isCheck
-      })
-
-    } else if (e.data.payload.situation.end) {
+    } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
 
       var status = e.data.payload.situation.status;
       var winner = e.data.payload.situation.winner;
@@ -97,12 +63,17 @@ module.exports = (gameSSBDao, myIdent) => {
 
       var winnerId = winner ? coloursToPlayer[winner].id : null;
 
-      gameSSBDao.endGame(gameRootMessage, status.name, winnerId, fen, ply,
-        originSquare, destinationSquare, pgnMove, respondsTo).then(dc => {
-        gameSSBDao.getSituation(gameRootMessage).then(situation =>
-          PubSub.publish("game_end", situation))
-      });
-    } else {
+      gameSSBDao.endGame(
+        gameRootMessage,
+        status.name,
+        winnerId,
+        fen,
+        ply,
+        originSquare,
+        destinationSquare,
+        pgnMove,
+        respondsTo);
+    } else if (e.data.topic === 'move') {
 
       var respondsTo = e.data.reqid.respondsTo;
 
@@ -115,9 +86,7 @@ module.exports = (gameSSBDao, myIdent) => {
         e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
         e.data.payload.situation.fen,
         respondsTo
-      ).then(dc => {
-        gameSSBDao.getSituation(gameRootMessage).then(situation => PubSub.publish("move", situation));
-      });
+      );
     }
   }
 
@@ -125,7 +94,6 @@ module.exports = (gameSSBDao, myIdent) => {
 
   return {
     makeMove: makeMove,
-    resignGame: resignGame,
-    publishValidMoves: publishValidMoves
+    resignGame: resignGame
   }
 }

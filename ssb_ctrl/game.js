@@ -178,6 +178,7 @@ module.exports = (sbot, myIdent) => {
       }));
 
       var isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
+      var isCheckmate = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('#') !== -1 : false;
 
       return {
         gameId: gameRootMessage,
@@ -185,7 +186,7 @@ module.exports = (sbot, myIdent) => {
         fenHistory: fenHistory,
         ply: pgnMoves.length,
         origDests: origDests,
-        check: isCheck,
+        check: isCheck || isCheckmate,
         fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
         players: players,
         toMove: getPlayerToMove(players, pgnMoves.length),
@@ -193,6 +194,10 @@ module.exports = (sbot, myIdent) => {
         lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
         lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
         latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
+        isCheckOnMoveNumber: function(moveNumber) {
+          var arrIdx = moveNumber - 1;
+          return this.pgnMoves[arrIdx] != null && (this.pgnMoves[arrIdx].indexOf("+") !== -1 || this.pgnMoves[arrIdx].indexOf("#") !== -1);
+        },
         getInitialFen: function () {
           return startFen;
         },
