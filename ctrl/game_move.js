@@ -37,25 +37,6 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     return gameSSBDao.resignGame(gameId, respondsTo);
   }
 
-  function publishValidMoves(gameId, ply) {
-
-    gameSSBDao.getSituation(gameId).then(situation => {
-
-      var gameFen = ply != null ? situation.fenHistory[ply] : situation.fen;
-
-      chessWorker.postMessage({
-        topic: 'init',
-        payload: {
-          'fen': gameFen
-        },
-        reqid: {
-          gameRootMessage: situation.gameId
-        }
-      })
-
-    });
-  }
-
   function handleChessWorkerResponse(e) {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
@@ -127,7 +108,6 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
 
   return {
     makeMove: makeMove,
-    resignGame: resignGame,
-    publishValidMoves: publishValidMoves
+    resignGame: resignGame
   }
 }
