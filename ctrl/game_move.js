@@ -1,5 +1,4 @@
 const PlayerModelUtils = require('./player_model_utils')();
-const PubSub = require('pubsub-js');
 
 module.exports = (gameSSBDao, myIdent, chessWorker) => {
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
