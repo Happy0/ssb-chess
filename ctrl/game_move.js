@@ -47,7 +47,9 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       } = e.data.reqid;
       ({ respondsTo } = e.data.reqid);
 
-      const pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
+      const pgnMove = ply > 0
+        ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]
+        : null;
 
       const coloursToPlayer = PlayerModelUtils.coloursToPlayer(players);
 

@@ -11,15 +11,17 @@ const gameEndActivity = require('./gameEnd');
  *
  * @gameCtrl The main game controller. Used to retrieve further information to support
  *           the rendering.
- * @recentGameMessagesObs An observable array of recent chess game scuttlebutt messages with their associated game
- *                        situation state. e.g.
- *                        {
- *                            msg: ...,
- *                            situation: ...
- *                        }
- *                        This list is expected to be a ring buffer (i.e. the least recent message
- *                        drops off the bottom when a new one arrives if the array has reached some capacity.)
-
+ * @recentGameMessagesObs An observable array of recent chess game scuttlebutt
+ * messages with their associated game situation state. e.g.
+ *
+ * {
+ *   msg: ...,
+ *   situation: ...
+ * }
+ *
+ * This list is expected to be a ring buffer (i.e. the least recent message
+ * drops off the bottom when a new one arrives if the array has reached some
+ * capacity).
  */
 module.exports = (gameCtrl, recentGameMessagesObs) => {
   let messages = [];
@@ -44,7 +46,7 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
 
   function canRender(entry) {
     const { type } = entry.msg.value.content;
-    return renderers.hasOwnProperty(type);
+    return Object.prototype.hasOwnProperty.call(renderers, type);
   }
 
   function renderMessages() {

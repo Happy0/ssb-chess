@@ -45,10 +45,10 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     return ply % 2 === 0 ? 'white' : 'black';
   }
 
-  function isPromotionMove(chessGround, dest) {
+  function isPromotionMove(cg, dest) {
     return (dest[1] === '8' || dest[1] === '1')
-      && chessGround.state.pieces[dest]
-      && (chessGround.state.pieces[dest].role === 'pawn');
+      && cg.state.pieces[dest]
+      && (cg.state.pieces[dest].role === 'pawn');
   }
 
   function renderBoard(gameId) {
@@ -200,8 +200,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     return chat.getChatboxElement();
   }
 
-  function playMoveSound(situation, newConfig, chessGround, moveSelected) {
-    if (newConfig.fen !== chessGround.state.fen && moveSelected !== 0) {
+  function playMoveSound(situation, newConfig, cg, moveSelected) {
+    if (newConfig.fen !== cg.state.fen && moveSelected !== 0) {
       const pgnMove = moveSelected === 'live' ? situation.pgnMoves[
         situation.pgnMoves.length - 1] : situation.pgnMoves[moveSelected - 1];
 

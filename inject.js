@@ -75,13 +75,13 @@ exports.create = function (api) {
 
   function routes(sofar = []) {
     // loc = location, an object with all the info required to specify a location
-    const routes = [
+    const r = [
       [loc => loc.page === 'chess', chessIndex],
       [loc => isChessMsg(loc), chessShow],
     ];
 
     // this stacks chess routes below routes loaded by depject so far (polite)
-    return [...sofar, ...routes];
+    return [...sofar, ...r];
   }
 
 

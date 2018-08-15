@@ -61,18 +61,18 @@ module.exports = (gameSummaryObservable, summary, identPerspective, opts) => {
     ]);
   }
 
-  function summaryToChessgroundConfig(summary) {
+  function summaryToChessgroundConfig(s) {
     const config = {
-      fen: summary.fen,
+      fen: s.fen,
       viewOnly: true,
       orientation: playerColour,
-      turnColor: summary.players[summary.toMove].colour,
-      check: summary.check,
+      turnColor: s.players[s.toMove].colour,
+      check: s.check,
       coordinates: false,
     };
 
-    if (summary.lastMove) {
-      config.lastMove = [summary.lastMove.orig, summary.lastMove.dest];
+    if (s.lastMove) {
+      config.lastMove = [s.lastMove.orig, s.lastMove.dest];
     }
 
     return config;

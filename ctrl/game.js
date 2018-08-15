@@ -32,7 +32,11 @@ module.exports = (sbot, myIdent) => {
   const movesFinderCtrl = MovesFinder(chessWorker);
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
-  const recentActivityCtrl = RecentActivityCtrl(userGamesUpdateWatcher, getSituationObservable, myIdent);
+  const recentActivityCtrl = RecentActivityCtrl(
+    userGamesUpdateWatcher,
+    getSituationObservable,
+    myIdent,
+  );
 
   function getMyIdent() {
     return myIdent;
@@ -53,7 +57,8 @@ module.exports = (sbot, myIdent) => {
 
     gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent).then(observable.set));
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent)
+      .then(observable.set));
 
     return computed([observable], a => a, {
       comparer: compareGameSummaryLists,
@@ -66,7 +71,8 @@ module.exports = (sbot, myIdent) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent).then(observable.set));
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent)
+      .then(observable.set));
 
     return computed(
       [observable], a => a, {
@@ -149,7 +155,7 @@ module.exports = (sbot, myIdent) => {
       gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
         (summary) => {
           const { gameId } = summary;
-          const idx = observable().findIndex(summary => summary.gameId === gameId);
+          const idx = observable().findIndex(s => s.gameId === gameId);
 
           if (idx !== -1) {
             observable.put(idx, summary);

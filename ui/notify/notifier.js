@@ -9,6 +9,10 @@ module.exports = (gameCtrl, sbot) => {
 
   const userGamesWatcher = UserGamesWatcher(sbot);
 
+  function getOpponentName(situation, msg) {
+    return situation.players[msg.value.author] ? situation.players[msg.value.author].name : '';
+  }
+
   function notifyIfRelevant(gameMsg) {
     if (!userLocationUtils.chessAppIsVisible()) {
       const gameId = gameMsg.value.content.type === 'chess_invite' ? gameMsg.key : gameMsg.value.content.root;
@@ -38,10 +42,6 @@ module.exports = (gameCtrl, sbot) => {
         }
       });
     }
-  }
-
-  function getOpponentName(situation, msg) {
-    return situation.players[msg.value.author] ? situation.players[msg.value.author].name : '';
   }
 
   function startNotifying() {

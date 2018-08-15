@@ -21,20 +21,20 @@ module.exports = (sbot) => {
           const authorColour = result.content.myColor === 'white' ? result.content.myColor : 'black';
           const players = {};
 
-          const names = Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName));
-          names.then((names) => {
-            players[authorId] = {};
-            players[authorId].colour = authorColour;
-            [players[authorId].name] = names;
-            players[authorId].id = authorId;
+          Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName))
+            .then((names) => {
+              players[authorId] = {};
+              players[authorId].colour = authorColour;
+              [players[authorId].name] = names;
+              players[authorId].id = authorId;
 
-            players[invited] = {};
-            players[invited].colour = authorColour === 'white' ? 'black' : 'white';
-            [, players[invited].name] = names;
-            players[invited].id = invited;
+              players[invited] = {};
+              players[invited].colour = authorColour === 'white' ? 'black' : 'white';
+              [, players[invited].name] = names;
+              players[invited].id = invited;
 
-            resolve(players);
-          });
+              resolve(players);
+            });
         }
       });
     });
@@ -119,7 +119,7 @@ module.exports = (sbot) => {
       'chess_game_end'];
 
     const messageType = msg.value.content.type;
-    const isSituationMsg = relevantMessageTypes.find(msg => msg === messageType);
+    const isSituationMsg = relevantMessageTypes.find(m => m === messageType);
     return isSituationMsg !== undefined;
   }
 
@@ -131,12 +131,12 @@ module.exports = (sbot) => {
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
     return computed([players, gameMessages.sync, gameMessages],
-      (players, synced, messages) => {
-        if (!players || !synced) return null;
+      (p, synced, messages) => {
+        if (!p || !synced) return null;
 
         // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
         // to 'move messages';
-        let msgs = filterByPlayerMoves(players, messages);
+        let msgs = filterByPlayerMoves(p, messages);
         if (!msgs) msgs = [];
         if (!messages) messages = [];
 
@@ -151,7 +151,7 @@ module.exports = (sbot) => {
         const fenHistory = msgs.map(msg => msg.value.content.fen);
         fenHistory.unshift(startFen);
 
-        const status = findGameStatus(players, messages);
+        const status = findGameStatus(p, messages);
 
         const origDests = msgs.map(msg => ({
           orig: msg.value.content.orig,
@@ -169,8 +169,8 @@ module.exports = (sbot) => {
           origDests,
           check: isCheck || isCheckmate,
           fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
-          players,
-          toMove: getPlayerToMove(players, pgnMoves.length),
+          players: p,
+          toMove: getPlayerToMove(p, pgnMoves.length),
           status,
           lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
           lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
