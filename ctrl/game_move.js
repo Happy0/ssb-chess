@@ -42,9 +42,10 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     let respondsTo;
 
     if (e.data.payload.error) {
+      // Todo: work out how to communicate this to the user.
+      // This shouldn't happen though... (eh, famous last words, I guess.)
       console.log('move error');
       console.dir(e);
-      PubSub.publish('move_error', e.data.payload.error);
     } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
       const status = e.data.payload.situation.status;
       const winner = e.data.payload.situation.winner;
