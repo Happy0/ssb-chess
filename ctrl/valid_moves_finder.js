@@ -42,7 +42,28 @@ module.exports = (chessWorker) => {
    * @return An observable of whether the player currently playing may claim a draw.
    */
   function canClaimDrawObs(situationObs) {
-    // TODO
+    // TODO: test this, use this to expose 'claim draw' button
+
+    return computed([situationObs], situation => {
+      let drawObs = Value({});
+      let key = getDrawKey(situation.gameId, situation.ply);
+
+      awaitingWorkerResponses[key] = drawObs;
+
+      chessWorker.postMessage({
+        topic: 'threefoldTest',
+        payload: {
+          initialFen: situation.getInitialFen(),
+          pgnMoves: situation.pgnMoves
+        },
+        reqid: {
+          gameRootMessage: situation.gameId,
+          ply: situation.ply
+        }
+      })
+
+      return drawObs;
+    });
   }
 
   // Listens for respones from the chess webworker and updates observables
