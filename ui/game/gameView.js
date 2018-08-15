@@ -74,7 +74,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     conf['movable']['color'] = null;
   }
 
-  function watchForMoveConfirmation(situation, onConfirm) {
+  function watchForMoveConfirmation(situation, onConfirm, validMoves) {
       if (!settings.getMoveConfirmation()) {
         // If move confirmation is not enabled, perform the move immediately
         onConfirm();
@@ -95,7 +95,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       if (value.moveConfirmed.confirmed) {
         onConfirm();
       } else if (value.moveSelected !== "live" || value.moveConfirmed.confirmed === false) {
-        var oldConfig = situationToChessgroundConfig(situation, "live");
+        var oldConfig = situationToChessgroundConfig(situation, "live", validMoves);
 
         if (value.moveSelected === "live") {
           chessGround.set(oldConfig);
@@ -108,7 +108,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
   }
 
-  function situationToChessgroundConfig(situation, moveSelected) {
+  function situationToChessgroundConfig(situation, moveSelected, validMoves) {
     const playerColour = situation.players[myIdent] ? situation.players[myIdent].colour : 'white';
 
     const colourToPlay = plyToColourToPlay(situation.ply);
@@ -120,6 +120,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       ply: situation.ply,
       check: situation.check,
       movable: {
+        dests: validMoves,
+        free: false,
         color: situation.toMove === myIdent ? playerColour : null,
         events: {
           after: (orig, dest, metadata) => {
@@ -138,7 +140,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
                 gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest);
               }
 
-              watchForMoveConfirmation(situation, onConfirmMove)
+              watchForMoveConfirmation(situation, onConfirmMove, validMoves)
             }
 
             var notMovable = {
@@ -223,18 +225,6 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     }
   }
 
-  function setValidMoves(situation, chessGroundInstance, validMoves) {
-    var dests = {
-      check: situation.isCheck,
-      movable: {
-        dests: validMoves,
-        free: false
-      }
-    }
-
-    chessGroundInstance.set(dests);
-  }
-
   return {
 
     view: function(ctrl) {
@@ -260,7 +250,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
       var originalSituation = situationObservable();
 
-      var config = situationToChessgroundConfig(originalSituation, "live");
+      var config = situationToChessgroundConfig(originalSituation, "live", {});
       chessGround = Chessground(boardDom, config);
       chessGroundObservable.set(chessGround);
 
@@ -272,13 +262,11 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       this.removeWatches = watchAll([situationObservable,
          gameHistory.getMoveSelectedObservable(), validMovesObservable],
         (newSituation, moveSelected, validMoves) => {
-          var newConfig = situationToChessgroundConfig(newSituation, moveSelected);
+          var newConfig = situationToChessgroundConfig(newSituation, moveSelected, validMoves);
 
           if (settings.getPlaySounds()) {
             playMoveSound(newSituation, newConfig, chessGround, moveSelected);
           }
-
-          setValidMoves(newSituation, chessGround, validMoves);
 
           chessGround.set(newConfig);
         });
