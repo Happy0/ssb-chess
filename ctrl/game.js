@@ -1,7 +1,6 @@
 const GameChallenger = require("../ssb_ctrl/game_challenge");
 const GameSSBDao = require("../ssb_ctrl/game");
 const uuidV4 = require('uuid/v4');
-const Worker = require("tiny-worker");
 
 const GameDb = require('../db/game_db');
 const SocialCtrl = require('./social');
@@ -9,6 +8,7 @@ const PlayerCtrl = require('./player');
 const MoveCtrl = require('./game_move');
 const RecentActivityCtrl = require('./recentActivityCtrl');
 const PgnCtrl = require('./pgn');
+const MovesFinder = require("./valid_moves_finder");
 
 var PubSub = require('pubsub-js');
 
@@ -23,14 +23,19 @@ const _ = require('lodash');
 
 module.exports = (sbot, myIdent, injectedApi) => {
 
-  const gameSSBDao = GameSSBDao(sbot, myIdent, injectedApi);
+  var rootDir = __dirname.replace("ctrl","") + "/";
+  const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
+
+  const gameSSBDao = GameSSBDao(sbot, myIdent, chessWorker);
   const gameChallenger = GameChallenger(sbot, myIdent);
   const gameDb = GameDb(sbot);
-  const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
+  const moveCtrl = MoveCtrl(gameSSBDao, myIdent, chessWorker);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
+
+  const movesFinderCtrl = MovesFinder(chessWorker);
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
   const recentActivityCtrl = RecentActivityCtrl(userGamesUpdateWatcher, getSituationObservable, myIdent);
@@ -239,6 +244,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     getSocialCtrl: () => socialCtrl,
     getPlayerCtrl: () => playerCtrl,
     getRecentActivityCtrl: () => recentActivityCtrl,
+    getMovesFinderCtrl: () => movesFinderCtrl,
     getPgnCtrl: () => pgnCtrl,
     getSbot: () => sbot
   }

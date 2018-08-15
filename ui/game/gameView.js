@@ -182,10 +182,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     const colourToPlay = plyToColourToPlay(moveNumber);
     newConfig['turnColor'] = colourToPlay;
 
-    // Remove 'check' if its in the current state until we
-    // receive an event telling us it is check as we scroll
-    // through the move history
-    newConfig.check = false;
+    newConfig.check = newSituation.isCheckOnMoveNumber(moveNumber);
   }
 
   function makeEmbeddedChat(situation) {
@@ -227,6 +224,18 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     }
   }
 
+  function setValidMoves(situation, chessGroundInstance, validMoves) {
+    var dests = {
+      check: situation.isCheck,
+      movable: {
+        dests: validMoves,
+        free: false
+      }
+    }
+
+    chessGroundInstance.set(dests);
+  }
+
   return {
 
     view: function(ctrl) {
@@ -244,21 +253,6 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     },
     oninit: function(vnode) {
       const gameId = atob(vnode.attrs.gameId);
-
-      this.validMovesListener = PubSub.subscribe("valid_moves", function(msg, data) {
-        if (data.gameId === gameId && chessGround) {
-
-          var dests = {
-            check: data.check,
-            movable: {
-              dests: data.validMoves,
-              free: false
-            }
-          }
-
-          chessGround.set(dests);
-        }
-      });
     },
     oncreate: function(vNode) {
       const gameId = atob(vNode.attrs.gameId);
@@ -274,23 +268,18 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       var chatElement = makeEmbeddedChat(originalSituation);
       chatDom.appendChild(chatElement);
 
-      gameCtrl.getMoveCtrl().publishValidMoves(originalSituation.gameId);
+      var validMovesObservable = gameCtrl.getMovesFinderCtrl().validMovesForSituationObs(situationObservable);
 
-      this.removeWatches = watchAll([situationObservable, gameHistory.getMoveSelectedObservable()],
-        (newSituation, moveSelected) => {
+      this.removeWatches = watchAll([situationObservable,
+         gameHistory.getMoveSelectedObservable(), validMovesObservable],
+        (newSituation, moveSelected, validMoves) => {
           var newConfig = situationToChessgroundConfig(newSituation, moveSelected);
-
-          // If the user is on the latest move, they may move and we
-          // render the game updates. Otherwise the board is read only
-          if (moveSelected !== "live") {
-            gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId, moveSelected);
-          } else {
-            gameCtrl.getMoveCtrl().publishValidMoves(newSituation.gameId);
-          }
 
           if (settings.getPlaySounds()) {
             playMoveSound(newSituation, newConfig, chessGround, moveSelected);
           }
+
+          setValidMoves(newSituation, chessGround, validMoves);
 
           chessGround.set(newConfig);
         });
