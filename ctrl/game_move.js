@@ -48,18 +48,6 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       console.log("move error");
       console.dir(e);
       PubSub.publish("move_error", e.data.payload.error);
-    } else if (e.data.topic === 'init') {
-
-      var gameId = e.data.reqid.gameRootMessage;
-      var validDests = e.data.payload.setup.dests;
-      var isCheck = e.data.payload.setup.check;
-
-      PubSub.publish("valid_moves", {
-        gameId: gameId,
-        validMoves: validDests,
-        check: isCheck
-      })
-
     } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
 
       var status = e.data.payload.situation.status;
