@@ -1,5 +1,4 @@
 var pull = require("pull-stream");
-var PubSub = require("pubsub-js");
 
 module.exports = (sbot) => {
 

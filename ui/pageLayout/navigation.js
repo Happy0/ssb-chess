@@ -1,5 +1,4 @@
 const m = require('mithril');
-const PubSub = require('pubsub-js');
 const SettingsDialog = require('../settings/settings-dialog');
 
 module.exports = (gameCtrl, settings) => {
@@ -114,7 +113,7 @@ module.exports = (gameCtrl, settings) => {
       keepCountsUpdated();
     },
     onremove: () => {
-      Pubsub.unsubscribe(this.gameUpdatesListener);
+
     }
   }
 }

@@ -116,7 +116,7 @@ module.exports = (gameCtrl) => {
       ]);
     },
     onremove: function(e) {
-      PubSub.unsubscribe(this.miniboardUpdatesListener);
+      
       watches.forEach(w => w());
       watches = [];
     }

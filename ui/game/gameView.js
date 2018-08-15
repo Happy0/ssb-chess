@@ -293,8 +293,6 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       if(this.removeWatches) {
         this.removeWatches();
       }
-
-      PubSub.unsubscribe(this.validMovesListener);
       chessGround.destroy();
 
       PubSub.publish("exited_game");

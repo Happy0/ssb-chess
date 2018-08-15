@@ -2,8 +2,6 @@ var m = require("mithril");
 var Chessground = require('chessground').Chessground;
 var Miniboard = require('./miniboard');
 
-var PubSub = require("pubsub-js");
-
 var watch = require("mutant/watch");
 
 /**

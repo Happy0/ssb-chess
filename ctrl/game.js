@@ -10,8 +10,6 @@ const RecentActivityCtrl = require('./recentActivityCtrl');
 const PgnCtrl = require('./pgn');
 const MovesFinder = require("./valid_moves_finder");
 
-var PubSub = require('pubsub-js');
-
 const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
