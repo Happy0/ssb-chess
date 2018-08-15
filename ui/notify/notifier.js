@@ -7,7 +7,7 @@ const onceTrue = require('mutant/once-true');
 module.exports = (gameCtrl, sbot) => {
   const me = gameCtrl.getMyIdent();
 
-  userGamesWatcher = UserGamesWatcher(sbot);
+  const userGamesWatcher = UserGamesWatcher(sbot);
 
   function notifyIfRelevant(gameMsg) {
     if (!userLocationUtils.chessAppIsVisible()) {
