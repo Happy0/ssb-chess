@@ -46,7 +46,7 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
 
   function canRender(entry) {
     const { type } = entry.msg.value.content;
-    return Object.prototype.hasOwnProperty.call(renderers, type);
+    return {}.hasOwnProperty.call(renderers, type);
   }
 
   function renderMessages() {

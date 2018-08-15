@@ -181,7 +181,7 @@ module.exports = (sbot) => {
         obsArray.push(entry);
       }
 
-      count++;
+      count += 1;
     }));
 
     // Sort in descending order

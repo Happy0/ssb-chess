@@ -1,17 +1,18 @@
 module.exports = () => {
   function coloursToNames(json) {
     const ret = {};
-    for (const key in json) {
+
+    Object.keys(json).forEach((key) => {
       ret[json[key].colour] = json[key].name;
-    }
+    });
     return ret;
   }
 
   function coloursToPlayer(json) {
     const ret = {};
-    for (const key in json) {
+    Object.keys(json).forEach((key) => {
       ret[json[key].colour] = json[key];
-    }
+    });
     return ret;
   }
 

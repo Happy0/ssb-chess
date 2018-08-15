@@ -23,7 +23,8 @@ module.exports = () => {
   function getMoveConfirmation() {
     const chessSettings = getObject('ssb-chess');
 
-    if (chessSettings.moveConfirmationEnabled === undefined || chessSettings.moveConfirmationEnabled === null) {
+    if (chessSettings.moveConfirmationEnabled === undefined
+      || chessSettings.moveConfirmationEnabled === null) {
       return true;
     }
     return chessSettings.moveConfirmationEnabled;

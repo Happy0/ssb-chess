@@ -36,7 +36,7 @@ module.exports = (gameCtrl) => {
 
       gameCtrl.inviteToPlay(friendId)
         .then(msg => m.route.set(`/games/${btoa(msg.key)}`))
-        .then(() => buttonElement.disabled = false);
+        .then(() => { buttonElement.disabled = false; });
     };
 
     const challengeButton = m('button', {

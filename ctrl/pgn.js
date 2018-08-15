@@ -51,7 +51,8 @@ module.exports = (gameSSBDao) => {
       // Well, at least the caller gets a nice promise back to hook on to =p.
       awaitPgnResponse(chessWorker, gameId).then(resolve).catch(reject);
 
-      gameSSBDao.getSituation(gameId).then(situation => postWorkerMessage(chessWorker, situation)).catch(reject);
+      gameSSBDao.getSituation(gameId)
+        .then(situation => postWorkerMessage(chessWorker, situation)).catch(reject);
     }),
   };
 };

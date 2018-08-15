@@ -16,6 +16,20 @@ exports.needs = nest({
 });
 
 exports.create = function (api) {
+  function ChessContainer() {
+    const root = h('div.ssb-chess-container');
+    // root.title = location.page
+    // ? '/chess'
+    // : `/chess/${getRoot(location)}`
+
+    // root.id = api.app.sync.locationId(location)
+
+    root.title = '/chess';
+    root.id = JSON.stringify({ page: 'chess' });
+
+    return root;
+  }
+
   let pageLoaded = false;
   const topLevelDomElement = ChessContainer();
   let app = null;
@@ -83,26 +97,13 @@ exports.create = function (api) {
     // this stacks chess routes below routes loaded by depject so far (polite)
     return [...sofar, ...r];
   }
-
-
-  function ChessContainer() {
-    const root = h('div.ssb-chess-container');
-    // root.title = location.page
-    // ? '/chess'
-    // : `/chess/${getRoot(location)}`
-
-    // root.id = api.app.sync.locationId(location)
-
-    root.title = '/chess';
-    root.id = JSON.stringify({ page: 'chess' });
-
-    return root;
-  }
 };
 
 function locationId(location) {
-  if (location.page === 'chess') return JSON.stringify({ page: 'chess' });
-  if (isChessMsg(location)) return JSON.stringify({ page: 'chess' });
+  if (location.page === 'chess' || isChessMsg(location)) {
+    return JSON.stringify({ page: 'chess' });
+  }
+  throw new Error('Unexpected location ID: ', location);
 }
 
 function isChessMsg(loc) {

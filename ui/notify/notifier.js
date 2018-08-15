@@ -50,7 +50,10 @@ module.exports = (gameCtrl, sbot) => {
       since: Date.now(),
     };
 
-    const gameUpdateStream = userGamesWatcher.chessMessagesForPlayerGames(gameCtrl.getMyIdent(), opts);
+    const gameUpdateStream = userGamesWatcher.chessMessagesForPlayerGames(
+      gameCtrl.getMyIdent(),
+      opts,
+    );
 
     pull(gameUpdateStream, pull.drain(msg => notifyIfRelevant(msg)));
   }

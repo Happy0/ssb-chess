@@ -64,13 +64,13 @@ module.exports = (gameCtrl) => {
 
     const w1 = invitesReceived((received) => {
       invitesToSituations(received)
-        .then(inviteSituations => invitationsReceived = inviteSituations)
+        .then((inviteSituations) => { invitationsReceived = inviteSituations; })
         .then(m.redraw);
     });
 
     const w2 = invitesSent((sent) => {
       invitesToSituations(sent)
-        .then(inviteSituations => invitationsSent = inviteSituations)
+        .then((inviteSituations) => { invitationsSent = inviteSituations; })
         .then(m.redraw);
     });
 

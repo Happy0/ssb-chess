@@ -1,6 +1,7 @@
 const m = require('mithril');
-const GameCtrl = require('./ctrl/game');
+const onceTrue = require('mutant/once-true');
 
+const GameCtrl = require('./ctrl/game');
 const MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 const NavigationBar = require('./ui/pageLayout/navigation');
 const GameComponent = require('./ui/game/gameView');
@@ -8,10 +9,7 @@ const PlayerProfileComponent = require('./ui/player/player_profile');
 const InvitationsComponent = require('./ui/invitations/invitations');
 const RecentActivityComponent = require('./ui/recent_activity/recent');
 const PgnExportComponent = require('./ui/export/pgnExport');
-
 const settingsCtrl = require('./ctrl/settings')();
-const onceTrue = require('mutant/once-true');
-
 const Notifier = require('./ui/notify/notifier');
 
 module.exports = (attachToElement, sbot, opts = {}) => {

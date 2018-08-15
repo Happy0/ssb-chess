@@ -28,8 +28,20 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
   const gameHistoryObs = gameHistory.getMoveSelectedObservable();
 
-  const pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, false);
-  const pieceGraveMe = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, true);
+  const pieceGraveOpponent = PieceGraveyard(
+    chessGroundObservable,
+    situationObservable,
+    gameHistoryObs,
+    myIdent,
+    false,
+  );
+  const pieceGraveMe = PieceGraveyard(
+    chessGroundObservable,
+    situationObservable,
+    gameHistoryObs,
+    myIdent,
+    true,
+  );
 
   const rootDir = `${__dirname.replace('/ui/game', '')}/`;
 
@@ -82,10 +94,13 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     const confirmedObs = actionButtons.showMoveConfirmation();
     m.redraw();
 
-    const watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => ({
-      moveConfirmed: confirmed,
-      moveSelected,
-    }));
+    const watches = computed(
+      [confirmedObs, gameHistory.getMoveSelectedObservable()],
+      (confirmed, moveSelected) => ({
+        moveConfirmed: confirmed,
+        moveSelected,
+      }),
+    );
 
     const removeConfirmationListener = watches((value) => {
       if (value.moveConfirmed.confirmed) {
@@ -125,7 +140,12 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
               PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
-                  const onConfirmMove = () => gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  const onConfirmMove = () => gameCtrl.getMoveCtrl().makeMove(
+                    situation.gameId,
+                    orig,
+                    dest,
+                    promotingToPiece,
+                  );
                   watchForMoveConfirmation(situation, onConfirmMove);
                 }).renderPromotionOptionsOverlay();
             } else {
@@ -243,7 +263,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       const chatElement = makeEmbeddedChat(originalSituation);
       chatDom.appendChild(chatElement);
 
-      const validMovesObservable = gameCtrl.getMovesFinderCtrl().validMovesForSituationObs(situationObservable);
+      const validMovesObservable = gameCtrl.getMovesFinderCtrl()
+        .validMovesForSituationObs(situationObservable);
 
       this.removeWatches = watchAll([situationObservable,
         gameHistory.getMoveSelectedObservable(), validMovesObservable],

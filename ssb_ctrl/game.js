@@ -78,14 +78,18 @@ module.exports = (sbot) => {
 
     const status = {
       status: gameStatus,
-      winner: gameFinishedMsg != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), gameFinishedMsg) : null,
+      winner: gameFinishedMsg != null
+        ? ChessMsgUtils.winnerFromEndMsgPlayers(
+          Object.keys(players),
+          gameFinishedMsg,
+        ) : null,
     };
 
     return status;
   }
 
   function filterByPlayerMoves(players, messages) {
-    return messages.filter(msg => players.hasOwnProperty(msg.value.author)
+    return messages.filter(msg => ({}).hasOwnProperty.call(players, msg.value.author)
       && (msg.value.content.type === 'chess_move'
         || (msg.value.content.type === 'chess_game_end' && msg.value.content.orig != null)));
   }
@@ -95,11 +99,13 @@ module.exports = (sbot) => {
 
     const playerIds = Object.keys(players);
 
-    for (let i = 0; i < playerIds.length; i++) {
+    for (let i = 0; i < playerIds.length; i += 1) {
       if (players[playerIds[i]].colour === colourToMove) {
         return playerIds[i];
       }
     }
+
+    throw new Error('Unable to find player ID', colourToMove);
   }
 
   /**
@@ -192,11 +198,13 @@ module.exports = (sbot) => {
             return this.players[id] != null;
           },
           getOtherPlayer(id) {
-            for (const k in this.players) {
+            let otherPlayer = Object.keys(this.players).forEach((k) => {
               if (k !== id) {
-                return this.players[k];
+                otherPlayer = this.players[k];
               }
-            }
+            });
+
+            return otherPlayer;
           },
         };
       });
@@ -226,7 +234,16 @@ module.exports = (sbot) => {
     return MutantUtils.mutantToPromise(getSituationObservable(gameRootMessage));
   }
 
-  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen, respondsTo) {
+  function makeMove(
+    gameRootMessage,
+    ply,
+    originSquare,
+    destinationSquare,
+    promotion,
+    pgnMove,
+    fen,
+    respondsTo,
+  ) {
     const post = {
       type: 'chess_move',
       ply,
@@ -282,7 +299,17 @@ module.exports = (sbot) => {
     });
   }
 
-  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove, respondsTo) {
+  function endGame(
+    gameRootMessage,
+    status,
+    winner,
+    fen,
+    ply,
+    originSquare,
+    destinationSquare,
+    pgnMove,
+    respondsTo,
+  ) {
     return new Promise((resolve, reject) => {
       const post = {
         type: 'chess_game_end',

@@ -26,10 +26,15 @@ module.exports = (sbot, myIdent) => {
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent, chessWorker);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
+  function getSituationObservable(gameId) {
+    return gameSSBDao.getSituationObservable(gameId);
+  }
+
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const movesFinderCtrl = MovesFinder(chessWorker);
+
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
   const recentActivityCtrl = RecentActivityCtrl(
@@ -205,9 +210,6 @@ module.exports = (sbot, myIdent) => {
     return gameSSBDao.getSituation(gameId);
   }
 
-  function getSituationObservable(gameId) {
-    return gameSSBDao.getSituationObservable(gameId);
-  }
 
   function getSituationSummaryObservable(gameId) {
     return gameSSBDao.getSituationSummaryObservable(gameId);

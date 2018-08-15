@@ -118,8 +118,9 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())());
     },
     oninit() {
-      const w = watch(situationObservable,
-        situation => observing = isObserving(situation));
+      const w = watch(situationObservable, (situation) => {
+        observing = isObserving(situation);
+      });
 
       watchesToClear.push(w);
     },
