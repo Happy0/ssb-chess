@@ -1,11 +1,4 @@
 const nest = require('depnest');
-const Value = require('mutant/value');
-const computed = require('mutant/computed');
-const Abortable = require('pull-abortable');
-const resolve = require('mutant/resolve');
-const pull = require('pull-stream');
-const onceIdle = require('mutant/once-idle');
-
 const patchCore = require('patchcore');
 const combine = require('depject');
 

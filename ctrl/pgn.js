@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const Worker = require('tiny-worker');
 
-module.exports = (gameSSBDao, chessWorker) => {
+module.exports = (gameSSBDao) => {
   function postWorkerMessage(chessWorker, situation) {
     chessWorker.postMessage({
       topic: 'pgnDump',

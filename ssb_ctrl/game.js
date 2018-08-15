@@ -1,23 +1,12 @@
-const filter = require('pull-stream/throughs/filter');
-const pull = require('pull-stream');
-const map = require('pull-stream/throughs/map');
-const collect = require('pull-stream/sinks/collect');
-
-const nest = require('depnest');
-
 const computed = require('mutant/computed');
-const when = require('mutant/when');
-const Value = require('mutant/value');
-const onceTrue = require('mutant/once-true');
 
 const SocialCtrl = require('./social');
 const MutantUtils = require('./mutant_utils')();
 const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 
 const getFilteredBackLinks = require('./backlinks_obs')();
-const combine = require('depject');
 
-module.exports = (sbot, myIdent) => {
+module.exports = (sbot) => {
   const socialCtrl = SocialCtrl(sbot);
 
   function getPlayers(gameRootMessage) {
@@ -36,12 +25,12 @@ module.exports = (sbot, myIdent) => {
           names.then((names) => {
             players[authorId] = {};
             players[authorId].colour = authorColour;
-            players[authorId].name = names[0];
+            [players[authorId].name] = names;
             players[authorId].id = authorId;
 
             players[invited] = {};
             players[invited].colour = authorColour === 'white' ? 'black' : 'white';
-            players[invited].name = names[1];
+            [, players[invited].name] = names;
             players[invited].id = invited;
 
             resolve(players);

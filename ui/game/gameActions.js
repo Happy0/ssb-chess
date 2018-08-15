@@ -40,7 +40,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
   }
 
   function resignButton() {
-    const resignGame = (e) => {
+    const resignGame = () => {
       onceTrue(situationObservable,
         (situation) => {
           if (situation && situation.status.status === 'started') {
@@ -107,7 +107,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
   }
 
   return {
-    view: (vDom) => {
+    view: () => {
       if (observing) {
         return postGameButtons();
       }
@@ -117,7 +117,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       },
       when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())());
     },
-    oninit(vNode) {
+    oninit() {
       const w = watch(situationObservable,
         situation => observing = isObserving(situation));
 

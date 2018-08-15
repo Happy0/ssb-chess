@@ -1,7 +1,7 @@
 const m = require('mithril');
 const watchAll = require('mutant/watch-all');
 
-const opposite = require('chessground/util').opposite;
+const { opposite } = require('chessground/util');
 
 const R = require('ramda');
 
@@ -76,13 +76,13 @@ module.exports = (
     }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor)),
     oncreate: () => {
       this.removeWatches = watchAll([chessGroundObservable, situationObservable, moveSelectedObservable],
-        (chessground, situation, move) => {
+        (chessground, situation) => {
           if (situation) {
             setPlayerColours(situation);
           }
 
           if (chessground) {
-            const pieces = chessground.state.pieces;
+            const { pieces } = chessground.state;
             materialDiff = getMaterialDiff(pieces);
             m.redraw();
           }

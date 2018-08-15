@@ -1,4 +1,11 @@
 module.exports = () => {
+  function isVisible(elm) {
+    // Thanks https://stackoverflow.com/a/33026481 =]
+    if (!elm.offsetHeight && !elm.offsetWidth) { return false; }
+    if (getComputedStyle(elm).visibility === 'hidden') { return false; }
+    return true;
+  }
+
   /**
    * Returns true if the user can currently see the chess app, and false otherwise.
    * The user might be in a different tab in the containing application, for example.
@@ -12,13 +19,6 @@ module.exports = () => {
     const element = topLevelElementArr[0];
 
     return document.hasFocus() && isVisible(element);
-  }
-
-  function isVisible(elm) {
-    // Thanks https://stackoverflow.com/a/33026481 =]
-    if (!elm.offsetHeight && !elm.offsetWidth) { return false; }
-    if (getComputedStyle(elm).visibility === 'hidden') { return false; }
-    return true;
   }
 
   /**

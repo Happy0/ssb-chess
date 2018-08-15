@@ -7,7 +7,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       if (situation.toMove !== myIdent) {
         console.log(`Not ${myIdent} to move`);
       } else {
-        const pgnMoves = situation.pgnMoves;
+        const { pgnMoves } = situation;
         chessWorker.postMessage({
           topic: 'move',
           payload: {
@@ -37,9 +37,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
   function handleChessWorkerResponse(e) {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
-    const gameRootMessage = e.data.reqid.gameRootMessage;
-    const originSquare = e.data.reqid.originSquare;
-    const destinationSquare = e.data.reqid.destinationSquare;
+    const { gameRootMessage, originSquare, destinationSquare } = e.data.reqid;
     let respondsTo;
 
     if (e.data.payload.error) {
@@ -47,12 +45,10 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       console.dir(e);
       PubSub.publish('move_error', e.data.payload.error);
     } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
-      const status = e.data.payload.situation.status;
-      const winner = e.data.payload.situation.winner;
-      const ply = e.data.payload.situation.ply;
-      const fen = e.data.payload.situation.fen;
-      const players = e.data.reqid.players;
-      respondsTo = e.data.reqid.respondsTo;
+      const {
+        status, winner, ply, fen, players,
+      } = e.data.reqid;
+      ({ respondsTo } = e.data.reqid);
 
       const pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
@@ -72,7 +68,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
         respondsTo,
       );
     } else if (e.data.topic === 'move') {
-      respondsTo = e.data.reqid.respondsTo;
+      ({ respondsTo } = e.data.reqid);
 
       gameSSBDao.makeMove(
         gameRootMessage,

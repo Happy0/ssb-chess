@@ -25,13 +25,13 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
   let messages = [];
   const watches = [];
 
-  const renderers = {
-    chess_game_end: renderGameEndMsg,
-  };
-
   function renderGameEndMsg(entry) {
     return m('div', m(gameEndActivity(entry.msg, entry.situation, gameCtrl.getMyIdent())));
   }
+
+  const renderers = {
+    chess_game_end: renderGameEndMsg,
+  };
 
   function renderMessage(entry) {
     const renderer = renderers[entry.msg.value.content.type];
@@ -44,7 +44,7 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
   }
 
   function canRender(entry) {
-    const type = entry.msg.value.content.type;
+    const { type } = entry.msg.value.content;
     return renderers.hasOwnProperty(type);
   }
 

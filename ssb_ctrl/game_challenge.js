@@ -1,4 +1,3 @@
-const pull = require('pull-stream');
 const About = require('ssb-ooo-about');
 const Promise = require('bluebird');
 

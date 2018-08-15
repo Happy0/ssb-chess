@@ -88,14 +88,14 @@ module.exports = (attachToElement, sbot, opts = {}) => {
       '/my_games': MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
       '/games_my_move': MiniboardListComponent(gameCtrl, gamesMyMoveObs, gameCtrl.getMyIdent()),
       '/games/:gameId': {
-        onmatch(args, requestedPath) {
+        onmatch(args) {
           const gameId = atob(args.gameId);
           const gameSituationObs = gameCtrl.getSituationObservable(gameId);
 
           // Only load the game page once we have the initial game situation state.
           // The mithril router allows us to return a component in a promise.
-          return new Promise((resolve, reject) => {
-            onceTrue(gameSituationObs, (originalSituation) => {
+          return new Promise((resolve) => {
+            onceTrue(gameSituationObs, () => {
               const gameComponent = GameComponent(gameCtrl, gameSituationObs, settingsCtrl);
               resolve(gameComponent);
             });
@@ -107,7 +107,7 @@ module.exports = (attachToElement, sbot, opts = {}) => {
       '/observable': MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
       '/player/:playerId': PlayerProfileComponent(gameCtrl),
       '/games/:gameId/pgn': {
-        onmatch(args, requestedPath) {
+        onmatch(args) {
           const gameId = atob(args.gameId);
           return gameCtrl.getPgnCtrl()
             .getPgnExport(gameId)

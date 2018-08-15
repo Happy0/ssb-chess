@@ -1,11 +1,10 @@
 const m = require('mithril');
-const Chessground = require('chessground').Chessground;
+const { Chessground } = require('chessground');
 const PubSub = require('pubsub-js');
-const onceTrue = require('mutant/once-true');
 const Value = require('mutant/value');
 const watchAll = require('mutant/watch-all');
 const computed = require('mutant/computed');
-const Howl = require('howler').Howl;
+const { Howl } = require('howler');
 
 const EmbeddedChat = require('ssb-embedded-chat');
 const ActionButtons = require('./gameActions');
@@ -120,7 +119,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
         free: false,
         color: situation.toMove === myIdent ? playerColour : null,
         events: {
-          after: (orig, dest, metadata) => {
+          after: (orig, dest) => {
             if (isPromotionMove(chessGround, dest)) {
               const chessboardDom = document.getElementsByClassName('cg-board-wrap')[0];
 
@@ -230,9 +229,6 @@ module.exports = (gameCtrl, situationObservable, settings) => {
           m(pieceGraveMe),
         ])]);
     },
-    oninit(vnode) {
-      const gameId = atob(vnode.attrs.gameId);
-    },
     oncreate(vNode) {
       const gameId = atob(vNode.attrs.gameId);
       const boardDom = document.getElementById(gameId);
@@ -265,7 +261,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
         gameId,
       });
     },
-    onremove(vnode) {
+    onremove() {
       if (this.removeWatches) {
         this.removeWatches();
       }

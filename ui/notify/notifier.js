@@ -1,8 +1,8 @@
-const UserGamesWatcher = require('../../ctrl/user_game_updates_watcher');
-const notify = require('./notify')();
 const pull = require('pull-stream');
-const userLocationUtils = require('../viewer_perspective/user_location')();
 const onceTrue = require('mutant/once-true');
+const notify = require('./notify')();
+const UserGamesWatcher = require('../../ctrl/user_game_updates_watcher');
+const userLocationUtils = require('../viewer_perspective/user_location')();
 
 module.exports = (gameCtrl, sbot) => {
   const me = gameCtrl.getMyIdent();

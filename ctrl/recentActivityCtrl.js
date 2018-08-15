@@ -1,20 +1,8 @@
 const computed = require('mutant/computed');
-const MutantArray = require('mutant/array');
 const Value = require('mutant/value');
 const userViewingGame = require('./userViewingGame')();
 
 module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
-  function msgAndSituationObs(msg) {
-    const gameId = msg.value.content.root;
-
-    const situationObs = getSituationObs(gameId);
-
-    return computed([situationObs], situation => ({
-      msg,
-      situation,
-    }));
-  }
-
   const activityObs = userGamesUpdateWatcher.getRingBufferGameMsgsForPlayer(myIdent, getSituationObs, ['chess_game_end'], 10);
 
   function getRecentActivity() {

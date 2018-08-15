@@ -1,5 +1,5 @@
 const m = require('mithril');
-const Chessground = require('chessground').Chessground;
+const { Chessground } = require('chessground');
 const PlayerModelUtils = require('../../ctrl/player_model_utils')();
 const timeAgo = require('./timeAgo')();
 
@@ -7,8 +7,6 @@ module.exports = (gameSummaryObservable, summary, identPerspective, opts) => {
   let chessground = null;
   let observables = [];
   let lastActivityTimestamp = summary.lastUpdateTime;
-
-  const timeAgoRedrawTimer = null;
 
   // An observer might not be in the 'players' list so we need a default
   // perspective of white for them.
@@ -91,7 +89,7 @@ module.exports = (gameSummaryObservable, summary, identPerspective, opts) => {
 
       const config = summaryToChessgroundConfig(summary);
 
-      const dom = vNode.dom;
+      const { dom } = vNode;
       const chessGroundParent = dom.querySelector('.ssb-chessground-container');
       chessground = Chessground(chessGroundParent, config);
 

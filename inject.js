@@ -1,8 +1,6 @@
 const nest = require('depnest');
 const { h, onceTrue } = require('mutant');
 const get = require('lodash/get');
-const m = require('mithril');
-// const { isMsg } = require('ssb-ref')
 
 const index = require('./index');
 

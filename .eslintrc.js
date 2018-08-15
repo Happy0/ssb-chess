@@ -6,8 +6,6 @@ module.exports = {
   },
   "rules": {
     "no-console": "warn",
-    "no-unused-vars": "warn",
-    "prefer-destructuring": "warn",
     "max-len": "warn",
     "no-use-before-define": "warn",
     "eqeqeq": "warn",

@@ -1,4 +1,7 @@
-const uuidV4 = require('uuid/v4');
+const Value = require('mutant/value');
+const MutantArray = require('mutant/array');
+const computed = require('mutant/computed');
+const _ = require('lodash');
 const GameChallenger = require('../ssb_ctrl/game_challenge');
 const GameSSBDao = require('../ssb_ctrl/game');
 
@@ -10,16 +13,10 @@ const RecentActivityCtrl = require('./recentActivityCtrl');
 const PgnCtrl = require('./pgn');
 const MovesFinder = require('./valid_moves_finder');
 
-const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
-const Value = require('mutant/value');
-const MutantArray = require('mutant/array');
-const computed = require('mutant/computed');
 
-const _ = require('lodash');
-
-module.exports = (sbot, myIdent, injectedApi) => {
+module.exports = (sbot, myIdent) => {
   const rootDir = `${__dirname.replace('ctrl', '')}/`;
   const chessWorker = new Worker(`${rootDir}vendor/scalachessjs/scalachess.js`);
 
@@ -55,9 +52,9 @@ module.exports = (sbot, myIdent, injectedApi) => {
   function pendingChallengesSent() {
     const observable = Value([]);
 
-    const challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
+    gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    const unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set));
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent).then(observable.set));
 
     return computed([observable], a => a, {
       comparer: compareGameSummaryLists,
@@ -70,7 +67,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    const unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set));
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent).then(observable.set));
 
     return computed(
       [observable], a => a, {
@@ -152,7 +149,7 @@ module.exports = (sbot, myIdent, injectedApi) => {
     if (type === 'chess_move') {
       gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
         (summary) => {
-          const gameId = summary.gameId;
+          const { gameId } = summary;
           const idx = observable().findIndex(summary => summary.gameId === gameId);
 
           if (idx !== -1) {

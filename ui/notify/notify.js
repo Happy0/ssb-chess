@@ -13,7 +13,7 @@ module.exports = () => {
   }
 
   function showNotification(text, onclick) {
-    const permission = Notification.permission;
+    const { permission } = Notification;
     if (permission === 'default') {
       Notification.requestPermission().then((result) => {
         if (result === 'granted') {

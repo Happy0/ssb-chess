@@ -106,10 +106,6 @@ module.exports = (sbot) => {
     return msgTypes.indexOf(msg.value.content.type) !== -1;
   }
 
-  function containsPlayerId(playerId, players) {
-    return players.indexOf(playerId) !== -1;
-  }
-
   function msgMatchesFilter(playerId, playerShouldBeInGame, messageTypes) {
     return pull(
       pull(

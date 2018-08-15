@@ -1,5 +1,3 @@
-const pull = require('pull-stream');
-
 module.exports = (sbot) => {
   function pendingChallengesSent(playerId) {
     return new Promise((resolve, reject) => {
