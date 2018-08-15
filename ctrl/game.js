@@ -1,6 +1,6 @@
-const GameChallenger = require("../ssb_ctrl/game_challenge");
-const GameSSBDao = require("../ssb_ctrl/game");
 const uuidV4 = require('uuid/v4');
+const GameChallenger = require('../ssb_ctrl/game_challenge');
+const GameSSBDao = require('../ssb_ctrl/game');
 
 const GameDb = require('../db/game_db');
 const SocialCtrl = require('./social');
@@ -8,7 +8,7 @@ const PlayerCtrl = require('./player');
 const MoveCtrl = require('./game_move');
 const RecentActivityCtrl = require('./recentActivityCtrl');
 const PgnCtrl = require('./pgn');
-const MovesFinder = require("./valid_moves_finder");
+const MovesFinder = require('./valid_moves_finder');
 
 const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
@@ -20,9 +20,8 @@ const computed = require('mutant/computed');
 const _ = require('lodash');
 
 module.exports = (sbot, myIdent, injectedApi) => {
-
-  var rootDir = __dirname.replace("ctrl","") + "/";
-  const chessWorker = new Worker(rootDir + 'vendor/scalachessjs/scalachess.js');
+  const rootDir = `${__dirname.replace('ctrl', '')}/`;
+  const chessWorker = new Worker(`${rootDir}vendor/scalachessjs/scalachess.js`);
 
   const gameSSBDao = GameSSBDao(sbot, myIdent, chessWorker);
   const gameChallenger = GameChallenger(sbot, myIdent);
@@ -43,41 +42,42 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function inviteToPlay(playerKey, asWhite) {
-    return gameChallenger.inviteToPlay(playerKey, asWhite)
+    return gameChallenger.inviteToPlay(playerKey, asWhite);
   }
 
   function acceptChallenge(rootGameMessage) {
-    console.log("accepting invite " + rootGameMessage);
+    console.log(`accepting invite ${rootGameMessage}`);
     return gameChallenger.acceptChallenge(rootGameMessage);
   }
 
-  var myGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
+  const myGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
 
   function pendingChallengesSent() {
-    var observable = Value([]);
+    const observable = Value([]);
 
-    var challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
+    const challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    var unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set))
+    const unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set));
 
     return computed([observable], a => a, {
       comparer: compareGameSummaryLists,
-      onUnlisten: unlistenUpdates
+      onUnlisten: unlistenUpdates,
     });
   }
 
   function pendingChallengesReceived() {
-    var observable = Value([]);
+    const observable = Value([]);
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    var unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set))
+    const unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set));
 
     return computed(
       [observable], a => a, {
         comparer: compareGameSummaryLists,
-        onUnlisten: unlistenUpdates
-      });
+        onUnlisten: unlistenUpdates,
+      },
+    );
   }
 
   function getMyGamesInProgress() {
@@ -85,31 +85,30 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function gamesAgreedToPlaySummaries(playerId) {
-    return gameDb.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => {
-      return Promise.all(
-        gamesInProgress.map(gameSSBDao.getSmallGameSummary)
-      )
-    });
+    return gameDb.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => Promise.all(
+      gamesInProgress.map(gameSSBDao.getSmallGameSummary),
+    ));
   }
 
   function getGamesInProgress(playerId) {
-    var observable = MutantArray([]);
+    const observable = MutantArray([]);
     gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)));
 
-    var playerGameUpdates = getGameUpdatesObservable(playerId);
+    const playerGameUpdates = getGameUpdatesObservable(playerId);
 
-    var unlistenUpdates = playerGameUpdates(
+    const unlistenUpdates = playerGameUpdates(
       newUpdate => updateObservableWithGameChange(
         () => gamesAgreedToPlaySummaries(playerId),
         newUpdate,
-        observable)
-    )
+        observable,
+      ),
+    );
 
     return computed(
       [observable],
       a => a, {
-        onUnlisten: unlistenUpdates
-      }
+        onUnlisten: unlistenUpdates,
+      },
     );
   }
 
@@ -117,53 +116,54 @@ module.exports = (sbot, myIdent, injectedApi) => {
     const observable = MutantArray([]);
 
     const start = startArg || 0;
-    const end = endArg || 20
+    const end = endArg || 20;
 
     gameDb.getObservableGames(myIdent, start, end).then(
       gameIds => Promise.all(
-        gameIds.map(gameSSBDao.getSmallGameSummary)
-    )).then(a => a.sort(compareGameTimestamps)).then(observable.set)
+        gameIds.map(gameSSBDao.getSmallGameSummary),
+      ),
+    ).then(a => a.sort(compareGameTimestamps)).then(observable.set);
 
-    var observingUpdates = userGamesUpdateWatcher.latestGameMessageForOtherPlayersObs(myIdent);
+    const observingUpdates = userGamesUpdateWatcher.latestGameMessageForOtherPlayersObs(myIdent);
 
-    var unlistenObservingUpdates = observingUpdates(
+    const unlistenObservingUpdates = observingUpdates(
       newUpdate => updateObservableWithGameChange(
         () => gameDb.getObservableGames(myIdent, start, end).then(
           gameIds => Promise.all(
-            gameIds.map(gameSSBDao.getSmallGameSummary)
-        )),
+            gameIds.map(gameSSBDao.getSmallGameSummary),
+          ),
+        ),
         newUpdate,
-        observable)
-    )
+        observable,
+      ),
+    );
 
     return computed(
       [observable],
       a => a.sort(compareGameTimestamps), {
         comparer: compareGameSummaryLists,
-        onUnlisten: unlistenObservingUpdates
-      }
+        onUnlisten: unlistenObservingUpdates,
+      },
     );
   }
 
   function updateObservableWithGameChange(summaryListPromiseFn, newUpdate, observable) {
-    var type = newUpdate.value ? newUpdate.value.content.type : null;
-    if (type === "chess_move") {
+    const type = newUpdate.value ? newUpdate.value.content.type : null;
+    if (type === 'chess_move') {
       gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
-        summary => {
-          var gameId = summary.gameId;
-          var idx = observable().findIndex(summary => summary.gameId === gameId);
+        (summary) => {
+          const gameId = summary.gameId;
+          const idx = observable().findIndex(summary => summary.gameId === gameId);
 
           if (idx !== -1) {
             observable.put(idx, summary);
           } else {
-            summaryListPromiseFn().then(g =>
-              observable.set(g.sort(compareGameTimestamps)
-            ))
+            summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)));
           }
-        }
-      )
+        },
+      );
     } else {
-      summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)))
+      summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)));
     }
   }
 
@@ -172,19 +172,17 @@ module.exports = (sbot, myIdent, injectedApi) => {
       return false;
     }
 
-    list1 = list1 ? list1 : [];
-    list2 = list2 ? list2 : [];
+    list1 = list1 || [];
+    list2 = list2 || [];
 
-    var list1ids = list1.map(a => a.gameId);
-    var list2ids = list2.map(a => a.gameId);
+    const list1ids = list1.map(a => a.gameId);
+    const list2ids = list2.map(a => a.gameId);
 
-    return _.isEmpty(_.xor(list1ids, list2ids))
+    return _.isEmpty(_.xor(list1ids, list2ids));
   }
 
   function filterGamesMyMove(gameSummaries) {
-    return gameSummaries.filter(summary =>
-      summary.toMove === myIdent
-    )
+    return gameSummaries.filter(summary => summary.toMove === myIdent);
   }
 
   function compareGameTimestamps(g1, g2) {
@@ -192,16 +190,13 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getGamesWhereMyMove() {
-
-    var myGamesInProgress = getMyGamesInProgress();
+    const myGamesInProgress = getMyGamesInProgress();
 
     return computed([myGamesInProgress],
-      (gamesInProgress) => {
-        return computed(
-          [gamesInProgress],
-           games => filterGamesMyMove(games).sort(compareGameTimestamps))
-      }
-    );
+      gamesInProgress => computed(
+        [gamesInProgress],
+        games => filterGamesMyMove(games).sort(compareGameTimestamps),
+      ));
   }
 
   function getSituation(gameId) {
@@ -209,7 +204,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function getSituationObservable(gameId) {
-
     return gameSSBDao.getSituationObservable(gameId);
   }
 
@@ -220,31 +214,29 @@ module.exports = (sbot, myIdent, injectedApi) => {
   function getGameUpdatesObservable(ident) {
     if (ident === myIdent) {
       return myGameUpdates;
-    } else {
-      return userGamesUpdateWatcher.latestGameMessageForPlayerObs(ident);
     }
+    return userGamesUpdateWatcher.latestGameMessageForPlayerObs(ident);
   }
 
   return {
-    getMyIdent: getMyIdent,
-    inviteToPlay: inviteToPlay,
-    acceptChallenge: acceptChallenge,
-    getGamesWhereMyMove: getGamesWhereMyMove,
-    pendingChallengesSent: pendingChallengesSent,
-    pendingChallengesReceived: pendingChallengesReceived,
-    getMyGamesInProgress: getMyGamesInProgress,
-    getGamesInProgress: getGamesInProgress,
-    getFriendsObservableGames: getFriendsObservableGames,
-    getSituation: getSituation,
-    getSituationObservable: getSituationObservable,
-    getSituationSummaryObservable: getSituationSummaryObservable,
+    getMyIdent,
+    inviteToPlay,
+    acceptChallenge,
+    getGamesWhereMyMove,
+    pendingChallengesSent,
+    pendingChallengesReceived,
+    getMyGamesInProgress,
+    getGamesInProgress,
+    getFriendsObservableGames,
+    getSituation,
+    getSituationObservable,
+    getSituationSummaryObservable,
     getMoveCtrl: () => moveCtrl,
     getSocialCtrl: () => socialCtrl,
     getPlayerCtrl: () => playerCtrl,
     getRecentActivityCtrl: () => recentActivityCtrl,
     getMovesFinderCtrl: () => movesFinderCtrl,
     getPgnCtrl: () => pgnCtrl,
-    getSbot: () => sbot
-  }
-
-}
+    getSbot: () => sbot,
+  };
+};

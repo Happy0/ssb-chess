@@ -1,14 +1,13 @@
-var patchCore = require('patchcore')
-var combine = require('depject')
-var nest = require('depnest')
+const patchCore = require('patchcore');
+const combine = require('depject');
+const nest = require('depnest');
 
 module.exports = () => {
+  const timeAgo = {
+    needs: nest({ 'lib.obs.timeAgo': 'first' }),
+  };
 
-  var timeAgo = {
-    needs: nest({"lib.obs.timeAgo": "first"})
-  }
+  const api = combine([timeAgo, patchCore]);
 
-  var api = combine([timeAgo, patchCore]);
-
-  return api.lib.obs.timeAgo[0]
-}
+  return api.lib.obs.timeAgo[0];
+};

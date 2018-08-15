@@ -1,82 +1,78 @@
-var m = require("mithril");
-var onceTrue = require('mutant/once-true');
-var Value = require('mutant/value');
-var when = require('mutant/when');
-var watch = require("mutant/watch");
-var computed = require('mutant/computed');
+const m = require('mithril');
+const onceTrue = require('mutant/once-true');
+const Value = require('mutant/value');
+const when = require('mutant/when');
+const watch = require('mutant/watch');
+const computed = require('mutant/computed');
 
 module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
+  let watchesToClear = [];
 
-  var watchesToClear = [];
+  let observing = true;
 
-  var observing = true;
-
-  var moveConfirmationObservable = makeMoveObservationListener();
+  const moveConfirmationObservable = makeMoveObservationListener();
 
   function moveConfirmButtons() {
-
-    var confirmMove = () => {
+    const confirmMove = () => {
       moveConfirmationObservable.set({
         moveNeedsConfirmed: false,
-        confirmed: true
-      })
-    }
+        confirmed: true,
+      });
+    };
 
-    var cancelMove = () => {
+    const cancelMove = () => {
       moveConfirmationObservable.set({
         moveNeedsConfirmed: false,
-        confirmed: false
-      })
-    }
+        confirmed: false,
+      });
+    };
 
     return m('div', {
-      class: 'ssb-chess-move-confirm-buttons'
+      class: 'ssb-chess-move-confirm-buttons',
     }, [
       m('button', {
-        onclick: confirmMove
+        onclick: confirmMove,
       }, 'Confirm'),
       m('button', {
-        onclick: cancelMove
-      }, 'Cancel')
-    ])
+        onclick: cancelMove,
+      }, 'Cancel'),
+    ]);
   }
 
   function resignButton() {
-    var resignGame = (e) => {
+    const resignGame = (e) => {
       onceTrue(situationObservable,
-        situation => {
-          if (situation && situation.status.status === "started") {
-            gameMoveCtrl.resignGame(situation.gameId, situation.latestUpdateMsg)
+        (situation) => {
+          if (situation && situation.status.status === 'started') {
+            gameMoveCtrl.resignGame(situation.gameId, situation.latestUpdateMsg);
           }
-        }
-      );
-    }
+        });
+    };
 
     return m('button', {
-      onclick: resignGame
+      onclick: resignGame,
     }, 'Resign');
   }
 
   function handlePgnExport(gameId) {
-    var url = "/games/:gameId/pgn";
+    const url = '/games/:gameId/pgn';
 
     m.route.set(url, {
-      gameId: btoa(gameId)
+      gameId: btoa(gameId),
     });
   }
 
   function postGameButtons() {
-
     const exportPgn = () => {
-      onceTrue(situationObservable, situation => {
-        handlePgnExport(situation.gameId)
+      onceTrue(situationObservable, (situation) => {
+        handlePgnExport(situation.gameId);
       });
-    }
+    };
 
     return m('button', {
       onclick: exportPgn,
-      title: 'Export game.'
-    }, 'Export game')
+      title: 'Export game.',
+    }, 'Export game');
   }
 
   function isObserving(situation) {
@@ -84,11 +80,11 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
   }
 
   function makeMoveObservationListener() {
-    var value = Value();
+    const value = Value();
 
     value.set({
       moveNeedsConfirmed: false,
-      moveConfirmed: false
+      moveConfirmed: false,
     });
 
     return value;
@@ -98,14 +94,13 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     // Eh, miby there's redundancy here, dunno :P
 
     return computed(moveConfirmationObservable,
-      confirmation => confirmation.moveNeedsConfirmed
-    );
+      confirmation => confirmation.moveNeedsConfirmed);
   }
 
   function usualButtons() {
-    var gameInProgress = computed(
+    const gameInProgress = computed(
       situationObservable,
-      situation => situation && (situation.status.status === "started")
+      situation => situation && (situation.status.status === 'started'),
     );
 
     return when(gameInProgress, resignButton(), postGameButtons());
@@ -113,22 +108,18 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
 
   return {
     view: (vDom) => {
-
       if (observing) {
         return postGameButtons();
       }
-      else {
-        return m('div', {
-            class: "ssb-game-actions"
-          },
-          when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
-        );
-      }
+
+      return m('div', {
+        class: 'ssb-game-actions',
+      },
+      when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())());
     },
-    oninit: function(vNode) {
-      var w = watch(situationObservable,
-        (situation) => observing = isObserving(situation)
-      );
+    oninit(vNode) {
+      const w = watch(situationObservable,
+        situation => observing = isObserving(situation));
 
       watchesToClear.push(w);
     },
@@ -136,22 +127,22 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       watchesToClear.forEach(w => w());
       watchesToClear = [];
     },
-    showMoveConfirmation: function() {
+    showMoveConfirmation() {
       moveConfirmationObservable.set({
         moveNeedsConfirmed: true,
-        confirmed: false
+        confirmed: false,
       });
 
       return moveConfirmationObservable;
     },
-    hideMoveConfirmation: function() {
+    hideMoveConfirmation() {
       moveConfirmationObservable.set({
         moveNeedsConfirmed: false,
-        confirmed: false
+        confirmed: false,
       });
 
       m.redraw();
-    }
+    },
 
-  }
-}
+  };
+};

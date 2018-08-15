@@ -1,21 +1,20 @@
 const Scroller = require('pull-scroll');
-var h = require('hyperscript');
-var m = require('mithril');
-var pull = require('pull-stream');
+const h = require('hyperscript');
+const m = require('mithril');
+const pull = require('pull-stream');
 
-var Miniboard = require('../miniboard/miniboard');
+const Miniboard = require('../miniboard/miniboard');
 
 module.exports = (gameCtrl) => {
-
   function renderFinishedGameSummary(gameSummary, playerId) {
-    var dom = document.createElement('div');
-    dom.className = "ssb-chess-profile-game-summary";
+    const dom = document.createElement('div');
+    dom.className = 'ssb-chess-profile-game-summary';
 
-    var gameSummaryObservable = gameCtrl.getSituationSummaryObservable(gameSummary.gameId);
+    const gameSummaryObservable = gameCtrl.getSituationSummaryObservable(gameSummary.gameId);
 
-    var miniboard = Miniboard(gameSummaryObservable, gameSummary, playerId);
+    const miniboard = Miniboard(gameSummaryObservable, gameSummary, playerId);
 
-    var board = m(miniboard);
+    const board = m(miniboard);
 
     m.render(dom, board);
 
@@ -25,31 +24,30 @@ module.exports = (gameCtrl) => {
   function getScrollingFinishedGamesDom(playerId) {
     const finishedGamesSource = gameCtrl.getPlayerCtrl().endedGamesSummariesSource(playerId);
 
-    var content = h('div', {
-      className: "ssb-chess-player-finished-games-scroller"
-    })
+    const content = h('div', {
+      className: 'ssb-chess-player-finished-games-scroller',
+    });
 
-    var scroller = h('div', {
+    const scroller = h('div', {
       style: {
         'overflow-y': 'scroll',
         position: 'fixed',
         bottom: '0px',
         top: '200px',
-        width: '100%'
+        width: '100%',
       },
-    }, content)
+    }, content);
 
     pull(finishedGamesSource,
-      Scroller(scroller, content, (current) => renderFinishedGameSummary(current, playerId))
-    );
+      Scroller(scroller, content, current => renderFinishedGameSummary(current, playerId)));
 
     return h('div', {
-      className: 'ssb-chess-player-finished-games'
+      className: 'ssb-chess-player-finished-games',
     }, scroller);
   }
 
 
   return {
-    getScrollingFinishedGamesDom: getScrollingFinishedGamesDom
-  }
-}
+    getScrollingFinishedGamesDom,
+  };
+};

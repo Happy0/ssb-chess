@@ -1,53 +1,52 @@
-var pull = require("pull-stream");
+const pull = require('pull-stream');
 
 module.exports = (sbot) => {
-
   function pendingChallengesSent(playerId) {
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sbot.ssbChessIndex.pendingChallengesSent(playerId, (err, result) => {
         if (err) {
           reject(err);
         } else {
           resolve(result);
         }
-      })
-    })
+      });
+    });
   }
 
   function pendingChallengesReceived(playerId) {
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sbot.ssbChessIndex.pendingChallengesReceived(playerId, (err, result) => {
         if (err) {
           reject(err);
         } else {
           resolve(result);
         }
-      })
-    })
+      });
+    });
   }
 
   function getGamesAgreedToPlayIds(playerId) {
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sbot.ssbChessIndex.getGamesAgreedToPlayIds(playerId, (err, result) => {
         if (err) {
           reject(err);
         } else {
           resolve(result);
         }
-      })
-    })
+      });
+    });
   }
 
   function getObservableGames(playerId) {
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sbot.ssbChessIndex.getObservableGames(playerId, (err, result) => {
         if (err) {
           reject(err);
         } else {
           resolve(result);
         }
-      })
-    })
+      });
+    });
   }
 
   function getGamesFinished(playerId) {
@@ -55,10 +54,10 @@ module.exports = (sbot) => {
   }
 
   return {
-    pendingChallengesSent: pendingChallengesSent,
-    pendingChallengesReceived: pendingChallengesReceived,
-    getGamesAgreedToPlayIds: getGamesAgreedToPlayIds,
-    getObservableGames: getObservableGames,
-    getGamesFinished: getGamesFinished
-  }
-}
+    pendingChallengesSent,
+    pendingChallengesReceived,
+    getGamesAgreedToPlayIds,
+    getObservableGames,
+    getGamesFinished,
+  };
+};

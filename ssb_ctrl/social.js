@@ -1,15 +1,14 @@
-const pull = require("pull-stream");
+const pull = require('pull-stream');
 
 module.exports = (sbot, myIdent) => {
-
   // untested
   function followPlayer(playerPubKey) {
     sbot.publish({
       type: 'contact',
       contact: playerPubKey,
-      following: true
-    }, function(err, msg) {
-      console.log("Following contact: " + console.dir(msg));
+      following: true,
+    }, (err, msg) => {
+      console.log(`Following contact: ${console.dir(msg)}`);
     });
   }
 
@@ -18,10 +17,10 @@ module.exports = (sbot, myIdent) => {
     sbot.publish({
       type: 'contact',
       contact: playerPubKey,
-      following: false
-    }, function(err, msg) {
-      console.log("Unfollowing contact: " + console.dir(msg));
-    })
+      following: false,
+    }, (err, msg) => {
+      console.log(`Unfollowing contact: ${console.dir(msg)}`);
+    });
   }
 
   function consumeStreamIntoArrayPromise(source, through) {
@@ -33,38 +32,37 @@ module.exports = (sbot, myIdent) => {
           resolve(results);
         }
       }));
-    })
-
+    });
   }
 
   function followedByMe() {
-    var followsMe = sbot.links({
+    const followsMe = sbot.links({
       source: myIdent,
-      rel: "contact",
+      rel: 'contact',
       values: true,
-      reverse: true
+      reverse: true,
     });
 
-    var onlyStillFollowingsThrough = pull(
+    const onlyStillFollowingsThrough = pull(
       pull.unique('dest'),
-      pull.filter(msg => msg.value.content.following !== false)
+      pull.filter(msg => msg.value.content.following !== false),
     );
 
     return consumeStreamIntoArrayPromise(followsMe, onlyStillFollowingsThrough)
-            .then(results => results.map(a => a.dest));
+      .then(results => results.map(a => a.dest));
   }
 
   function followingMe() {
-    var followsMe = sbot.links({
+    const followsMe = sbot.links({
       dest: myIdent,
-      rel: "contact",
+      rel: 'contact',
       values: true,
-      reverse: true
+      reverse: true,
     });
 
-    var onlyStillFollowingsThrough = pull(
+    const onlyStillFollowingsThrough = pull(
       pull.unique('source'),
-      pull.filter(msg => msg.value.content.following !== false)
+      pull.filter(msg => msg.value.content.following !== false),
     );
 
     return consumeStreamIntoArrayPromise(followsMe, onlyStillFollowingsThrough)
@@ -72,20 +70,20 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getPlayerDisplayName(playerPubKey) {
-    //console.log("uwot " + playerPubKey);
+    // console.log("uwot " + playerPubKey);
 
     // TODO: have some way to mark a game as corrupted.
     if (!playerPubKey || !playerPubKey.startsWith('@')) {
-      return Promise.resolve("<error>");
+      return Promise.resolve('<error>');
     }
 
-    //console.log("player pub key:" + playerPubKey);
+    // console.log("player pub key:" + playerPubKey);
     const aboutStream = sbot.links({
       dest: playerPubKey,
-      rel: "about",
+      rel: 'about',
       reverse: true,
       values: true,
-      source: playerPubKey
+      source: playerPubKey,
     });
 
     return new Promise((resolve, reject) => {
@@ -101,11 +99,10 @@ module.exports = (sbot, myIdent) => {
   }
 
   return {
-    followingMe: followingMe,
-    followedByMe: followedByMe,
-    followPlayer: followPlayer,
-    unfollowPlayer: unfollowPlayer,
-    getPlayerDisplayName: getPlayerDisplayName
-  }
-
-}
+    followingMe,
+    followedByMe,
+    followPlayer,
+    unfollowPlayer,
+    getPlayerDisplayName,
+  };
+};

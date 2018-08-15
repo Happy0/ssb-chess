@@ -1,29 +1,28 @@
 const m = require('mithril');
 
 module.exports = (chessBoardDomElement, colour, column, onChoice) => {
-
-  const roles = ["queen", "rook", "knight", "bishop"];
+  const roles = ['queen', 'rook', 'knight', 'bishop'];
 
   function renderPiece(role, cb) {
     return m('piece', {
-      class: colour + ' ' + role,
-      onclick: () => cb(role)
+      class: `${colour} ${role}`,
+      onclick: () => cb(role),
     });
   }
 
   const PromotionBox = (cb) => {
-    var component = {
+    const component = {
       view: () => m('div', {
-        id: "ssb-promotion-box"
+        id: 'ssb-promotion-box',
       }, [
         m('div', {
-          id: "ssb-promotion-box-pieces"
-        }, roles.map(role => renderPiece(role, cb)))
-      ])
-    }
+          id: 'ssb-promotion-box-pieces',
+        }, roles.map(role => renderPiece(role, cb))),
+      ]),
+    };
 
     return component;
-  }
+  };
 
 
   function columnLetterToNumberFromZero(columnLetter) {
@@ -31,20 +30,20 @@ module.exports = (chessBoardDomElement, colour, column, onChoice) => {
   }
 
   function renderPromotionOptionsOverlay() {
-    var chessBoardDomElement = document.getElementsByClassName("cg-board-wrap")[0];
+    const chessBoardDomElement = document.getElementsByClassName('cg-board-wrap')[0];
 
-    var prom = document.createElement('div');
+    const prom = document.createElement('div');
 
-    var cb = (piece) => {
+    const cb = (piece) => {
       chessBoardDomElement.removeChild(prom);
       onChoice(piece);
-    }
+    };
 
-    var box = PromotionBox(cb);
+    const box = PromotionBox(cb);
 
-    var left = colour === "white" ? 75 * columnLetterToNumberFromZero(column) : ((75 * 7) - (75 * columnLetterToNumberFromZero(column)));
-    var promotionBox = m('div', {
-      style: 'z-index: 100; position: absolute; left: ' + left + 'px; top: 0px;'
+    const left = colour === 'white' ? 75 * columnLetterToNumberFromZero(column) : ((75 * 7) - (75 * columnLetterToNumberFromZero(column)));
+    const promotionBox = m('div', {
+      style: `z-index: 100; position: absolute; left: ${left}px; top: 0px;`,
     }, m(box));
 
     chessBoardDomElement.appendChild(prom);
@@ -53,6 +52,6 @@ module.exports = (chessBoardDomElement, colour, column, onChoice) => {
   }
 
   return {
-    renderPromotionOptionsOverlay: renderPromotionOptionsOverlay
-  }
-}
+    renderPromotionOptionsOverlay,
+  };
+};
