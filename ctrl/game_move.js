@@ -86,9 +86,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
         e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1],
         e.data.payload.situation.fen,
         respondsTo
-      ).then(dc => {
-        gameSSBDao.getSituation(gameRootMessage).then(situation => PubSub.publish("move", situation));
-      });
+      );
     }
   }
 
