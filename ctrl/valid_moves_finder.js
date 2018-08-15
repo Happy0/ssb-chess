@@ -11,31 +11,27 @@ module.exports = (chessWorker) => {
   /**
    * @return An observable of the valid moves for the current game position for the
    *         user
-   *
    */
-  function validMovesForSituationObs(situationObs, forUserOnly) {
+  function validMovesForSituationObs(situationObs) {
 
     return computed([situationObs], situation => {
 
       let destsObs = Value({});
 
-      // Only calculate if it's the user to play
-      if (!forUserOnly || situation.toMove === myIdent) {
-        let key = getDestsKey(situation.gameId, situation.ply);
+      let key = getDestsKey(situation.gameId, situation.ply);
 
-        awaitingWorkerResponses[key] = destsObs;
+      awaitingWorkerResponses[key] = destsObs;
 
-        chessWorker.postMessage({
-          topic: 'dests',
-          payload: {
-            fen: situation.fen
-          },
-          reqid: {
-            gameRootMessage: situation.gameId,
-            ply: situation.ply
-          }
-        })
-      }
+      chessWorker.postMessage({
+        topic: 'dests',
+        payload: {
+          fen: situation.fen
+        },
+        reqid: {
+          gameRootMessage: situation.gameId,
+          ply: situation.ply
+        }
+      })
 
       return destsObs;
     })
