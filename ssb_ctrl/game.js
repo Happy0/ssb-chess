@@ -118,7 +118,7 @@ module.exports = (sbot, myIdent) => {
       }
     }
 
-  };
+  }
 
   /**
   * Returns 'true' if the given scuttlebutt message is something that changes

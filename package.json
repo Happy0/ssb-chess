@@ -37,5 +37,8 @@
   },
   "author": "Gordon Martin",
   "homepage": "https://github.com/Happy0/ssb-chess",
-  "license": "GPL-2.0"
+  "license": "GPL-2.0",
+  "devDependencies": {
+    "eslint": "^5.3.0"
+  }
 }

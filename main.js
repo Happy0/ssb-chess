@@ -13,7 +13,7 @@ if (!process.argv.find(arg => arg === "cli")) {
   // be closed automatically when the JavaScript object is garbage collected.
   let mainWindow
 
-  function createWindow () {
+  const createWindow = function () {
     // Create the browser window.
     mainWindow = new BrowserWindow({width: 800, height: 600})
 

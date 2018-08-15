@@ -113,11 +113,11 @@ module.exports = (sbot, myIdent, injectedApi) => {
     );
   }
 
-  function getFriendsObservableGames(start, end) {
-    var observable = MutantArray([]);
+  function getFriendsObservableGames(startArg, endArg) {
+    const observable = MutantArray([]);
 
-    var start = start ? start : 0;
-    var end = end ? end : 20
+    const start = startArg || 0;
+    const end = endArg || 20
 
     gameDb.getObservableGames(myIdent, start, end).then(
       gameIds => Promise.all(

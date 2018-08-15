@@ -21,7 +21,7 @@ module.exports = (msg, situation, myIdent) => {
       return m('div', "You lost your game against " + name);
     } else {
       var winnerName = gameState.players[gameState.status.winner].name
-      var otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
+      otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
       return m('div', winnerName + " won their game against " + otherPlayer);
     }
   }
@@ -36,7 +36,7 @@ module.exports = (msg, situation, myIdent) => {
       return('div', "You resigned your game against " + name)
     } else {
       var winnerName = gameState.players[gameState.status.winner].name;
-      var otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
+      otherPlayer = gameState.otherPlayer(gameState.status.winner).name;
 
       return m('div', winnerName + " won their game against " + otherPlayer);
     }
@@ -52,8 +52,6 @@ module.exports = (msg, situation, myIdent) => {
     }
     else if (gameState.status.status === "resigned") {
     return m('div', {class: 'ssb-chess-game-activity-notification-text'}, renderResignMessage(gameState));
-    } else {
-
     }
   }
 
@@ -74,10 +72,6 @@ module.exports = (msg, situation, myIdent) => {
 
   return {
     view: render,
-    oncreate: () => {
-      if (situation) {
-
-      }
-    }
+    oncreate: () => {}
   }
 }

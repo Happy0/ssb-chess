@@ -43,6 +43,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     const gameRootMessage = e.data.reqid.gameRootMessage;
     const originSquare = e.data.reqid.originSquare;
     const destinationSquare = e.data.reqid.destinationSquare;
+    let respondsTo
 
     if (e.data.payload.error) {
       console.log("move error");
@@ -55,7 +56,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       var ply = e.data.payload.situation.ply;
       var fen = e.data.payload.situation.fen;
       var players = e.data.reqid.players;
-      var respondsTo = e.data.reqid.respondsTo;
+      respondsTo = e.data.reqid.respondsTo;
 
       var pgnMove = ply > 0 ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1] : null;
 
@@ -75,7 +76,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
         respondsTo);
     } else if (e.data.topic === 'move') {
 
-      var respondsTo = e.data.reqid.respondsTo;
+      respondsTo = e.data.reqid.respondsTo;
 
       gameSSBDao.makeMove(
         gameRootMessage,

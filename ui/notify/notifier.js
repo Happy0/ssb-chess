@@ -25,19 +25,20 @@ module.exports = (gameCtrl, sbot) => {
       onceTrue(situation, function (gameSituation) {
 
         var opponentName = getOpponentName(gameSituation, gameMsg);
+        var notification;
 
         if (gameMsg.value.content && gameMsg.value.content.type === "chess_invite" && gameMsg.value.author != me) {
-          var notification = opponentName + " has invited you to a game";
+          notification = opponentName + " has invited you to a game";
           notify.showNotification(notification);
         }
         else if (gameMsg.value.content.type === "chess_move" && gameMsg.value.author != me) {
-          var notification = "It's your move in your game against " + opponentName;
+          notification = "It's your move in your game against " + opponentName;
           notify.showNotification(notification);
         } else if (gameMsg.value.content.type === "chess_game_end" && gameMsg.value.author != me) {
-          var notification = "Your game with " + opponentName + " ended";
+          notification = "Your game with " + opponentName + " ended";
           notify.showNotification(notification);
         } else if (gameMsg.value.content.type === "chess_invite_accept" && gameMsg.value.author != me) {
-          var notification = opponentName + " has accepted your game invite";
+          notification = opponentName + " has accepted your game invite";
           notify.showNotification(notification);
         }
 

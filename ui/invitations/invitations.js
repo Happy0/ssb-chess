@@ -82,7 +82,7 @@ module.exports = (gameCtrl) => {
 
   function renderMiniboards(invites, sent, title) {
 
-    var title = m('div', {
+    var titleDiv = m('div', {
       class: "ssb-chess-invites-section-title"
     }, title);
 
@@ -94,7 +94,7 @@ module.exports = (gameCtrl) => {
 
     )
 
-    return m('div', {}, [title, miniboards]);
+    return m('div', {}, [titleDiv, miniboards]);
   }
 
   return {
