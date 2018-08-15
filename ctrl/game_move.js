@@ -3,9 +3,7 @@ const PlayerModelUtils = require('./player_model_utils')();
 module.exports = (gameSSBDao, myIdent, chessWorker) => {
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
     gameSSBDao.getSituation(gameRootMessage).then((situation) => {
-      if (situation.toMove !== myIdent) {
-        console.log(`Not ${myIdent} to move`);
-      } else {
+      if (situation.toMove === myIdent) {
         const { pgnMoves } = situation;
         chessWorker.postMessage({
           topic: 'move',
@@ -42,8 +40,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     if (e.data.payload.error) {
       // Todo: work out how to communicate this to the user.
       // This shouldn't happen though... (eh, famous last words, I guess.)
-      console.log('move error');
-      console.dir(e);
+      throw new Error('Move error: ', e);
     } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
       const {
         status, winner, ply, fen, players,

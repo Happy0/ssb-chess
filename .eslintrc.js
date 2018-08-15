@@ -5,7 +5,6 @@ module.exports = {
     "node": true
   },
   "rules": {
-    "no-console": "warn",
     "max-len": "warn",
     "no-use-before-define": "warn",
     "eqeqeq": "warn",

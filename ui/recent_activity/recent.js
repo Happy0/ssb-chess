@@ -39,7 +39,6 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
     if (renderer) {
       return m('div', { class: 'ssb-chess-game-activity-notification' }, renderer(entry));
     }
-    console.log(`Unexpected recent.js msg: ${entry}`);
     return m('div');
   }
 

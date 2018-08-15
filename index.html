@@ -22,13 +22,11 @@
 <script>
   var ssbClient = require('ssb-client');
 
-  console.log("Starting ssb-chess");
-
   ssbClient(
     function(err, sbot) {
 
       if (err) {
-        console.log(err);
+        throw new Error(err);
       } else {
         var attachToElement = document.getElementById("ssb-main");
         require('./index.js')(attachToElement, sbot);

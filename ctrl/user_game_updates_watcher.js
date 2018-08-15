@@ -91,8 +91,6 @@ module.exports = (sbot) => {
       return msg.key;
     }
     if (!msg.value || !msg.value.content || !msg.value.content.root) {
-      console.warn('No root found for chess message ');
-      console.warn(msg);
       return null;
     }
     return msg.value.content.root;

@@ -12,7 +12,7 @@ const url = require('url');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-const createWindow = function () {
+function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({ width: 800, height: 600 });
 
@@ -33,7 +33,7 @@ const createWindow = function () {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-};
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
