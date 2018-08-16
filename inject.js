@@ -103,7 +103,8 @@ function locationId(location) {
   if (location.page === 'chess' || isChessMsg(location)) {
     return JSON.stringify({ page: 'chess' });
   }
-  throw new Error('Unexpected location ID: ', location);
+
+  return undefined;
 }
 
 function isChessMsg(loc) {

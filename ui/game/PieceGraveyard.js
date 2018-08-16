@@ -48,9 +48,9 @@ module.exports = (
       const them = diff[opposite(p.color)];
       const i = 1;
       if (them[p.role] > 0) {
-        them[p.role] += i;
+        them[p.role] -= i;
       } else {
-        diff[p.color][p.role] -= i;
+        diff[p.color][p.role] += i;
       }
     });
 
@@ -64,13 +64,14 @@ module.exports = (
 
   function renderPiecesForColour(colour) {
     let pieces = [];
+    if (typeof materialDiff[colour] === 'object') {
+      Object.keys(materialDiff[colour]).forEach((pieceName) => {
+        const numPieces = materialDiff[colour][pieceName];
+        const repeated = R.repeat(pieceName, numPieces);
 
-    Object.keys(materialDiff[colour]).forEach((pieceName) => {
-      const numPieces = materialDiff[colour][pieceName];
-      const repeated = R.repeat(pieceName, numPieces);
-
-      pieces = pieces.concat(repeated);
-    });
+        pieces = pieces.concat(repeated);
+      });
+    }
 
     return pieces.map(p => m('mono-piece', { class: p }));
   }

@@ -198,7 +198,8 @@ module.exports = (sbot) => {
             return this.players[id] != null;
           },
           getOtherPlayer(id) {
-            let otherPlayer = Object.keys(this.players).forEach((k) => {
+            let otherPlayer;
+            Object.keys(this.players).forEach((k) => {
               if (k !== id) {
                 otherPlayer = this.players[k];
               }
