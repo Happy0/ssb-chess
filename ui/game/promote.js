@@ -30,12 +30,12 @@ module.exports = (chessBoardDomElement, colour, column, onChoice) => {
   }
 
   function renderPromotionOptionsOverlay() {
-    const chessBoardDomElement = document.getElementsByClassName('cg-board-wrap')[0];
+    const c = document.getElementsByClassName('cg-board-wrap')[0];
 
     const prom = document.createElement('div');
 
     const cb = (piece) => {
-      chessBoardDomElement.removeChild(prom);
+      c.removeChild(prom);
       onChoice(piece);
     };
 
@@ -46,7 +46,7 @@ module.exports = (chessBoardDomElement, colour, column, onChoice) => {
       style: `z-index: 100; position: absolute; left: ${left}px; top: 0px;`,
     }, m(box));
 
-    chessBoardDomElement.appendChild(prom);
+    c.appendChild(prom);
 
     m.render(prom, promotionBox);
   }

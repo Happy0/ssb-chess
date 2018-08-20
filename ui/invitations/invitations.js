@@ -13,7 +13,7 @@ module.exports = (gameCtrl) => {
   function renderAcceptOrRejectControls(gameId, inviteSent) {
     const acceptInvite = () => {
       gameCtrl.acceptChallenge(gameId)
-        .then(e => m.route.set(`/games/${btoa(gameId)}`));
+        .then(() => m.route.set(`/games/${btoa(gameId)}`));
     };
 
     // Hide for now since it doesn't do anything yet ;x
@@ -64,13 +64,13 @@ module.exports = (gameCtrl) => {
 
     const w1 = invitesReceived((received) => {
       invitesToSituations(received)
-        .then(inviteSituations => invitationsReceived = inviteSituations)
+        .then((inviteSituations) => { invitationsReceived = inviteSituations; })
         .then(m.redraw);
     });
 
     const w2 = invitesSent((sent) => {
       invitesToSituations(sent)
-        .then(inviteSituations => invitationsSent = inviteSituations)
+        .then((inviteSituations) => { invitationsSent = inviteSituations; })
         .then(m.redraw);
     });
 
@@ -108,7 +108,7 @@ module.exports = (gameCtrl) => {
         invitationsSentMiniboards,
       ]);
     },
-    onremove(e) {
+    onremove() {
       watches.forEach(w => w());
       watches = [];
     },

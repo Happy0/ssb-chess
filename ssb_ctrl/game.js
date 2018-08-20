@@ -1,23 +1,12 @@
-const filter = require('pull-stream/throughs/filter');
-const pull = require('pull-stream');
-const map = require('pull-stream/throughs/map');
-const collect = require('pull-stream/sinks/collect');
-
-const nest = require('depnest');
-
 const computed = require('mutant/computed');
-const when = require('mutant/when');
-const Value = require('mutant/value');
-const onceTrue = require('mutant/once-true');
 
 const SocialCtrl = require('./social');
 const MutantUtils = require('./mutant_utils')();
 const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 
 const getFilteredBackLinks = require('./backlinks_obs')();
-const combine = require('depject');
 
-module.exports = (sbot, myIdent) => {
+module.exports = (sbot) => {
   const socialCtrl = SocialCtrl(sbot);
 
   function getPlayers(gameRootMessage) {
@@ -32,20 +21,20 @@ module.exports = (sbot, myIdent) => {
           const authorColour = result.content.myColor === 'white' ? result.content.myColor : 'black';
           const players = {};
 
-          const names = Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName));
-          names.then((names) => {
-            players[authorId] = {};
-            players[authorId].colour = authorColour;
-            players[authorId].name = names[0];
-            players[authorId].id = authorId;
+          Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName))
+            .then((names) => {
+              players[authorId] = {};
+              players[authorId].colour = authorColour;
+              [players[authorId].name] = names;
+              players[authorId].id = authorId;
 
-            players[invited] = {};
-            players[invited].colour = authorColour === 'white' ? 'black' : 'white';
-            players[invited].name = names[1];
-            players[invited].id = invited;
+              players[invited] = {};
+              players[invited].colour = authorColour === 'white' ? 'black' : 'white';
+              [, players[invited].name] = names;
+              players[invited].id = invited;
 
-            resolve(players);
-          });
+              resolve(players);
+            });
         }
       });
     });
@@ -89,14 +78,18 @@ module.exports = (sbot, myIdent) => {
 
     const status = {
       status: gameStatus,
-      winner: gameFinishedMsg != null ? ChessMsgUtils.winnerFromEndMsgPlayers(Object.keys(players), gameFinishedMsg) : null,
+      winner: gameFinishedMsg != null
+        ? ChessMsgUtils.winnerFromEndMsgPlayers(
+          Object.keys(players),
+          gameFinishedMsg,
+        ) : null,
     };
 
     return status;
   }
 
   function filterByPlayerMoves(players, messages) {
-    return messages.filter(msg => players.hasOwnProperty(msg.value.author)
+    return messages.filter(msg => ({}).hasOwnProperty.call(players, msg.value.author)
       && (msg.value.content.type === 'chess_move'
         || (msg.value.content.type === 'chess_game_end' && msg.value.content.orig != null)));
   }
@@ -106,11 +99,13 @@ module.exports = (sbot, myIdent) => {
 
     const playerIds = Object.keys(players);
 
-    for (let i = 0; i < playerIds.length; i++) {
+    for (let i = 0; i < playerIds.length; i += 1) {
       if (players[playerIds[i]].colour === colourToMove) {
         return playerIds[i];
       }
     }
+
+    throw new Error('Unable to find player ID', colourToMove);
   }
 
   /**
@@ -130,7 +125,7 @@ module.exports = (sbot, myIdent) => {
       'chess_game_end'];
 
     const messageType = msg.value.content.type;
-    const isSituationMsg = relevantMessageTypes.find(msg => msg === messageType);
+    const isSituationMsg = relevantMessageTypes.find(m => m === messageType);
     return isSituationMsg !== undefined;
   }
 
@@ -142,12 +137,12 @@ module.exports = (sbot, myIdent) => {
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
     return computed([players, gameMessages.sync, gameMessages],
-      (players, synced, messages) => {
-        if (!players || !synced) return null;
+      (p, synced, messages) => {
+        if (!p || !synced) return null;
 
         // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
         // to 'move messages';
-        let msgs = filterByPlayerMoves(players, messages);
+        let msgs = filterByPlayerMoves(p, messages);
         if (!msgs) msgs = [];
         if (!messages) messages = [];
 
@@ -162,7 +157,7 @@ module.exports = (sbot, myIdent) => {
         const fenHistory = msgs.map(msg => msg.value.content.fen);
         fenHistory.unshift(startFen);
 
-        const status = findGameStatus(players, messages);
+        const status = findGameStatus(p, messages);
 
         const origDests = msgs.map(msg => ({
           orig: msg.value.content.orig,
@@ -180,8 +175,8 @@ module.exports = (sbot, myIdent) => {
           origDests,
           check: isCheck || isCheckmate,
           fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
-          players,
-          toMove: getPlayerToMove(players, pgnMoves.length),
+          players: p,
+          toMove: getPlayerToMove(p, pgnMoves.length),
           status,
           lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
           lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
@@ -203,11 +198,14 @@ module.exports = (sbot, myIdent) => {
             return this.players[id] != null;
           },
           getOtherPlayer(id) {
-            for (const k in this.players) {
+            let otherPlayer;
+            Object.keys(this.players).forEach((k) => {
               if (k !== id) {
-                return this.players[k];
+                otherPlayer = this.players[k];
               }
-            }
+            });
+
+            return otherPlayer;
           },
         };
       });
@@ -237,7 +235,16 @@ module.exports = (sbot, myIdent) => {
     return MutantUtils.mutantToPromise(getSituationObservable(gameRootMessage));
   }
 
-  function makeMove(gameRootMessage, ply, originSquare, destinationSquare, promotion, pgnMove, fen, respondsTo) {
+  function makeMove(
+    gameRootMessage,
+    ply,
+    originSquare,
+    destinationSquare,
+    promotion,
+    pgnMove,
+    fen,
+    respondsTo,
+  ) {
     const post = {
       type: 'chess_move',
       ply,
@@ -293,7 +300,17 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
-  function endGame(gameRootMessage, status, winner, fen, ply, originSquare, destinationSquare, pgnMove, respondsTo) {
+  function endGame(
+    gameRootMessage,
+    status,
+    winner,
+    fen,
+    ply,
+    originSquare,
+    destinationSquare,
+    pgnMove,
+    respondsTo,
+  ) {
     return new Promise((resolve, reject) => {
       const post = {
         type: 'chess_game_end',

@@ -1,8 +1,6 @@
 const nest = require('depnest');
 const { h, onceTrue } = require('mutant');
 const get = require('lodash/get');
-const m = require('mithril');
-// const { isMsg } = require('ssb-ref')
 
 const index = require('./index');
 
@@ -18,6 +16,20 @@ exports.needs = nest({
 });
 
 exports.create = function (api) {
+  function ChessContainer() {
+    const root = h('div.ssb-chess-container');
+    // root.title = location.page
+    // ? '/chess'
+    // : `/chess/${getRoot(location)}`
+
+    // root.id = api.app.sync.locationId(location)
+
+    root.title = '/chess';
+    root.id = JSON.stringify({ page: 'chess' });
+
+    return root;
+  }
+
   let pageLoaded = false;
   const topLevelDomElement = ChessContainer();
   let app = null;
@@ -77,34 +89,22 @@ exports.create = function (api) {
 
   function routes(sofar = []) {
     // loc = location, an object with all the info required to specify a location
-    const routes = [
+    const r = [
       [loc => loc.page === 'chess', chessIndex],
       [loc => isChessMsg(loc), chessShow],
     ];
 
     // this stacks chess routes below routes loaded by depject so far (polite)
-    return [...sofar, ...routes];
-  }
-
-
-  function ChessContainer() {
-    const root = h('div.ssb-chess-container');
-    // root.title = location.page
-    // ? '/chess'
-    // : `/chess/${getRoot(location)}`
-
-    // root.id = api.app.sync.locationId(location)
-
-    root.title = '/chess';
-    root.id = JSON.stringify({ page: 'chess' });
-
-    return root;
+    return [...sofar, ...r];
   }
 };
 
 function locationId(location) {
-  if (location.page === 'chess') return JSON.stringify({ page: 'chess' });
-  if (isChessMsg(location)) return JSON.stringify({ page: 'chess' });
+  if (location.page === 'chess' || isChessMsg(location)) {
+    return JSON.stringify({ page: 'chess' });
+  }
+
+  return undefined;
 }
 
 function isChessMsg(loc) {

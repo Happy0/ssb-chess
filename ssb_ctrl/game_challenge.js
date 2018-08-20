@@ -1,4 +1,3 @@
-const pull = require('pull-stream');
 const About = require('ssb-ooo-about');
 const Promise = require('bluebird');
 
@@ -41,7 +40,6 @@ module.exports = (sbot, myIdent) => {
   }
 
   function acceptChallenge(gameRootMessage) {
-    console.log(`Accepting challenge. Root game message is: ${gameRootMessage}`);
     const post = {
       type: 'chess_invite_accept',
       root: gameRootMessage,

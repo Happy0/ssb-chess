@@ -11,27 +11,29 @@ const gameEndActivity = require('./gameEnd');
  *
  * @gameCtrl The main game controller. Used to retrieve further information to support
  *           the rendering.
- * @recentGameMessagesObs An observable array of recent chess game scuttlebutt messages with their associated game
- *                        situation state. e.g.
- *                        {
- *                            msg: ...,
- *                            situation: ...
- *                        }
- *                        This list is expected to be a ring buffer (i.e. the least recent message
- *                        drops off the bottom when a new one arrives if the array has reached some capacity.)
-
+ * @recentGameMessagesObs An observable array of recent chess game scuttlebutt
+ * messages with their associated game situation state. e.g.
+ *
+ * {
+ *   msg: ...,
+ *   situation: ...
+ * }
+ *
+ * This list is expected to be a ring buffer (i.e. the least recent message
+ * drops off the bottom when a new one arrives if the array has reached some
+ * capacity).
  */
 module.exports = (gameCtrl, recentGameMessagesObs) => {
   let messages = [];
   const watches = [];
 
-  const renderers = {
-    chess_game_end: renderGameEndMsg,
-  };
-
   function renderGameEndMsg(entry) {
     return m('div', m(gameEndActivity(entry.msg, entry.situation, gameCtrl.getMyIdent())));
   }
+
+  const renderers = {
+    chess_game_end: renderGameEndMsg,
+  };
 
   function renderMessage(entry) {
     const renderer = renderers[entry.msg.value.content.type];
@@ -39,13 +41,12 @@ module.exports = (gameCtrl, recentGameMessagesObs) => {
     if (renderer) {
       return m('div', { class: 'ssb-chess-game-activity-notification' }, renderer(entry));
     }
-    console.log(`Unexpected recent.js msg: ${entry}`);
     return m('div');
   }
 
   function canRender(entry) {
-    const type = entry.msg.value.content.type;
-    return renderers.hasOwnProperty(type);
+    const { type } = entry.msg.value.content;
+    return {}.hasOwnProperty.call(renderers, type);
   }
 
   function renderMessages() {

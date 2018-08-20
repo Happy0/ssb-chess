@@ -9,7 +9,7 @@ const PlayerModelUtils = require('../../ctrl/player_model_utils')();
 
 const UserLocationUtils = require('../viewer_perspective/user_location')();
 
-module.exports = (gameObservable, myIdent) => {
+module.exports = (gameObservable) => {
   let watchesToClear = [];
 
   let moveNumberSelected = 'live';
@@ -32,9 +32,6 @@ module.exports = (gameObservable, myIdent) => {
     if (!players || players.length === 0) {
       return m('div', {}, '');
     }
-
-    const mePlaying = players[myIdent];
-    const myPerspectiveColour = mePlaying ? mePlaying.colour : 'white';
 
     const coloursToPlayers = PlayerModelUtils.coloursToPlayer(players);
 
@@ -99,7 +96,10 @@ module.exports = (gameObservable, myIdent) => {
     return m('div', { class: 'ssb-chess-pgn-moves-list' },
       halves.map((half, halfNumber) => m('div', {
         class: 'ssb-chess-pgn-move',
-      }, [renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1), renderHalfMove(half[1], (halfNumber + 1) * 2)])));
+      }, [
+        renderHalfMove(half[0], ((halfNumber + 1) * 2) - 1),
+        renderHalfMove(half[1], (halfNumber + 1) * 2),
+      ])));
   }
 
   function hasChatInputBoxFocused() {
@@ -167,9 +167,7 @@ module.exports = (gameObservable, myIdent) => {
   function updateModelOnGameUpdates() {
     const w = watch(gameObservable, (situation) => {
       if (situation) {
-        pgnMoves = situation.pgnMoves;
-        status = situation.status;
-        players = situation.players;
+        ({ pgnMoves, status, players } = situation);
 
         latestMove = situation.ply;
       }
@@ -184,7 +182,7 @@ module.exports = (gameObservable, myIdent) => {
   }
 
   function scrollToBottomOnGameUpdates() {
-    const w = watch(gameObservable, (situation) => {
+    const w = watch(gameObservable, () => {
       scrollToBottomIfLive();
       m.redraw();
     });

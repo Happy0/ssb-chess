@@ -1,7 +1,5 @@
 const computed = require('mutant/computed');
 const m = require('mithril');
-const resolve = require('mutant/resolve');
-const when = require('mutant/when');
 
 const Miniboard = require('../miniboard/miniboard');
 
@@ -38,17 +36,13 @@ module.exports = (msg, situation, myIdent) => {
     return m('div', `${winnerName} won their game against ${otherPlayer}`);
   }
 
-  function renderDrawMessage(gameState) {
-
-  }
-
   function renderInformation(gameState) {
     if (gameState.status.status === 'mate') {
       return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderMateMessage(gameState));
-    }
-    if (gameState.status.status === 'resigned') {
+    } if (gameState.status.status === 'resigned') {
       return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderResignMessage(gameState));
     }
+    throw new Error('Unexpected game state: ', gameState.status.status);
   }
 
   function render() {

@@ -1,4 +1,7 @@
-const uuidV4 = require('uuid/v4');
+const Value = require('mutant/value');
+const MutantArray = require('mutant/array');
+const computed = require('mutant/computed');
+const _ = require('lodash');
 const GameChallenger = require('../ssb_ctrl/game_challenge');
 const GameSSBDao = require('../ssb_ctrl/game');
 
@@ -10,16 +13,10 @@ const RecentActivityCtrl = require('./recentActivityCtrl');
 const PgnCtrl = require('./pgn');
 const MovesFinder = require('./valid_moves_finder');
 
-const PlayerModelUtils = require('./player_model_utils')();
 const UserGamesUpdateWatcher = require('./user_game_updates_watcher');
 
-const Value = require('mutant/value');
-const MutantArray = require('mutant/array');
-const computed = require('mutant/computed');
 
-const _ = require('lodash');
-
-module.exports = (sbot, myIdent, injectedApi) => {
+module.exports = (sbot, myIdent) => {
   const rootDir = `${__dirname.replace('ctrl', '')}/`;
   const chessWorker = new Worker(`${rootDir}vendor/scalachessjs/scalachess.js`);
 
@@ -29,13 +26,22 @@ module.exports = (sbot, myIdent, injectedApi) => {
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent, chessWorker);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
+  function getSituationObservable(gameId) {
+    return gameSSBDao.getSituationObservable(gameId);
+  }
+
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const movesFinderCtrl = MovesFinder(chessWorker);
 
+
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
-  const recentActivityCtrl = RecentActivityCtrl(userGamesUpdateWatcher, getSituationObservable, myIdent);
+  const recentActivityCtrl = RecentActivityCtrl(
+    userGamesUpdateWatcher,
+    getSituationObservable,
+    myIdent,
+  );
 
   function getMyIdent() {
     return myIdent;
@@ -46,7 +52,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
   }
 
   function acceptChallenge(rootGameMessage) {
-    console.log(`accepting invite ${rootGameMessage}`);
     return gameChallenger.acceptChallenge(rootGameMessage);
   }
 
@@ -55,9 +60,10 @@ module.exports = (sbot, myIdent, injectedApi) => {
   function pendingChallengesSent() {
     const observable = Value([]);
 
-    const challenges = gameDb.pendingChallengesSent(myIdent).then(observable.set);
+    gameDb.pendingChallengesSent(myIdent).then(observable.set);
 
-    const unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesSent(myIdent).then(observable.set));
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent)
+      .then(observable.set));
 
     return computed([observable], a => a, {
       comparer: compareGameSummaryLists,
@@ -70,7 +76,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
 
     gameDb.pendingChallengesReceived(myIdent).then(observable.set);
 
-    const unlistenUpdates = myGameUpdates(update => gameDb.pendingChallengesReceived(myIdent).then(observable.set));
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent)
+      .then(observable.set));
 
     return computed(
       [observable], a => a, {
@@ -152,8 +159,8 @@ module.exports = (sbot, myIdent, injectedApi) => {
     if (type === 'chess_move') {
       gameSSBDao.getSmallGameSummary(newUpdate.value.content.root).then(
         (summary) => {
-          const gameId = summary.gameId;
-          const idx = observable().findIndex(summary => summary.gameId === gameId);
+          const { gameId } = summary;
+          const idx = observable().findIndex(s => s.gameId === gameId);
 
           if (idx !== -1) {
             observable.put(idx, summary);
@@ -203,9 +210,6 @@ module.exports = (sbot, myIdent, injectedApi) => {
     return gameSSBDao.getSituation(gameId);
   }
 
-  function getSituationObservable(gameId) {
-    return gameSSBDao.getSituationObservable(gameId);
-  }
 
   function getSituationSummaryObservable(gameId) {
     return gameSSBDao.getSituationSummaryObservable(gameId);

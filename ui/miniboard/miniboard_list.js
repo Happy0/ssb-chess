@@ -1,5 +1,4 @@
 const m = require('mithril');
-const Chessground = require('chessground').Chessground;
 const watch = require('mutant/watch');
 const Miniboard = require('./miniboard');
 
@@ -40,7 +39,7 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
         Miniboard(situationObservable, summary, this.ident),
       );
     })),
-    oncreate(e) {
+    oncreate() {
       keepMiniboardsUpdated();
 
       this.updateTimeAgoTimes = setInterval(

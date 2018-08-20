@@ -91,8 +91,6 @@ module.exports = (sbot) => {
       return msg.key;
     }
     if (!msg.value || !msg.value.content || !msg.value.content.root) {
-      console.warn('No root found for chess message ');
-      console.warn(msg);
       return null;
     }
     return msg.value.content.root;
@@ -104,10 +102,6 @@ module.exports = (sbot) => {
     }
 
     return msgTypes.indexOf(msg.value.content.type) !== -1;
-  }
-
-  function containsPlayerId(playerId, players) {
-    return players.indexOf(playerId) !== -1;
   }
 
   function msgMatchesFilter(playerId, playerShouldBeInGame, messageTypes) {
@@ -187,7 +181,7 @@ module.exports = (sbot) => {
         obsArray.push(entry);
       }
 
-      count++;
+      count += 1;
     }));
 
     // Sort in descending order

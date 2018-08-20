@@ -2,7 +2,7 @@ const m = require('mithril');
 const PlayerGames = require('./player_games');
 
 module.exports = gameCtrl => ({
-  view: vNode => m('div'),
+  view: () => m('div'),
   oncreate: (vNode) => {
     if (vNode.attrs.playerId === this.playerId) {
       return;

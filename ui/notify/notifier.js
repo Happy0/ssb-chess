@@ -1,13 +1,17 @@
-const UserGamesWatcher = require('../../ctrl/user_game_updates_watcher');
-const notify = require('./notify')();
 const pull = require('pull-stream');
-const userLocationUtils = require('../viewer_perspective/user_location')();
 const onceTrue = require('mutant/once-true');
+const notify = require('./notify')();
+const UserGamesWatcher = require('../../ctrl/user_game_updates_watcher');
+const userLocationUtils = require('../viewer_perspective/user_location')();
 
 module.exports = (gameCtrl, sbot) => {
   const me = gameCtrl.getMyIdent();
 
   const userGamesWatcher = UserGamesWatcher(sbot);
+
+  function getOpponentName(situation, msg) {
+    return situation.players[msg.value.author] ? situation.players[msg.value.author].name : '';
+  }
 
   function notifyIfRelevant(gameMsg) {
     if (!userLocationUtils.chessAppIsVisible()) {
@@ -40,17 +44,16 @@ module.exports = (gameCtrl, sbot) => {
     }
   }
 
-  function getOpponentName(situation, msg) {
-    return situation.players[msg.value.author] ? situation.players[msg.value.author].name : '';
-  }
-
   function startNotifying() {
     const opts = {
       live: true,
       since: Date.now(),
     };
 
-    const gameUpdateStream = userGamesWatcher.chessMessagesForPlayerGames(gameCtrl.getMyIdent(), opts);
+    const gameUpdateStream = userGamesWatcher.chessMessagesForPlayerGames(
+      gameCtrl.getMyIdent(),
+      opts,
+    );
 
     pull(gameUpdateStream, pull.drain(msg => notifyIfRelevant(msg)));
   }

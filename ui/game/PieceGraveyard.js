@@ -1,7 +1,7 @@
 const m = require('mithril');
 const watchAll = require('mutant/watch-all');
 
-const opposite = require('chessground/util').opposite;
+const { opposite } = require('chessground/util');
 
 const R = require('ramda');
 
@@ -11,8 +11,9 @@ const R = require('ramda');
  *
  * @param @chessGroundObservable The chessground observable becomes populated with a value when the
  *        board has been initialised.
- * @param @situationObservable Fires when the game has been updated with a new move, etc. This may have
- *         involved a piece being captured so we may have to update.
+ * @param @situationObservable Fires when the game has been updated with a new
+ *        move, etc. This may have involved a piece being captured so we may
+ *        have to update.
  * @param @moveSelectedObservable Fires when the user has chosen a move in the move history,
  *        so we display the material difference for that move in the history.
  * @param @myIdent The user's identity (used to decide the viewing perspective of the board.)
@@ -42,12 +43,16 @@ module.exports = (
       },
     };
 
-    for (const k in pieces) {
-      const p = pieces[k]; const
-        them = diff[opposite(p.color)];
-      if (them[p.role] > 0) them[p.role]--;
-      else diff[p.color][p.role]++;
-    }
+    Object.keys(pieces).forEach((k) => {
+      const p = pieces[k];
+      const them = diff[opposite(p.color)];
+      const i = 1;
+      if (them[p.role] > 0) {
+        them[p.role] -= i;
+      } else {
+        diff[p.color][p.role] += i;
+      }
+    });
 
     return diff;
   }
@@ -59,12 +64,13 @@ module.exports = (
 
   function renderPiecesForColour(colour) {
     let pieces = [];
+    if (typeof materialDiff[colour] === 'object') {
+      Object.keys(materialDiff[colour]).forEach((pieceName) => {
+        const numPieces = materialDiff[colour][pieceName];
+        const repeated = R.repeat(pieceName, numPieces);
 
-    for (const pieceName in materialDiff[colour]) {
-      const numPieces = materialDiff[colour][pieceName];
-      const repeated = R.repeat(pieceName, numPieces);
-
-      pieces = pieces.concat(repeated);
+        pieces = pieces.concat(repeated);
+      });
     }
 
     return pieces.map(p => m('mono-piece', { class: p }));
@@ -75,18 +81,20 @@ module.exports = (
       class: 'ssb-chess-graveyard',
     }, bottom ? renderPiecesForColour(playerColour) : renderPiecesForColour(opponentColor)),
     oncreate: () => {
-      this.removeWatches = watchAll([chessGroundObservable, situationObservable, moveSelectedObservable],
-        (chessground, situation, move) => {
+      this.removeWatches = watchAll(
+        [chessGroundObservable, situationObservable, moveSelectedObservable],
+        (chessground, situation) => {
           if (situation) {
             setPlayerColours(situation);
           }
 
           if (chessground) {
-            const pieces = chessground.state.pieces;
+            const { pieces } = chessground.state;
             materialDiff = getMaterialDiff(pieces);
             m.redraw();
           }
-        });
+        },
+      );
     },
     onremove: () => {
       if (this.removeWatches) {

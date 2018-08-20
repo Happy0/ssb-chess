@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const Worker = require('tiny-worker');
 
-module.exports = (gameSSBDao, chessWorker) => {
+module.exports = (gameSSBDao) => {
   function postWorkerMessage(chessWorker, situation) {
     chessWorker.postMessage({
       topic: 'pgnDump',
@@ -51,7 +51,8 @@ module.exports = (gameSSBDao, chessWorker) => {
       // Well, at least the caller gets a nice promise back to hook on to =p.
       awaitPgnResponse(chessWorker, gameId).then(resolve).catch(reject);
 
-      gameSSBDao.getSituation(gameId).then(situation => postWorkerMessage(chessWorker, situation)).catch(reject);
+      gameSSBDao.getSituation(gameId)
+        .then(situation => postWorkerMessage(chessWorker, situation)).catch(reject);
     }),
   };
 };

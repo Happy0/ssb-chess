@@ -68,7 +68,7 @@ module.exports = (chessWorker) => {
   function listenForWorkerResults() {
     chessWorker.addEventListener('message', (event) => {
       const gameId = event.data.reqid.gameRootMessage;
-      const ply = event.data.reqid.ply;
+      const { ply } = event.data.reqid;
 
       if (event.data.topic === 'dests') {
         const destsMapKey = getDestsKey(gameId, ply);

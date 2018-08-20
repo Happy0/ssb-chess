@@ -1,11 +1,10 @@
 const m = require('mithril');
-const Chessground = require('chessground').Chessground;
+const { Chessground } = require('chessground');
 const PubSub = require('pubsub-js');
-const onceTrue = require('mutant/once-true');
 const Value = require('mutant/value');
 const watchAll = require('mutant/watch-all');
 const computed = require('mutant/computed');
-const Howl = require('howler').Howl;
+const { Howl } = require('howler');
 
 const EmbeddedChat = require('ssb-embedded-chat');
 const ActionButtons = require('./gameActions');
@@ -29,8 +28,20 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
   const gameHistoryObs = gameHistory.getMoveSelectedObservable();
 
-  const pieceGraveOpponent = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, false);
-  const pieceGraveMe = PieceGraveyard(chessGroundObservable, situationObservable, gameHistoryObs, myIdent, true);
+  const pieceGraveOpponent = PieceGraveyard(
+    chessGroundObservable,
+    situationObservable,
+    gameHistoryObs,
+    myIdent,
+    false,
+  );
+  const pieceGraveMe = PieceGraveyard(
+    chessGroundObservable,
+    situationObservable,
+    gameHistoryObs,
+    myIdent,
+    true,
+  );
 
   const rootDir = `${__dirname.replace('/ui/game', '')}/`;
 
@@ -46,10 +57,10 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     return ply % 2 === 0 ? 'white' : 'black';
   }
 
-  function isPromotionMove(chessGround, dest) {
+  function isPromotionMove(cg, dest) {
     return (dest[1] === '8' || dest[1] === '1')
-      && chessGround.state.pieces[dest]
-      && (chessGround.state.pieces[dest].role === 'pawn');
+      && cg.state.pieces[dest]
+      && (cg.state.pieces[dest].role === 'pawn');
   }
 
   function renderBoard(gameId) {
@@ -83,10 +94,13 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     const confirmedObs = actionButtons.showMoveConfirmation();
     m.redraw();
 
-    const watches = computed([confirmedObs, gameHistory.getMoveSelectedObservable()], (confirmed, moveSelected) => ({
-      moveConfirmed: confirmed,
-      moveSelected,
-    }));
+    const watches = computed(
+      [confirmedObs, gameHistory.getMoveSelectedObservable()],
+      (confirmed, moveSelected) => ({
+        moveConfirmed: confirmed,
+        moveSelected,
+      }),
+    );
 
     const removeConfirmationListener = watches((value) => {
       if (value.moveConfirmed.confirmed) {
@@ -120,13 +134,18 @@ module.exports = (gameCtrl, situationObservable, settings) => {
         free: false,
         color: situation.toMove === myIdent ? playerColour : null,
         events: {
-          after: (orig, dest, metadata) => {
+          after: (orig, dest) => {
             if (isPromotionMove(chessGround, dest)) {
               const chessboardDom = document.getElementsByClassName('cg-board-wrap')[0];
 
               PromotionBox(chessboardDom, colourToPlay, dest[0],
                 (promotingToPiece) => {
-                  const onConfirmMove = () => gameCtrl.getMoveCtrl().makeMove(situation.gameId, orig, dest, promotingToPiece);
+                  const onConfirmMove = () => gameCtrl.getMoveCtrl().makeMove(
+                    situation.gameId,
+                    orig,
+                    dest,
+                    promotingToPiece,
+                  );
                   watchForMoveConfirmation(situation, onConfirmMove);
                 }).renderPromotionOptionsOverlay();
             } else {
@@ -201,8 +220,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
     return chat.getChatboxElement();
   }
 
-  function playMoveSound(situation, newConfig, chessGround, moveSelected) {
-    if (newConfig.fen !== chessGround.state.fen && moveSelected !== 0) {
+  function playMoveSound(situation, newConfig, cg, moveSelected) {
+    if (newConfig.fen !== cg.state.fen && moveSelected !== 0) {
       const pgnMove = moveSelected === 'live' ? situation.pgnMoves[
         situation.pgnMoves.length - 1] : situation.pgnMoves[moveSelected - 1];
 
@@ -230,9 +249,6 @@ module.exports = (gameCtrl, situationObservable, settings) => {
           m(pieceGraveMe),
         ])]);
     },
-    oninit(vnode) {
-      const gameId = atob(vnode.attrs.gameId);
-    },
     oncreate(vNode) {
       const gameId = atob(vNode.attrs.gameId);
       const boardDom = document.getElementById(gameId);
@@ -247,7 +263,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       const chatElement = makeEmbeddedChat(originalSituation);
       chatDom.appendChild(chatElement);
 
-      const validMovesObservable = gameCtrl.getMovesFinderCtrl().validMovesForSituationObs(situationObservable);
+      const validMovesObservable = gameCtrl.getMovesFinderCtrl()
+        .validMovesForSituationObs(situationObservable);
 
       this.removeWatches = watchAll([situationObservable,
         gameHistory.getMoveSelectedObservable(), validMovesObservable],
@@ -265,7 +282,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
         gameId,
       });
     },
-    onremove(vnode) {
+    onremove() {
       if (this.removeWatches) {
         this.removeWatches();
       }

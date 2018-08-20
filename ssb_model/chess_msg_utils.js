@@ -19,7 +19,7 @@ module.exports = () => {
       case 'draw':
         return null;
       case 'resigned':
-        winner = players.filter(playerId => playerId != maybeGameEndMsg.value.author)[0];
+        [winner] = players.filter(playerId => playerId != maybeGameEndMsg.value.author);
         return winner;
       default:
         return null;

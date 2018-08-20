@@ -7,8 +7,6 @@ module.exports = (sbot, myIdent) => {
       type: 'contact',
       contact: playerPubKey,
       following: true,
-    }, (err, msg) => {
-      console.log(`Following contact: ${console.dir(msg)}`);
     });
   }
 
@@ -18,8 +16,6 @@ module.exports = (sbot, myIdent) => {
       type: 'contact',
       contact: playerPubKey,
       following: false,
-    }, (err, msg) => {
-      console.log(`Unfollowing contact: ${console.dir(msg)}`);
     });
   }
 
@@ -70,14 +66,11 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getPlayerDisplayName(playerPubKey) {
-    // console.log("uwot " + playerPubKey);
-
     // TODO: have some way to mark a game as corrupted.
     if (!playerPubKey || !playerPubKey.startsWith('@')) {
       return Promise.resolve('<error>');
     }
 
-    // console.log("player pub key:" + playerPubKey);
     const aboutStream = sbot.links({
       dest: playerPubKey,
       rel: 'about',
