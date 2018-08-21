@@ -214,6 +214,11 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       config.isPublic = true;
     }
 
+    config.getDisplayName = (id, cb) => {
+      gameCtrl.getSocialCtrl().getDisplayName(id)
+        .then( name => cb(null, name))
+        .catch( (err) => cb(err, null) );
+    }
 
     const chat = EmbeddedChat(gameCtrl.getSbot(), config);
 

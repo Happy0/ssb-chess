@@ -30,6 +30,10 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
+  function getDisplayName(id) {
+    return identWithDisplayName(id).then(result => result.displayName);
+  }
+
   function friendsWithNames() {
     return friends().then((palaroonis) => {
       const namesWithIdents = palaroonis.map(identWithDisplayName);
@@ -43,5 +47,6 @@ module.exports = (sbot, myIdent) => {
     followedByMe,
     friends,
     friendsWithNames,
+    getDisplayName
   };
 };

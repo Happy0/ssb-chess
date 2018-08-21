@@ -24,7 +24,7 @@
     "pull-scroll": "1.0.9",
     "pull-stream": "3.6.0",
     "ramda": "0.24.1",
-    "ssb-embedded-chat": "1.1.1",
+    "ssb-embedded-chat": "1.2.0",
     "ssb-ooo-about": "^1.0.0",
     "tiny-worker": "2.1.1",
     "uuid": "3.1.0"
