@@ -222,7 +222,7 @@ module.exports = (gameCtrl, situationObservable, settings) => {
 
     const chat = EmbeddedChat(gameCtrl.getSbot(), config);
 
-    return chat.getChatboxElement();
+    return chat;
   }
 
   function playMoveSound(situation, newConfig, cg, moveSelected) {
@@ -265,8 +265,8 @@ module.exports = (gameCtrl, situationObservable, settings) => {
       chessGround = Chessground(boardDom, config);
       chessGroundObservable.set(chessGround);
 
-      const chatElement = makeEmbeddedChat(originalSituation);
-      chatDom.appendChild(chatElement);
+      this.embeddedChat = makeEmbeddedChat(originalSituation);
+      chatDom.appendChild(this.embeddedChat.getChatboxElement());
 
       const validMovesObservable = gameCtrl.getMovesFinderCtrl()
         .validMovesForSituationObs(situationObservable);
@@ -296,6 +296,10 @@ module.exports = (gameCtrl, situationObservable, settings) => {
         // Yuck. This has been null for people at this stage before. Perhaps onremove
         // can be called before oncreate in edge cases?
         chessGround.destroy();
+      }
+
+      if (this.embeddedChat) {
+        this.embeddedChat.destroy();
       }
 
       PubSub.publish('exited_game');
