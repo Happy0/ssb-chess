@@ -35,7 +35,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
     const { gameRootMessage, originSquare, destinationSquare } = e.data.reqid;
-    let respondsTo;
+    const { respondsTo, players } = e.data.reqid;
 
     if (e.data.payload.error) {
       // Todo: work out how to communicate this to the user.
@@ -43,9 +43,11 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       throw new Error('Move error: ', e);
     } else if (e.data.topic === 'move' && e.data.payload.situation.end) {
       const {
-        status, winner, ply, fen, players,
-      } = e.data.reqid;
-      ({ respondsTo } = e.data.reqid);
+        status,
+        winner,
+        ply,
+        fen,
+      } = e.data.payload.situation;
 
       const pgnMove = ply > 0
         ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]
@@ -67,8 +69,6 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
         respondsTo,
       );
     } else if (e.data.topic === 'move') {
-      ({ respondsTo } = e.data.reqid);
-
       gameSSBDao.makeMove(
         gameRootMessage,
         e.data.payload.situation.ply,
