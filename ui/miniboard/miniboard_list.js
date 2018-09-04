@@ -26,8 +26,11 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
 
   function keepMiniboardsUpdated() {
     unlistenUpdates = watch(gameSummaryListObs, (summaries) => {
-      gameSummaries = summaries;
-      setTimeout(m.redraw);
+      if (summaries.length != gameSummaries.length) {
+        // Only redraw if there is an additional game or a game has ended
+        gameSummaries = summaries;
+        setTimeout(m.redraw);
+      }
     });
   }
 
