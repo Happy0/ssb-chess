@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "2.3.7",
+  "version": "2.3.8",
   "description": "Multiplayer chess built on top of the scuttlebutt platform (https://www.scuttlebutt.nz).",
   "main": "inject.js",
   "dependencies": {
@@ -15,7 +15,7 @@
     "mutant": "3.19.0",
     "mutant-pull-reduce": "^1.1.0",
     "neodoc": "1.4.0",
-    "patchcore": "^1.28.0",
+    "patchcore": "^1.28.1",
     "pubsub-js": "1.5.7",
     "pull-abortable": "4.1.1",
     "pull-async-filter": "^1.0.0",

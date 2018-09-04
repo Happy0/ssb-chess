@@ -8,9 +8,28 @@ const combine = require('depject');
  */
 module.exports = () => {
   const backlinksObs = {
-    needs: nest({ 'backlinks.obs.filter': 'first' }),
+    needs: nest(
+      {
+        'backlinks.obs.filter': 'first',
+        'backlinks.obs.cache': 'first',
+      },
+    ),
   };
 
   const api = combine([backlinksObs, patchCore]);
-  return api.backlinks.obs.filter[0];
+
+  const Cache = api.backlinks.obs.cache[0];
+
+  // Cache the backlinks observables for 1 minute once there are no subscribers
+  // to the observable
+  const cache = Cache(60000);
+
+  const cachedBacklinksFn = api.backlinks.obs.filter[0];
+
+  function getCachedFilteredBacklinks(id, opts) {
+    opts.cache = cache;
+    return cachedBacklinksFn(id, opts);
+  }
+
+  return getCachedFilteredBacklinks;
 };
