@@ -21,6 +21,9 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
 
   let unlistenUpdates = null;
 
+  let updateTimeAgoTimesTimer = null;
+
+
   function keepMiniboardsUpdated() {
     unlistenUpdates = watch(gameSummaryListObs, (summaries) => {
       gameSummaries = summaries;
@@ -42,12 +45,12 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
     oncreate() {
       keepMiniboardsUpdated();
 
-      this.updateTimeAgoTimes = setInterval(
+      updateTimeAgoTimesTimer = setInterval(
         () => setTimeout(m.redraw), oneMinuteMillseconds,
       );
     },
     onremove: () => {
-      clearInterval(this.updateTimeAgoTimes);
+      clearInterval(updateTimeAgoTimesTimer);
       unlistenUpdates();
     },
   };
