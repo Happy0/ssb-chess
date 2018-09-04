@@ -27,7 +27,7 @@ module.exports = (msg, situation, myIdent) => {
 
     if (gameState.status.winner === myIdent) {
       return ('div', `${name} resigned their game against you.`);
-    } if (gameState.hasPlayer(myIdent)) {
+    } else if (gameState.hasPlayer(myIdent)) {
       return ('div', `You resigned your game against ${name}`);
     }
     const winnerName = gameState.players[gameState.status.winner].name;
@@ -36,11 +36,20 @@ module.exports = (msg, situation, myIdent) => {
     return m('div', `${winnerName} won their game against ${otherPlayer}`);
   }
 
+  function renderStalemateMessage(gameState) {
+    let otherPlayer = gameState.getOtherPlayer(myIdent);
+    const name = otherPlayer ? otherPlayer.name : '';
+
+    return ('div', `Your game with ${name} ended in a stalemate`);
+  }
+
   function renderInformation(gameState) {
     if (gameState.status.status === 'mate') {
       return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderMateMessage(gameState));
-    } if (gameState.status.status === 'resigned') {
+    } else if (gameState.status.status === 'resigned') {
       return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderResignMessage(gameState));
+    } else if (gameState.status.status === 'stalemate') {
+      return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderStalemateMessage(gameState));
     }
     throw new Error('Unexpected game state: ', gameState.status.status);
   }
