@@ -1,7 +1,7 @@
 const m = require('mithril');
 const watch = require('mutant/watch');
-const Miniboard = require('./miniboard');
 const R = require('ramda');
+const Miniboard = require('./miniboard');
 
 /**
  * Takes an observable list of game summaries (non-observable inner objects)
@@ -25,7 +25,6 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
 
   function keepMiniboardsUpdated() {
     unlistenUpdates = watch(gameSummaryListObs, (summaries) => {
-
       if (hasDifferentGameIds(gameSummaries, summaries)) {
         // Only redraw if there is an additional game or a game has ended
         setTimeout(m.redraw);
@@ -36,7 +35,7 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
   }
 
   function hasDifferentGameIds(oldSummaries, newSummaries) {
-    const comparer = (gameSummaryOld, gameSummaryNew) => gameSummaryOld.gameId === gameSummaryNew.gameId;
+    const comparer = (oldSummary, newSummary) => oldSummary.gameId === newSummary.gameId;
     return R.symmetricDifferenceWith(comparer, oldSummaries, newSummaries).length !== 0;
   }
 
