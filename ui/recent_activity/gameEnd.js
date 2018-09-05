@@ -44,14 +44,21 @@ module.exports = (msg, situation, myIdent) => {
   }
 
   function renderInformation(gameState) {
+    let message;
+
     if (gameState.status.status === 'mate') {
-      return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderMateMessage(gameState));
+      message = renderMateMessage(gameState);
     } if (gameState.status.status === 'resigned') {
-      return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderResignMessage(gameState));
+      message = renderResignMessage(gameState);
     } if (gameState.status.status === 'stalemate') {
-      return m('div', { class: 'ssb-chess-game-activity-notification-text' }, renderStalemateMessage(gameState));
+      message = renderStalemateMessage(gameState);
     }
-    throw new Error('Unexpected game state: ', gameState.status.status);
+
+    if (message) {
+      const className = 'ssb-chess-game-activity-notification-text';
+      return m('div', { class: className }, message);
+    }
+    throw new Error(`Unexpected game state: ${gameState.status.status}`);
   }
 
   function render() {
