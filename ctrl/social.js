@@ -47,6 +47,6 @@ module.exports = (sbot, myIdent) => {
     followedByMe,
     friends,
     friendsWithNames,
-    getDisplayName
+    getDisplayName,
   };
 };

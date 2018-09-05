@@ -1,7 +1,6 @@
 const pull = require('pull-stream');
 
 module.exports = (sbot, myIdent) => {
-
   // untested
   function followPlayer(playerPubKey) {
     sbot.publish({
