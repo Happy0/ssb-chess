@@ -51,7 +51,7 @@ module.exports = (gameCtrl) => {
   function updateFriends() {
     // Using palaroonis as a variable name because it's my project and
     // nobody can stop me >=D #madlad
-    gameCtrl.getSocialCtrl().friendsWithNames().then((palaroonis) => {
+    gameCtrl.getSocialCtrl().followedByMeWithNames().then((palaroonis) => {
       challengableFriends = palaroonis;
     }).then(m.redraw);
   }
