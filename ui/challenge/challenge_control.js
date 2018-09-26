@@ -1,4 +1,5 @@
 const m = require('mithril');
+const _ = require('ramda');
 
 module.exports = (gameCtrl) => {
   let challengableFriends = [];
@@ -9,19 +10,16 @@ module.exports = (gameCtrl) => {
     }, friend.displayName);
   }
 
-  function sortChallengeableFriendsAlphabetically() {
-    challengableFriends.sort((a, b) => {
+  function compareAlphabetically(a, b) {
       if (a.displayName.toLowerCase() < b.displayName.toLowerCase()) return -1;
       if (a.displayName.toLowerCase() > b.displayName.toLowerCase()) return 1;
       return 0;
-    });
   }
 
   function renderFriendsdropDown() {
-    sortChallengeableFriendsAlphabetically();
 
     return m('select', {
-      id: 'ssb-chess-challenge-control',
+      id: 'ssb-chess-challenge-control-select',
       name: 'friends',
     }, challengableFriends.map(renderFriendOption));
   }
@@ -31,7 +29,7 @@ module.exports = (gameCtrl) => {
       const buttonElement = e.srcElement;
       buttonElement.disabled = true;
 
-      const inviteDropdown = document.getElementById('ssb-chess-challenge-control');
+      const inviteDropdown = document.getElementById('ssb-chess-challenge-control-select');
       const friendId = inviteDropdown.options[inviteDropdown.selectedIndex].value;
 
       gameCtrl.inviteToPlay(friendId)
@@ -40,6 +38,7 @@ module.exports = (gameCtrl) => {
     };
 
     const challengeButton = m('button', {
+      class: 'ssb-chess-challenge-send-button',
       onclick: invitePlayer,
     }, 'Challenge');
 
@@ -48,11 +47,34 @@ module.exports = (gameCtrl) => {
     }, [renderFriendsdropDown(), challengeButton]);
   }
 
+  function getWeight(playerId, frequencies) {
+    return frequencies[playerId] ? frequencies[playerId] : 0;
+  }
+
+  /**
+   * Sort the list of invitable people by the frequency with which we've played them (weighted slightly by recency.)
+   */
   function updateFriends() {
-    // Using palaroonis as a variable name because it's my project and
-    // nobody can stop me >=D #madlad
-    gameCtrl.getSocialCtrl().followedByMeWithNames().then((palaroonis) => {
-      challengableFriends = palaroonis;
+
+    var playedFrequencies = gameCtrl.getSocialCtrl().getWeightedPlayFrequencyList();
+    var followedByMe = gameCtrl.getSocialCtrl().followedByMeWithNames()
+
+    Promise.all([followedByMe, playedFrequencies]).then(result => {
+      var [following, playedWeights] = result;
+
+      following.sort( (a,b) => {
+        var comp = getWeight(b.ident, playedWeights) - getWeight (a.ident, playedWeights);
+
+        if (comp === 0) {
+          return compareAlphabetically(a,b);
+        } else {
+          return comp;
+        }
+
+      });
+        
+
+      challengableFriends = following;
     }).then(m.redraw);
   }
 

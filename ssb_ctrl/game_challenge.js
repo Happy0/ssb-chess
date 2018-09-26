@@ -61,6 +61,6 @@ module.exports = (sbot, myIdent) => {
 
   return {
     inviteToPlay,
-    acceptChallenge,
+    acceptChallenge
   };
 };

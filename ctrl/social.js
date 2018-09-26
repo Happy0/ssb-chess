@@ -26,7 +26,12 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
+  function getWeightedPlayFrequencyList() {
+    return socialCtrl.getWeightedPlayFrequencyList();
+  }
+
   return {
+    getWeightedPlayFrequencyList,
     followedByMe,
     followedByMeWithNames,
     getDisplayName,

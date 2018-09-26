@@ -91,11 +91,30 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
+  function getWeightedPlayFrequencyList() {
+
+    return new Promise( (resolve, reject) => {
+      if (!sbot.ssbChessIndex.weightedPlayFrequencyList) {
+        alert("Please use version 1.0.4 of the ssb-chess-db plugin.");
+        resolve({});
+      } else {
+        sbot.ssbChessIndex.weightedPlayFrequencyList(myIdent, (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+      }
+    });
+  }
+
   return {
     followingMe,
     followedByMe,
     followPlayer,
     unfollowPlayer,
     getPlayerDisplayName,
+    getWeightedPlayFrequencyList
   };
 };
