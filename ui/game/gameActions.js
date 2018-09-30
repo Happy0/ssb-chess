@@ -11,6 +11,7 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
   let observing = true;
 
   const moveConfirmationObservable = makeMoveObservationListener();
+  const resignationConfirmationObservable = makeResignConfirmationListener();
 
   function moveConfirmButtons() {
     const confirmMove = () => {
@@ -39,18 +40,59 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     ]);
   }
 
-  function resignButton() {
-    const resignGame = () => {
-      onceTrue(situationObservable,
-        (situation) => {
-          if (situation && situation.status.status === 'started') {
-            gameMoveCtrl.resignGame(situation.gameId, situation.latestUpdateMsg);
-          }
-        });
+  function renderResignConfirmation() {
+    const confirmText = 'Yes';
+    const cancelText = 'No';
+
+    let doResignation = () => {
+      resignGame();
+      cancelResignationConfirmation();
     };
 
+    return m('div', {class: 'ssb-chess-resign-confirmation'}, [
+      m('p', {class: 'ssb-chess-resign-confirmation-prompt'}, "Really resign?"),
+      m('div', {class: "ssb-chess-resign-confirmation-buttons"}, [
+        renderResignConfirmationButton(confirmText, doResignation),
+        renderResignConfirmationButton(cancelText, cancelResignationConfirmation)
+      ])
+    ]);
+
+  }
+
+  function cancelResignationConfirmation() {
+    resignationConfirmationObservable.set(defaultResignationObservableValues());
+    m.redraw();
+  }
+
+  function renderResignConfirmationButton(text, cb) {
     return m('button', {
-      onclick: resignGame,
+      onclick: cb,
+      class: 'ssb-chess-resign-confirmation-button'
+    }, text);
+  }
+
+  function resignGame() {
+    onceTrue(situationObservable,
+      (situation) => {
+        if (situation && situation.status.status === 'started') {
+          gameMoveCtrl.resignGame(situation.gameId, situation.latestUpdateMsg);
+        }
+      });
+  }
+
+  function resignButton() {
+
+    let showResignationConfirmation = () => {
+      var resignState = defaultResignationObservableValues();
+      resignState.resignationNeedsConfirmed = true;
+
+      resignationConfirmationObservable.set(resignState);
+
+      m.redraw();
+    }
+
+    return m('button', {
+      onclick: showResignationConfirmation,
     }, 'Resign');
   }
 
@@ -90,11 +132,32 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
     return value;
   }
 
+  function defaultResignationObservableValues () {
+    return {
+      resignationNeedsConfirmed: false,
+      resignationConfirmed: false,
+    }
+  }
+
+  function makeResignConfirmationListener() {
+    const value = Value(defaultResignationObservableValues);
+
+    value.set(defaultResignationObservableValues());
+
+    return value;
+  }
+
   function moveNeedsConfirmed() {
-    // Eh, miby there's redundancy here, dunno :P
 
     return computed(moveConfirmationObservable,
       confirmation => confirmation.moveNeedsConfirmed);
+  }
+
+  function resignationNeedsConfirmed() {
+    return computed(
+      resignationConfirmationObservable,
+      confirmation => confirmation.resignationNeedsConfirmed
+    );
   }
 
   function usualButtons() {
@@ -115,7 +178,12 @@ module.exports = (gameMoveCtrl, myIdent, situationObservable) => {
       return m('div', {
         class: 'ssb-game-actions',
       },
-      when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())());
+        when(
+          resignationNeedsConfirmed(),
+          renderResignConfirmation(),
+          when(moveNeedsConfirmed(), moveConfirmButtons(), usualButtons())()
+        )()
+      )
     },
     oninit() {
       const w = watch(situationObservable, (situation) => {
