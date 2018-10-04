@@ -12,6 +12,8 @@ const InviteCtrl = require('./inviteCtrl');
 const GameCtrl = require('./gameCtrl');
 const UserGamesUpdateWatcher = require('./userGameUpdatesWatcher');
 
+const settingsCtrl = require('./settings')();
+
 /**
  * The main controller which can be used to access the functional area specific controllers.
  * 
@@ -63,6 +65,6 @@ module.exports = (sbot, myIdent) => {
     getPgnCtrl: () => pgnCtrl,
     getUserGameWatcherCtrl: () => userGamesUpdateWatcher,
     getSbot: () => sbot,
-    getSettingsCtrl: settingsCtrl
+    getSettingsCtrl: () => settingsCtrl
   };
 };

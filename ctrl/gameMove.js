@@ -1,5 +1,3 @@
-const PlayerModelUtils = require('./player_model_utils')();
-
 module.exports = (gameSSBDao, myIdent, chessWorker) => {
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
     gameSSBDao.getSituation(gameRootMessage).then((situation) => {
@@ -20,7 +18,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
             destinationSquare,
             players: situation.players,
             respondsTo: situation.latestUpdateMsg,
-            currentSituation: situation
+            coloursToPlayer: situation.coloursToPlayer()
           },
 
         });
@@ -35,7 +33,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
   function handleChessWorkerResponse(e) {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
-    const { gameRootMessage, originSquare, destinationSquare, currentSituation } = e.data.reqid;
+    const { gameRootMessage, originSquare, destinationSquare, coloursToPlayer } = e.data.reqid;
     const { respondsTo, players } = e.data.reqid;
 
     if (e.data.payload.error) {
@@ -53,8 +51,6 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
       const pgnMove = ply > 0
         ? e.data.payload.situation.pgnMoves[e.data.payload.situation.pgnMoves.length - 1]
         : null;
-
-      const coloursToPlayer = currentSituation.coloursToPlayer();
 
       const winnerId = winner ? coloursToPlayer[winner].id : null;
 
