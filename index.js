@@ -1,7 +1,8 @@
 const m = require('mithril');
 const onceTrue = require('mutant/once-true');
 
-const GameCtrl = require('./ctrl/game');
+const MainCtrl = require('./ctrl/main');
+
 const MiniboardListComponent = require('./ui/miniboard/miniboard_list');
 const NavigationBar = require('./ui/pageLayout/navigation');
 const GameComponent = require('./ui/game/gameView');
@@ -9,7 +10,6 @@ const PlayerProfileComponent = require('./ui/player/player_profile');
 const InvitationsComponent = require('./ui/invitations/invitations');
 const RecentActivityComponent = require('./ui/recent_activity/recent');
 const PgnExportComponent = require('./ui/export/pgnExport');
-const settingsCtrl = require('./ctrl/settings')();
 const Notifier = require('./ui/notify/notifier');
 
 module.exports = (attachToElement, sbot, opts = {}) => {
@@ -56,8 +56,8 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     m.render(dom, styles);
   }
 
-  function renderPageTop(parent, gameCtrl) {
-    const navBar = NavigationBar(gameCtrl, settingsCtrl);
+  function renderPageTop(parent, mainCtrl, settingsCtrl) {
+    const navBar = NavigationBar(mainCtrl, settingsCtrl);
 
     const TopComponent = {
       view: () => m('div', [
@@ -68,11 +68,11 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     m.mount(parent, TopComponent);
   }
 
-  function appRouter(mainBody, gameCtrl) {
-    const gamesInProgressObs = gameCtrl.getMyGamesInProgress();
-    const gamesMyMoveObs = gameCtrl.getGamesWhereMyMove();
-    const observableGamesObs = gameCtrl.getFriendsObservableGames();
-    const userRecentActivity = gameCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
+  function appRouter(mainBody, mainCtrl, settingsCtrl) {
+    const gamesInProgressObs = mainCtrl.getGameCtrl().getMyGamesInProgress();
+    const gamesMyMoveObs = mainCtrl.getGameCtrl().getGamesWhereMyMove();
+    const observableGamesObs = mainCtrl.getGameCtrl().getFriendsObservableGames();
+    const userRecentActivity = mainCtrl.getRecentActivityCtrl().getRecentActivityForUserGames();
 
     // Hack: keep observables loaded with the latest value.
     gamesInProgressObs(e => e);
@@ -83,31 +83,31 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     const defaultView = initialView || '/my_games';
 
     m.route(mainBody, defaultView, {
-      '/my_games': MiniboardListComponent(gameCtrl, gamesInProgressObs, gameCtrl.getMyIdent()),
-      '/games_my_move': MiniboardListComponent(gameCtrl, gamesMyMoveObs, gameCtrl.getMyIdent()),
+      '/my_games': MiniboardListComponent(mainCtrl, gamesInProgressObs, mainCtrl.getMyIdent()),
+      '/games_my_move': MiniboardListComponent(mainCtrl, gamesMyMoveObs, mainCtrl.getMyIdent()),
       '/games/:gameId': {
         onmatch(args) {
           const gameId = atob(args.gameId);
-          const gameSituationObs = gameCtrl.getSituationObservable(gameId);
+          const gameSituationObs = mainCtrl.getGameCtrl().getSituationObservable(gameId);
 
           // Only load the game page once we have the initial game situation state.
           // The mithril router allows us to return a component in a promise.
           return new Promise((resolve) => {
             onceTrue(gameSituationObs, () => {
-              const gameComponent = GameComponent(gameCtrl, gameSituationObs, settingsCtrl);
+              const gameComponent = GameComponent(mainCtrl, gameSituationObs, settingsCtrl);
               resolve(gameComponent);
             });
           });
         },
       },
-      '/invitations': InvitationsComponent(gameCtrl),
-      '/activity': RecentActivityComponent(gameCtrl, userRecentActivity),
-      '/observable': MiniboardListComponent(gameCtrl, observableGamesObs, gameCtrl.getMyIdent()),
-      '/player/:playerId': PlayerProfileComponent(gameCtrl),
+      '/invitations': InvitationsComponent(mainCtrl),
+      '/activity': RecentActivityComponent(mainCtrl, userRecentActivity),
+      '/observable': MiniboardListComponent(mainCtrl, observableGamesObs, mainCtrl.getMyIdent()),
+      '/player/:playerId': PlayerProfileComponent(mainCtrl),
       '/games/:gameId/pgn': {
         onmatch(args) {
           const gameId = atob(args.gameId);
-          return gameCtrl.getPgnCtrl()
+          return mainCtrl.getPgnCtrl()
             .getPgnExport(gameId)
             .then(pgnText => PgnExportComponent(gameId, pgnText));
         },
@@ -116,7 +116,9 @@ module.exports = (attachToElement, sbot, opts = {}) => {
   }
 
   sbot.whoami((err, ident) => {
-    const gameCtrl = GameCtrl(sbot, ident.id);
+    const mainCtrl = MainCtrl(sbot, ident.id);
+
+    const settingsCtrl = mainCtrl.getSettingsCtrl();
 
     const mainBody = attachToElement;
     const navDiv = document.createElement('div');
@@ -130,14 +132,14 @@ module.exports = (attachToElement, sbot, opts = {}) => {
     mainBody.appendChild(navDiv);
     mainBody.appendChild(bodyDiv);
 
-    renderPageTop(navDiv, gameCtrl);
+    renderPageTop(navDiv, mainCtrl, settingsCtrl);
 
     // Display HTML5 notifications if the user is not viewing the chess app
     // and one of their games has an update.
-    const notifier = Notifier(gameCtrl, sbot);
+    const notifier = Notifier(mainCtrl, sbot);
     notifier.startNotifying();
 
-    appRouter(bodyDiv, gameCtrl);
+    appRouter(bodyDiv, mainCtrl, settingsCtrl);
   });
 
   return {

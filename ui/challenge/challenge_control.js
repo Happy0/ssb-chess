@@ -32,7 +32,7 @@ module.exports = (gameCtrl) => {
       const inviteDropdown = document.getElementById('ssb-chess-challenge-control-select');
       const friendId = inviteDropdown.options[inviteDropdown.selectedIndex].value;
 
-      gameCtrl.inviteToPlay(friendId)
+      gameCtrl.getInviteCtrl().inviteToPlay(friendId)
         .then(msg => m.route.set(`/games/${btoa(msg.key)}`))
         .then(() => { buttonElement.disabled = false; });
     };

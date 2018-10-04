@@ -2,17 +2,17 @@ const m = require('mithril');
 const Miniboard = require('../miniboard/miniboard');
 const ChallengeComponent = require('../challenge/challenge_control');
 
-module.exports = (gameCtrl) => {
+module.exports = (mainCtrl) => {
   let invitationsReceived = [];
   let invitationsSent = [];
 
   let watches = [];
 
-  const challengeComponent = ChallengeComponent(gameCtrl);
+  const challengeComponent = ChallengeComponent(mainCtrl);
 
   function renderAcceptOrRejectControls(gameId, inviteSent) {
     const acceptInvite = () => {
-      gameCtrl.acceptChallenge(gameId)
+      mainCtrl.getInviteCtrl().acceptChallenge(gameId)
         .then(() => m.route.set(`/games/${btoa(gameId)}`));
     };
 
@@ -42,25 +42,25 @@ module.exports = (gameCtrl) => {
   }
 
   function renderInvite(gameSummary, sent) {
-    const gameSummaryObservable = gameCtrl.getSituationSummaryObservable(gameSummary.gameId);
+    const gameSummaryObservable = mainCtrl.getGameCtrl().getSituationSummaryObservable(gameSummary.gameId);
 
     return m('div', {
       class: 'ssb-chess-miniboard',
     }, [
-      m(Miniboard(gameSummaryObservable, gameSummary, gameCtrl.getMyIdent())),
+      m(Miniboard(gameSummaryObservable, gameSummary, mainCtrl.getMyIdent())),
       renderAcceptOrRejectControls(gameSummary.gameId, sent),
     ]);
   }
 
   function invitesToSituations(invites) {
     return Promise.all(
-      invites.map(invite => gameCtrl.getSituation(invite.gameId)),
+      invites.map(invite => mainCtrl.getGameCtrl().getSituation(invite.gameId)),
     );
   }
 
   function keepInvitesUpdated() {
-    const invitesReceived = gameCtrl.pendingChallengesReceived();
-    const invitesSent = gameCtrl.pendingChallengesSent();
+    const invitesReceived = mainCtrl.getInviteCtrl().pendingChallengesReceived();
+    const invitesSent = mainCtrl.getInviteCtrl().pendingChallengesSent();
 
     const w1 = invitesReceived((received) => {
       invitesToSituations(received)

@@ -44,7 +44,7 @@ module.exports = (gameCtrl, gameSummaryListObs, ident) => {
       class: 'ssb-chess-miniboards',
     },
     gameSummaries.map((summary) => {
-      const situationObservable = gameCtrl.getSituationSummaryObservable(summary.gameId);
+      const situationObservable = gameCtrl.getGameCtrl().getSituationSummaryObservable(summary.gameId);
 
       return m(
         Miniboard(situationObservable, summary, this.ident),

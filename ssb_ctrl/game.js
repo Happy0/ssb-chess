@@ -50,6 +50,7 @@ module.exports = (sbot) => {
       lastMove: gameSituation.lastMove,
       check: gameSituation.check,
       lastUpdateTime: gameSituation.lastUpdateTime,
+      coloursToPlayer: gameSituation.coloursToPlayer
     };
 
     return summary;
@@ -197,6 +198,9 @@ module.exports = (sbot) => {
           hasPlayer(id) {
             return this.players[id] != null;
           },
+          coloursToPlayer() {
+            return mapColoursToPlayer(this.players);
+          },
           getOtherPlayer(id) {
             let otherPlayer;
             Object.keys(this.players).forEach((k) => {
@@ -337,6 +341,14 @@ module.exports = (sbot) => {
         }
       });
     });
+  }
+
+  function mapColoursToPlayer(json) {
+    const ret = {};
+    Object.keys(json).forEach((key) => {
+      ret[json[key].colour] = json[key];
+    });
+    return ret;
   }
 
   return {

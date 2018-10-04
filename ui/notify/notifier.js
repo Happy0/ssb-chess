@@ -1,13 +1,12 @@
 const pull = require('pull-stream');
 const onceTrue = require('mutant/once-true');
 const notify = require('./notify')();
-const UserGamesWatcher = require('../../ctrl/user_game_updates_watcher');
 const userLocationUtils = require('../viewer_perspective/user_location')();
 
-module.exports = (gameCtrl, sbot) => {
-  const me = gameCtrl.getMyIdent();
+module.exports = (mainCtrl) => {
+  const me = mainCtrl.getMyIdent();
 
-  const userGamesWatcher = UserGamesWatcher(sbot);
+  const userGamesWatcher = mainCtrl.getUserGameWatcherCtrl();
 
   function getOpponentName(situation, msg) {
     return situation.players[msg.value.author] ? situation.players[msg.value.author].name : '';
@@ -21,7 +20,7 @@ module.exports = (gameCtrl, sbot) => {
         return;
       }
 
-      const situation = gameCtrl.getSituationObservable(gameId);
+      const situation = mainCtrl.getGameCtrl().getSituationObservable(gameId);
 
       onceTrue(situation, (gameSituation) => {
         const opponentName = getOpponentName(gameSituation, gameMsg);
@@ -51,7 +50,7 @@ module.exports = (gameCtrl, sbot) => {
     };
 
     const gameUpdateStream = userGamesWatcher.chessMessagesForPlayerGames(
-      gameCtrl.getMyIdent(),
+      mainCtrl.getMyIdent(),
       opts,
     );
 

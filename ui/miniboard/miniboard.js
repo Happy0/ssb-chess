@@ -1,6 +1,5 @@
 const m = require('mithril');
 const { Chessground } = require('chessground');
-const PlayerModelUtils = require('../../ctrl/player_model_utils')();
 const timeAgo = require('./timeAgo')();
 
 module.exports = (gameSummaryObservable, summary, identPerspective, opts) => {
@@ -23,7 +22,7 @@ module.exports = (gameSummaryObservable, summary, identPerspective, opts) => {
 
   function renderSummaryBottom() {
     if (!(opts && opts.small)) {
-      const coloursNames = PlayerModelUtils.coloursToPlayer(summary.players);
+      const coloursNames = summary.coloursToPlayer();
       const otherPlayerColour = playerColour == 'white' ? 'black' : 'white';
 
       const leftPlayer = coloursNames[playerColour];

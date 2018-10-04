@@ -10,7 +10,7 @@ module.exports = (gameCtrl) => {
     const dom = document.createElement('div');
     dom.className = 'ssb-chess-profile-game-summary';
 
-    const gameSummaryObservable = gameCtrl.getSituationSummaryObservable(gameSummary.gameId);
+    const gameSummaryObservable = gameCtrl.getGameCtrl().getSituationSummaryObservable(gameSummary.gameId);
 
     const miniboard = Miniboard(gameSummaryObservable, gameSummary, playerId);
 

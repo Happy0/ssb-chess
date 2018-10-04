@@ -4,9 +4,6 @@ const watch = require('mutant/watch');
 
 const R = require('ramda');
 
-// todo: move this file somewhere more appropriate :P
-const PlayerModelUtils = require('../../ctrl/player_model_utils')();
-
 const UserLocationUtils = require('../viewer_perspective/user_location')();
 
 module.exports = (gameObservable) => {
@@ -18,6 +15,7 @@ module.exports = (gameObservable) => {
   let pgnMoves = [];
   let status = null;
   let players = [];
+  let gameSituation = null;
 
   let latestMove = 0;
 
@@ -29,11 +27,11 @@ module.exports = (gameObservable) => {
   }
 
   function renderPlayers() {
-    if (!players || players.length === 0) {
+    if (!gameSituation) {
       return m('div', {}, '');
     }
 
-    const coloursToPlayers = PlayerModelUtils.coloursToPlayer(players);
+    const coloursToPlayers = gameSituation.coloursToPlayer();
 
     const whitePlayer = coloursToPlayers.white;
     const blackPlayer = coloursToPlayers.black;
@@ -168,6 +166,7 @@ module.exports = (gameObservable) => {
     const w = watch(gameObservable, (situation) => {
       if (situation) {
         ({ pgnMoves, status, players } = situation);
+        gameSituation = situation;
 
         latestMove = situation.ply;
       }
