@@ -1,7 +1,7 @@
 {
   "name": "ssb-chess",
-  "version": "2.5.0",
-  "description": "Multiplayer chess built on top of the scuttlebutt platform (https://www.scuttlebutt.nz).",
+  "version": "3.0.0",
+  "description": "A library for building UI chess clients for the ssb-chess protocol for scuttlebutt ( https://www.scuttlebutt.nz )",
   "main": "inject.js",
   "dependencies": {
     "bluebird": "^3.5.1",

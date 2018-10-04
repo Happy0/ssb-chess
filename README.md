@@ -1,25 +1,22 @@
 # ssb-chess
 
-![A screenshot of ssb-chess](http://i.imgur.com/Xz9ovwX.png)
+A library for building chess clients for the scuttlebutt platform. This library is intended to make it easier to build your own ssb-chess client, bot or tool.
 
-Correspondence chess built on top of the scuttlebutt platform. More information about scuttlebutt here: https://staltz.com/an-off-grid-social-network.html and [https://www.scuttlebutt.nz/](https://www.scuttlebutt.nz/)
-
-It is built to allow it to be integrated into scuttlebutt viewers (such as [patchbay](https://www.github.com/ssbc/patchbay), [patchwork](https://www.github.com/ssbc/patchbay) using [depject](https://github.com/depject/depject) so that they can take care of things like discovering friends to play with, etc.
-
-### Installation
-ssb-chess is currently integrated into [patchbay](https://www.github.com/ssbc/patchbay). You can find it in the menu at the top right (the blue dot) and then the 'chess' menu item.
-
-### Libraries used
-* [Mithriljs](https://mithril.js.org/) is used for rendering the pages.
-* [Chessground](https://github.com/ornicar/chessground) is used for the board and pieces widget and animating the moves.
-* [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
-* [Embedded Chat](https://github.com/happy0/ssb-embedded-chat) is used for the chatroom to allow the players to chat during their game.
+For an example of a scuttlebutt chess client built using this library see [ssb-chess-mithril](https://www.github.com/happy0/ssb-chess-mithril).
 
 # Protocol
 
 *Note*: since this is built on a peer 2 peer protocol, messages may be corrupted or deliberately misleading to cheat. ssb-chess doesn't validate that the client agrees a post is valid yet as it assumes your friends can be trusted.
 
 The documentation below documents the 'content' section of the [scuttlebutt messages](https://ssbc.github.io/secure-scuttlebutt/). The 'author' field of the outer object containing the `content` field is the ID of person who posted the message (made the chess move, posted the chat message, invited another player to a game, etc.)
+
+## Required scuttlebot plugins
+
+* Requires the ssb-chess-db which is used to index the state of all the known games.
+
+# Chess logic library
+
+* [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
 
 For example, the entire scuttlebutt message for a move could look like this:
 
@@ -54,12 +51,21 @@ Type `chess_invite`
 ### Fields
 * Inviting - the ID of the player being invited.
 * myColor - the colour of the inviting player (white or black.)
+* branch [optional] - As a convenience to clients, a client can optionally provide a list of the latest name / picture / description messages for the 2 players. This is so that ssb-ooo can pull these messages if one of the players is outside one of the other's follow graph. The ssb-ooo-about provided convenience functions for grabbing these.
 
 ```javascript
 {
   "type": "chess_invite",
   "inviting": "@RJ09Kfs3neEZPrbpbWVDxkN92x9moe3aPusOMOc4S2I=.ed25519",
-  "myColor": "black"
+  "myColor": "black",
+  "branch": [
+        "%g3D2FJH3LeGoZ/2jmNgydP2bZqISBZq3lfgJGBlBCrg=.sha256",
+        "%59xEb4ZqY1P3eksel9aUE6su/xZ5K/zHjOtUb1NG8HE=.sha256",
+        "%6L/zMxXPcoCui1Z0wbVye2ES+13o5KG2zHiMhPFbHIY=.sha256",
+        "%seGaypHi2RH3YY0zwLnbOU3+CfFesp0Y290iwGz46MU=.sha256",
+        "%9oK3ltfnvH9/7h5sxD6Cu+IYoSXcOddTMPJ5L6dLsUM=.sha256",
+        "%Adu40jiwOvGUXyZqefzsm8Qxd7TGOObH4NuiQNjqC2I=.sha256"
+  ]
 }
 ```
 The key of the message inviting a player to play then becomes the game ID which subsequent messages link back to.
@@ -159,14 +165,3 @@ If it is not a private message, it is a public message in the observer chat betw
   type: "chess_chat"
 }
 ```
-
-## Required scuttlebot plugins
-
-* Requires the ssb-chess-db which is used to index the state of all the known games.
-
-## Integrating ssb-chess into a scuttlebutt application using depject
-
-You can read more about depject [here](https://github.com/depject/depject)
-
-<TODO> The strategy for this was recently updated. I need to document the
-new approach :)
