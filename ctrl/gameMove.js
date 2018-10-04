@@ -34,7 +34,7 @@ module.exports = (gameSSBDao, myIdent, chessWorker) => {
     // This is a hack. Reqid is meant to be used for a string to identity
     // which request the response game from.
     const { gameRootMessage, originSquare, destinationSquare, coloursToPlayer } = e.data.reqid;
-    const { respondsTo, players } = e.data.reqid;
+    const { respondsTo } = e.data.reqid;
 
     if (e.data.payload.error) {
       // Todo: work out how to communicate this to the user.
