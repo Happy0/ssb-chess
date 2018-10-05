@@ -4,19 +4,15 @@ A library for building chess clients for the scuttlebutt platform. This library 
 
 For an example of a scuttlebutt chess client built using this library see [ssb-chess-mithril](https://www.github.com/happy0/ssb-chess-mithril).
 
+# Required scuttlebot plugins
+
+* Requires the [ssb-chess-db](https://www.github.com/happy0/ssb-chess-db) which is used to index the state of all the known games.
+
 # Protocol
 
 *Note*: since this is built on a peer 2 peer protocol, messages may be corrupted or deliberately misleading to cheat. ssb-chess doesn't validate that the client agrees a post is valid yet as it assumes your friends can be trusted.
 
 The documentation below documents the 'content' section of the [scuttlebutt messages](https://ssbc.github.io/secure-scuttlebutt/). The 'author' field of the outer object containing the `content` field is the ID of person who posted the message (made the chess move, posted the chat message, invited another player to a game, etc.)
-
-## Required scuttlebot plugins
-
-* Requires the [ssb-chess-db](https://www.github.com/happy0/ssb-chess-db) which is used to index the state of all the known games.
-
-# Chess logic library
-
-* [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
 
 For example, the entire scuttlebutt message for a move could look like this:
 
@@ -165,3 +161,6 @@ If it is not a private message, it is a public message in the observer chat betw
   type: "chess_chat"
 }
 ```
+# Chess logic library
+
+* [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
