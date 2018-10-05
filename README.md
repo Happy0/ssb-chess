@@ -12,7 +12,7 @@ The documentation below documents the 'content' section of the [scuttlebutt mess
 
 ## Required scuttlebot plugins
 
-* Requires the ssb-chess-db which is used to index the state of all the known games.
+* Requires the [ssb-chess-db](https://www.github.com/happy0/ssb-chess-db) which is used to index the state of all the known games.
 
 # Chess logic library
 
