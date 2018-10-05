@@ -54,17 +54,71 @@ module.exports = (sbot, myIdent) => {
   }
 
   return {
+    /**
+     * Get the player's public key.
+     */
     getMyIdent,
+
+    /**
+     * Game controller for fetching game states, and fetching games with properties like 'games where it's the player's move.'
+     * 
+     * The games and game lists are returned as observables.
+     */
     getGameCtrl: () => gameCtrl,
+
+    /**
+     * Invite controller. Manage incoming / outgoing game invitations.
+     */
     getInviteCtrl: () => inviteCtrl,
+
+    /**
+     * Controller for performing moves on a game. Commits game moves to the user's feed.
+     */
     getMoveCtrl: () => moveCtrl,
+
+    /**
+     * Controller for fetching information about users - such as their display name, who the player is following, etc.
+     */
     getSocialCtrl: () => socialCtrl,
+
+    /**
+     * Controller for fetching information about players.
+     */
     getPlayerCtrl: () => playerCtrl,
+
+    /**
+     * Controller for finding out about recent activity on games, such as games a player was in that ended recently.
+     * Useful for showing an aggregated list of activity such as a list of games that the user recently won / lost / drew.
+     * 
+     * Differs from getUserGameWatcherCtrl
+     */
     getRecentActivityCtrl: () => recentActivityCtrl,
+
+    /**
+     * Controller for calculating valid moves for a given game situation.
+     */
     getMovesFinderCtrl: () => movesFinderCtrl,
+
+    /**
+     * Controller for exporting games as a PGN.
+     */
     getPgnCtrl: () => pgnCtrl,
+
+    /**
+     * Controller for watching for updates in player's games. Useful for showing notifications when it's a
+     * player's turn to move, or watching for game updates to know when to update observables.
+     */
     getUserGameWatcherCtrl: () => userGamesUpdateWatcher,
+
+    /**
+     * Get the sbot instance. An abstraction leak, but can be useful when using UI libraries that take the
+     * sbot instance as a parameter.
+     */
     getSbot: () => sbot,
+
+    /**
+     * A controller for storing settings in local storage
+     */
     getSettingsCtrl: () => settingsCtrl
   };
 };
