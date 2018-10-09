@@ -10,6 +10,8 @@ module.exports = (sbot, myIdent) => {
   const about = About(sbot, {});
   const getLatestAboutMsgIds = Promise.promisify(about.async.getLatestMsgIds);
 
+  const publish = Promise.promisify(sbot.publish);
+
   /**
    * Generates an invite code for a game of chess which can be given to another person in another app, without
    * knowing what their scuttlebutt ID is.
@@ -46,6 +48,31 @@ module.exports = (sbot, myIdent) => {
     });
   }
 
+  /**
+   * Replies to the key of the game invite message in the invite code with the unencrypted
+   * version of the challenge (challengeResponse) and then accepts the DHT invite code.
+   * 
+   * @param {*} dhtInvite the dht invite (given to invitee in another app) object
+   */
+  function redeemDhtAndChessInvite(dhtInvite) {
+
+    if (!sbot.dhtInvite) {
+      return Promise.reject("dht invite plugin not installed");
+    }
+
+    const dhtCode = dhtInvite.dhtInviteCode;
+    const gameId = dhtInvite.chessInvite.gameId;
+    const inviteCode = dhtInvite.chessInvite.inviteCode;
+
+    const dhtAccept = Promise.promisify(dhtCode);
+
+    return publish({
+      type: 'chess_invite',
+      challengeResponse: inviteCode,
+      root: gameId,        
+    }).then( () => dhtAccept(inviteCode));
+  }
+
   function makeDhtInvite() {
     if (!sbot.dhtInvite) {
       return Promise.reject("dht invite plugin not installed");
@@ -59,11 +86,9 @@ module.exports = (sbot, myIdent) => {
 
     const message = {
       type: 'chess_invite',
-      inviteCode: password,
+      challenge: password,
       myColor: colour
     }
-
-    var publish = Promise.promisify(sbot.publish);
 
     return publish(message).then(inviteMsgCode);
   }
@@ -75,13 +100,13 @@ module.exports = (sbot, myIdent) => {
   function inviteMsgCode(msg) {
     const keys = getKeys();
 
-    const encryptedPassword = msg.value.content.inviteCode;
+    const encryptedPassword = msg.value.content.challenge;
 
     const password = ssbKeys.unbox(encryptedPassword, keys.private);
 
     return {
       gameId: msg.key,
-      inviteCode: password
+      challengeResponse: password
     }
   }
 
@@ -150,6 +175,7 @@ module.exports = (sbot, myIdent) => {
   return {
     inviteToPlay,
     acceptChallenge,
-    createChessAndDhtInviteCode
+    createChessAndDhtInviteCode,
+    redeemDhtAndChessInvite
   };
 };
