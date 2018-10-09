@@ -12,50 +12,55 @@ const Value = require('mutant/value');
  */
 module.exports = (myIdent, gameChallenger, gameDb, myGameUpdates) => {
 
-    function inviteToPlay(playerKey, asWhite) {
-        return gameChallenger.inviteToPlay(playerKey, asWhite);
-    }
-    
-    function acceptChallenge(rootGameMessage) {
-        return gameChallenger.acceptChallenge(rootGameMessage);
-    }
+  function inviteToPlay(playerKey, asWhite) {
+    return gameChallenger.inviteToPlay(playerKey, asWhite);
+  }
 
-    function pendingChallengesSent() {
-        const observable = Value([]);
-    
-        gameDb.pendingChallengesSent(myIdent).then(observable.set);
-    
-        // todo: not necessary to re-query all pending challenges for _ all _ game updates, just invite based ones
-        const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent)
-          .then(observable.set));
-    
-        return computed([observable], a => a, {
-          comparer: GameComparer.hasSameGames,
-          onUnlisten: unlistenUpdates,
-        });
-      }
-    
-      function pendingChallengesReceived() {
-        const observable = Value([]);
-    
-        gameDb.pendingChallengesReceived(myIdent).then(observable.set);
-    
-        // todo: not necessary to re-query all pending challenges for _ all _ game updates, just invite based ones
-        const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent)
-          .then(observable.set));
-    
-        return computed(
-          [observable], a => a, {
-            comparer: GameComparer.hasSameGames,
-            onUnlisten: unlistenUpdates,
-          },
-        );
-      }
+  function acceptChallenge(rootGameMessage) {
+    return gameChallenger.acceptChallenge(rootGameMessage);
+  }
 
-    return {
-        inviteToPlay,
-        acceptChallenge,
-        pendingChallengesSent,
-        pendingChallengesReceived,
-    }
+  function pendingChallengesSent() {
+    const observable = Value([]);
+
+    gameDb.pendingChallengesSent(myIdent).then(observable.set);
+
+    // todo: not necessary to re-query all pending challenges for _ all _ game updates, just invite based ones
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent)
+      .then(observable.set));
+
+    return computed([observable], a => a, {
+      comparer: GameComparer.hasSameGames,
+      onUnlisten: unlistenUpdates,
+    });
+  }
+
+  function pendingChallengesReceived() {
+    const observable = Value([]);
+
+    gameDb.pendingChallengesReceived(myIdent).then(observable.set);
+
+    // todo: not necessary to re-query all pending challenges for _ all _ game updates, just invite based ones
+    const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent)
+      .then(observable.set));
+
+    return computed(
+      [observable], a => a, {
+        comparer: GameComparer.hasSameGames,
+        onUnlisten: unlistenUpdates,
+      },
+    );
+  }
+
+  function createChessAndDhtInviteCode(colour) {
+    return gameChallenger.createChessAndDhtInviteCode(colour);
+  }
+
+  return {
+    inviteToPlay,
+    acceptChallenge,
+    pendingChallengesSent,
+    pendingChallengesReceived,
+    createChessAndDhtInviteCode
+  }
 }
