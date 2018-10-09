@@ -47,8 +47,8 @@ Type `chess_invite`
 ### Fields
 * Inviting - the ID of the player being invited. Note: this is omitted if 'challenge' is defined. 
 * myColor - the colour of the inviting player (white or black.)
-* challenge [optional] - An invite code string encrypted with the user's public key. A 'chess_invite_accept' message can be
-posted with the unencrypted version as a 'challengeResponse' field to accept the game invite. This allows someone to paste an invite code to a friend in another app.
+* challenge [optional] - An invite code string encrypted with the inviter's public key. A 'chess_invite_accept' message can be
+posted with the unencrypted version as a 'challengeResponse' field to accept the game invite. This allows someone to paste an invite code to a friend in another app, and the inviter's chess client to verify that the invite code is valid (by decrypting it with it's private key.).
 * branch [optional] - As a convenience to clients, a client can optionally provide a list of the latest name / picture / description messages for the 2 players. This is so that ssb-ooo can pull these messages if one of the players is outside one of the other's follow graph. The ssb-ooo-about provided convenience functions for grabbing these.
 
 ```javascript
