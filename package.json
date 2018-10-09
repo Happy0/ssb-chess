@@ -17,7 +17,6 @@
     "mutant-pull-reduce": "^1.1.0",
     "neodoc": "1.4.0",
     "patchcore": "^1.28.1",
-    "private-box": "^0.3.0",
     "pubsub-js": "1.5.7",
     "pull-abortable": "4.1.1",
     "pull-async-filter": "^1.0.0",
