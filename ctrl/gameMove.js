@@ -1,4 +1,9 @@
-module.exports = (gameSSBDao, myIdent, chessWorker) => {
+const ChessWorker = require('./worker');
+
+module.exports = (gameSSBDao, myIdent) => {
+
+  const chessWorker = ChessWorker();
+
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
     gameSSBDao.getSituation(gameRootMessage).then((situation) => {
       if (situation.toMove === myIdent) {

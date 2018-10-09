@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const Worker = require('tiny-worker');
+const ChessWorker = require('./worker');
 
 module.exports = (gameSSBDao) => {
   function postWorkerMessage(chessWorker, situation) {
@@ -39,13 +39,14 @@ module.exports = (gameSSBDao) => {
       // Yuck, need to remove event listener using same function reference
       handler = event => handlePgnResponse(event, gameId, resolve, reject);
       chessWorker.addEventListener('message', handler);
+
+      // Terminate as this functionality isn't used that often.
     }).finally(() => chessWorker.terminate());
   }
 
   return {
     getPgnExport: gameId => new Promise((resolve, reject) => {
-      const rootDir = `${__dirname.replace('ctrl', '')}/`;
-      const chessWorker = new Worker(`${rootDir}vendor/scalachessjs/scalachess.js`);
+      const chessWorker = ChessWorker();
 
       // Yuck. Make sure the event listener is set up before posting the web worker message.
       // Well, at least the caller gets a nice promise back to hook on to =p.

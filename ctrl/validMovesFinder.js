@@ -2,7 +2,9 @@ const get = require('lodash/get');
 const computed = require('mutant/computed');
 const Value = require('mutant/value');
 
-module.exports = (chessWorker) => {
+const chessWorker = require ('./worker')();
+
+module.exports = () => {
   // A map of observables that are currently awaiting a response from the asynchronous
   // chess logic webworker.
   const awaitingWorkerResponses = {};
