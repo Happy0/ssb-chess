@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const Worker = require('tiny-worker');
+const Worker = require('./worker');
 
 module.exports = (gameSSBDao) => {
   function postWorkerMessage(chessWorker, situation) {

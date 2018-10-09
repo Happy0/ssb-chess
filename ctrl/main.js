@@ -14,6 +14,8 @@ const UserGamesUpdateWatcher = require('./userGameUpdatesWatcher');
 
 const settingsCtrl = require('./settings')();
 
+const Worker = require('./worker');
+
 /**
  * The main controller which can be used to access the functional area specific controllers.
  * 
