@@ -93,8 +93,20 @@ Type `chess_invite_accept`
       "type": "chess_invite_accept",
       "root": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256",
       "branch": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256"
-    }
+}
 ```
+
+Invite code based invite response example:
+
+```
+{
+      "type": "chess_invite_accept",
+      "root": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256",
+      "branch": "%JJis5OErved3kJu2q9tpPyd+hjFq4EnqHUusy6LJ+OE=.sha256",
+      "challengeResponse": "/Xd0quntja+Gmg=="
+}
+```
+
 A player may accept an invite they have received by sending a message of type ```chess_invite_accept``` linking back to the key of the original game invitation message.
 
 The game is then 'in progress.'
