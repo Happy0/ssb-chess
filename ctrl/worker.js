@@ -1,5 +1,3 @@
-const Worker = require('tiny-worker');
-
 /**
  * Just constructs a web worker. I'm separating this out into a different file as
  * I'm wondering if ssb-chess might run in the web browser some time and we might need to
