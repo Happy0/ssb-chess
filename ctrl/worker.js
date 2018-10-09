@@ -1,12 +1,9 @@
-/**
- * Just constructs a web worker. I'm separating this out into a different file as
- * I'm wondering if ssb-chess might run in the web browser some time and we might need to
- * require a different WebWorker implementation depending on the context.
- * 
- * Electron apps can use 'new Worker'. However, CLI apps (such as bots) require a
- * nodejs implementation of the webworker API.
- * 
- * tiny-worker works for both electron and the CLI.
- */
+// The worker we construct depends on the environment we're in (nodejs or webbrowser);
+var ChessWorker =  Worker !== undefined ? Worker : require('tiny-worker');
 
-module.exports = Worker;
+const rootDir = `${__dirname.replace('ctrl', '')}/`;
+const path =`${rootDir}vendor/scalachessjs/scalachess.js`;
+
+module.exports = function makeChessWorker() {
+    return new ChessWorker(path);
+}

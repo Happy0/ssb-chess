@@ -14,8 +14,6 @@ const UserGamesUpdateWatcher = require('./userGameUpdatesWatcher');
 
 const settingsCtrl = require('./settings')();
 
-const Worker = require('./worker');
-
 /**
  * The main controller which can be used to access the functional area specific controllers.
  * 
@@ -23,19 +21,17 @@ const Worker = require('./worker');
  * @param {*} myIdent the user's public key
  */
 module.exports = (sbot, myIdent) => {
-  const rootDir = `${__dirname.replace('ctrl', '')}/`;
-  const chessWorker = new Worker(`${rootDir}vendor/scalachessjs/scalachess.js`);
-
-  const gameSSBDao = GameSSBDao(sbot, myIdent, chessWorker);
+  
+  const gameSSBDao = GameSSBDao(sbot);
   const gameChallenger = GameChallenger(sbot, myIdent);
   const gameDb = GameDb(sbot);
-  const moveCtrl = MoveCtrl(gameSSBDao, myIdent, chessWorker);
+  const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
   const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
-  const movesFinderCtrl = MovesFinder(chessWorker);
+  const movesFinderCtrl = MovesFinder();
 
   const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
 
