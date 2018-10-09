@@ -56,11 +56,16 @@ module.exports = (myIdent, gameChallenger, gameDb, myGameUpdates) => {
     return gameChallenger.createChessAndDhtInviteCode(colour);
   }
 
+  function redeemDhtAndChessInvite(invite) {
+    return gameChallenger.redeemDhtAndChessInvite(invite);
+  }
+
   return {
     inviteToPlay,
     acceptChallenge,
     pendingChallengesSent,
     pendingChallengesReceived,
-    createChessAndDhtInviteCode
+    createChessAndDhtInviteCode,
+    redeemDhtAndChessInvite
   }
 }
