@@ -45,8 +45,10 @@ For example, the entire scuttlebutt message for a move could look like this:
 Type `chess_invite`
 
 ### Fields
-* Inviting - the ID of the player being invited.
+* Inviting - the ID of the player being invited. Note: this is omitted if 'challenge' is defined. 
 * myColor - the colour of the inviting player (white or black.)
+* challenge [optional] - An invite code string encrypted with the user's public key. A 'chess_invite_accept' message can be
+posted with the unencrypted version as a 'challengeResponse' field to accept the game invite. This allows someone to paste an invite code to a friend in another app.
 * branch [optional] - As a convenience to clients, a client can optionally provide a list of the latest name / picture / description messages for the 2 players. This is so that ssb-ooo can pull these messages if one of the players is outside one of the other's follow graph. The ssb-ooo-about provided convenience functions for grabbing these.
 
 ```javascript
@@ -64,6 +66,17 @@ Type `chess_invite`
   ]
 }
 ```
+
+Invite code based invite:
+
+```javascript
+{
+  "type": "chess_invite",
+  "challenge": "JES7N43gwZ/YGA==",
+  "myColor": "black"
+}
+```
+
 The key of the message inviting a player to play then becomes the game ID which subsequent messages link back to.
 
 ## Accept an Invitation to Accept
@@ -73,6 +86,7 @@ Type `chess_invite_accept`
 * root - the key of the invitiation message that is being accepted.
 * branch - the key of the invitiation message that is being accepted. This is used to support ssb-ooo, which allows clients to
            request messages that are not visible in their follow graph. This helps clients observe the game, even if the user isn't close to one of the players in the follow graph.
+* challengeResponse [optional] - The unecrypted version of the original challenge. The unencrypted version is given as part of an invite code to the challenged player in another app. This is omitted if the original 'chess_invite' message had an 'inviting' field and not a 'challenge' field.
 
 ```javascript
 {

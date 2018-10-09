@@ -67,9 +67,10 @@ module.exports = (sbot, myIdent) => {
     const dhtAccept = Promise.promisify(dhtCode);
 
     return publish({
-      type: 'chess_invite',
+      type: 'chess_invite_accept',
       challengeResponse: inviteCode,
-      root: gameId,        
+      root: gameId,
+      branch: gameId
     }).then( () => dhtAccept(inviteCode));
   }
 
