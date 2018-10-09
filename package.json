@@ -6,6 +6,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "chessground": "7.3.2",
+    "crypto": "^1.0.1",
     "depject": "4.1.0",
     "depnest": "1.3.0",
     "howler": "^2.0.7",
@@ -25,6 +26,7 @@
     "pull-stream": "3.6.0",
     "ramda": "0.24.1",
     "ssb-embedded-chat": "1.2.1",
+    "ssb-keys": "^7.1.3",
     "ssb-ooo-about": "^1.0.0",
     "tiny-worker": "2.1.1",
     "uuid": "3.1.0"
