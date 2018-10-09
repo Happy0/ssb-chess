@@ -63,9 +63,6 @@ module.exports = (sbot, myIdent) => {
       myColor: colour
     }
 
-    console.log("Posting: ");
-    console.log(message);
-
     var publish = Promise.promisify(sbot.publish);
 
     return publish(message).then(inviteMsgCode);
