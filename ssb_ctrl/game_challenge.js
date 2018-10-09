@@ -64,7 +64,7 @@ module.exports = (sbot, myIdent) => {
 
     const dhtCode = dhtInvite.dhtInviteCode;
     const gameId = dhtInvite.chessInvite.gameId;
-    const inviteCode = dhtInvite.chessInvite.inviteCode;
+    const inviteCode = dhtInvite.chessInvite.challengeResponse;
 
     const dhtAccept = Promise.promisify(dhtCode);
 
