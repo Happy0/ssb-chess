@@ -2,7 +2,6 @@ const ChessWorker = require('./worker');
 
 module.exports = (gameSSBDao, myIdent) => {
 
-  const rootDir = `${__dirname.replace('ctrl', '')}/`;
   const chessWorker = ChessWorker();
 
   function makeMove(gameRootMessage, originSquare, destinationSquare, promoteTo) {
