@@ -22,7 +22,9 @@ module.exports = (sbot, myIdent) => {
    * redeems the invite we can compare their 'inviteCode' to our unecrypted version. This prevents a random person who hasn't been
    * given the invite 'out of band' from accepting the invite.
    * 
-   * @param {*} colour the colour the inviter wants to play as 
+   * The DHT invite code can be redeemed to allow the two players to follow each other and connect to sync up using ssb-dht-invite.
+   * 
+   * @param {*} colour the colour the inviter wants to play as
    */
   function createChessAndDhtInviteCode(colour) {
 
