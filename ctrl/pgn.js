@@ -53,15 +53,30 @@ module.exports = (gameSSBDao) => {
     postWorkerMessage(chessWorker, situation);
   }
 
+  function situationToPgnStreamThrough() {
+    return pull(
+      pull.filter(situation => situation.pgnMoves && situation.pgnMoves.length > 0),
+      pull.asyncMap((situation, cb) => {
+        pgnExportCb(situation, cb)
+      }));
+  }
+
   return {
+    /**
+     * Transforms a game ID source into a PGN text pull stream (a pull-stream through.)
+     * Useful for exporting a collection of games.
+     */
     pgnStreamThrough: () => {
       return pull(
         pull.asyncMap(getSituation),
-        pull.filter(situation => situation.pgnMoves && situation.pgnMoves.length > 0),
-        pull.asyncMap((situation, cb) => {
-          pgnExportCb(situation, cb)
-        }));
+        situationToPgnStreamThrough()
+      );
     },
+    /**
+     * Transforms a game situation into a PGN text pull stream (a pull-stream through.)
+     * Useful for exporting a collection of games.
+     */
+    situationToPgnStreamThrough: situationToPgnStreamThrough,
     getPgnExport: gameId => {
       const pgnExport = Bluebird.promisify(pgnExportCb);
       return gameSSBDao.getSituation(gameId).then(pgnExport)
