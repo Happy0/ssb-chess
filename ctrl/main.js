@@ -51,6 +51,20 @@ module.exports = (sbot, myIdent) => {
     return myIdent;
   }
 
+  function setUpGamesIndex() {
+    // In older versions of ssb-chess-db, the plugin was given 'ssbChessIndex'
+    // as a name. This caused issues when loading the plugin into a standalone
+    // scuttlebot ( https://github.com/Happy0/ssb-chess-db/issues/1 )
+    // We deal with this old name for backwards compatibility.
+    if (sbot['chess-db']) {
+      sbot.ssbChessIndex = sbot['chess-db'];
+    } else if (!sbot.ssbChessIndex && !sbot['chess-db']) {
+      throw new Error('Missing plugin ssb-chess-db');
+    }
+  }
+
+  setUpGamesIndex();
+
   return {
     /**
      * Get the player's public key.
