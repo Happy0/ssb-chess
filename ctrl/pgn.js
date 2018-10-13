@@ -1,6 +1,7 @@
 const pull = require('pull-stream');
 const ChessWorker = require('./worker');
 const Bluebird = require('bluebird');
+var HighWatermark = require('pull-high-watermark');
 
 module.exports = (gameSSBDao) => {
 
@@ -55,6 +56,7 @@ module.exports = (gameSSBDao) => {
 
   function situationToPgnStreamThrough() {
     return pull(
+      HighWatermark(100, 0),
       pull.filter(situation => situation.pgnMoves && situation.pgnMoves.length > 0),
       pull.asyncMap((situation, cb) => {
         pgnExportCb(situation, cb)
