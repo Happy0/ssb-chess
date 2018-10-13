@@ -137,6 +137,10 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
         return userGamesUpdateWatcher.latestGameMessageForPlayerObs(ident);
     }
 
+    function getAllGamesInDbIds() {
+        return gameDb.getAllGameIds();
+    }
+
     return {
         getGamesWhereMyMove,
         getMyGamesInProgress,
@@ -145,5 +149,6 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
         getSituation,
         getSituationObservable,
         getSituationSummaryObservable,
+        getAllGamesInDbIds
     }
 }

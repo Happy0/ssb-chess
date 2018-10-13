@@ -51,11 +51,20 @@ module.exports = (sbot) => {
     return sbot.ssbChessIndex.getGamesFinished(playerId);
   }
 
+  function getAllGameIds() {
+    if (sbot.ssbChessIndex.getAllGamesInDb) {
+      return sbot.ssbChessIndex.getAllGamesInDb();
+    } else {
+      throw new Error("Please install the latest version of ssb-chess-db with the 'getAllGames' function.");
+    }
+  }
+
   return {
     pendingChallengesSent,
     pendingChallengesReceived,
     getGamesAgreedToPlayIds,
     getObservableGames,
     getGamesFinished,
+    getAllGameIds
   };
 };

@@ -1,15 +1,19 @@
-const Promise = require('bluebird');
+const pull = require('pull-stream');
 const ChessWorker = require('./worker');
+const Bluebird = require('bluebird');
 
 module.exports = (gameSSBDao) => {
+
+  const chessWorker = ChessWorker();
+
   function postWorkerMessage(chessWorker, situation) {
     chessWorker.postMessage({
       topic: 'pgnDump',
       payload: {
         initialFen: situation.getInitialFen(),
         pgnMoves: situation.pgnMoves,
-        white: `${situation.getWhitePlayer().name} (${situation.getWhitePlayer().id})`,
-        black: `${situation.getBlackPlayer().name} (${situation.getBlackPlayer().id})`,
+        white: `${situation.getWhitePlayer().name}`,
+        black: `${situation.getBlackPlayer().name}`,
         date: new Date(situation.lastUpdateTime).toString(),
       },
       reqid: {
@@ -23,37 +27,44 @@ module.exports = (gameSSBDao) => {
     return pgn.replace('[Site "https://lichess.org"]', '[Site "ssb-chess (https://github.com/happy0/ssb-chess)"]');
   }
 
-  function handlePgnResponse(event, gameId, resolve, reject) {
+  function handlePgnResponse(event, gameId, cb) {
     if (event.data.topic === 'pgnDump' && event.data.reqid.gameRootMessage === gameId) {
       const pgnText = addChessSite(event.data.payload.pgn);
-      resolve(pgnText);
-    } else if (event.error === 'error') {
-      reject(event.error);
+      cb(null, pgnText);
+    } else if (event.data.topic === 'error') {
+      cb(event.error);
+    } else {
+      console.log("unexpected: ");
+      console.log(event);
     }
   }
 
-  function awaitPgnResponse(chessWorker, gameId) {
-    let handler = null;
+  function awaitPgnResponse(chessWorker, gameId, cb) {
+    let handler = event => handlePgnResponse(event, gameId, cb);
+    chessWorker.onmessage = handler;
+  }
 
-    return new Promise((resolve, reject) => {
-      // Yuck, need to remove event listener using same function reference
-      handler = event => handlePgnResponse(event, gameId, resolve, reject);
-      chessWorker.addEventListener('message', handler);
+  function getSituation(gameId, cb) {
+    return gameSSBDao.getSituation(gameId).then((res) => cb(null, res)).catch(err => cb(err));
+  }
 
-      // Terminate as this functionality isn't used that often.
-    }).finally(() => chessWorker.terminate());
+  function pgnExportCb(situation, cb) {
+    awaitPgnResponse(chessWorker, situation.gameId, cb);
+    postWorkerMessage(chessWorker, situation);
   }
 
   return {
-    getPgnExport: gameId => new Promise((resolve, reject) => {
-      const chessWorker = ChessWorker();
-
-      // Yuck. Make sure the event listener is set up before posting the web worker message.
-      // Well, at least the caller gets a nice promise back to hook on to =p.
-      awaitPgnResponse(chessWorker, gameId).then(resolve).catch(reject);
-
-      gameSSBDao.getSituation(gameId)
-        .then(situation => postWorkerMessage(chessWorker, situation)).catch(reject);
-    }),
+    pgnStreamThrough: () => {
+      return pull(
+        pull.asyncMap(getSituation),
+        pull.filter(situation => situation.pgnMoves && situation.pgnMoves.length > 0),
+        pull.asyncMap((situation, cb) => {
+          pgnExportCb(situation, cb)
+        }));
+    },
+    getPgnExport: gameId => {
+      const pgnExport = Bluebird.promisify(pgnExportCb);
+      return gameSSBDao.getSituation(gameId).then(pgnExport)
+    },
   };
 };
