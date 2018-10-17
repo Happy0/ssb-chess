@@ -22,7 +22,7 @@ const settingsCtrl = require('./settings')();
  */
 module.exports = (sbot, myIdent) => {
   
-  const gameSSBDao = GameSSBDao(sbot);
+  const gameSSBDao = GameSSBDao(sbot, myIdent);
   const gameChallenger = GameChallenger(sbot, myIdent);
   const gameDb = GameDb(sbot);
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent);

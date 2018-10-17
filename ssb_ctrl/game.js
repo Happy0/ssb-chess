@@ -6,7 +6,7 @@ const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 
 const getFilteredBackLinks = require('./backlinks_obs')();
 
-module.exports = (sbot) => {
+module.exports = (sbot, myIdent) => {
   const socialCtrl = SocialCtrl(sbot);
 
   function getPlayers(gameRootMessage) {
@@ -197,6 +197,9 @@ module.exports = (sbot) => {
           },
           hasPlayer(id) {
             return this.players[id] != null;
+          },
+          currentPlayerIsInGame() {
+            return this.players[myIdent] != null;
           },
           coloursToPlayer() {
             return mapColoursToPlayer(this.players);
