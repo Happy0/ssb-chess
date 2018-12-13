@@ -21,7 +21,7 @@ const settingsCtrl = require('./settings')();
  * @param {*} myIdent the user's public key
  */
 module.exports = (sbot, myIdent) => {
-  
+
   const gameSSBDao = GameSSBDao(sbot, myIdent);
   const gameChallenger = GameChallenger(sbot, myIdent);
   const gameDb = GameDb(sbot);
@@ -58,7 +58,13 @@ module.exports = (sbot, myIdent) => {
     // We deal with this old name for backwards compatibility.
     if (sbot['chess-db']) {
       sbot.ssbChessIndex = sbot['chess-db'];
-    } else if (!sbot.ssbChessIndex && !sbot['chess-db']) {
+    }
+    else if (sbot.chessDb) {
+      // (13/12/2018) lol... ssbc/secret-stack was recently changed to transform
+      // plugins with -'s in them to camcel case, so here we are again...
+      // (https://github.com/ssbc/secret-stack/pull/29)
+      sbot.ssbChessIndex = sbot.chessDb;
+    } else if (!sbot.ssbChessIndex) {
       throw new Error('Missing plugin ssb-chess-db');
     }
   }
