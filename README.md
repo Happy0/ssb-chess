@@ -70,8 +70,8 @@ The key of the message inviting a player to play then becomes the game ID which 
 Type `chess_invite_accept`
 
 ### Fields
-* root - the key of the invitiation message that is being accepted.
-* branch - the key of the invitiation message that is being accepted. This is used to support ssb-ooo, which allows clients to
+* root - the key of the invitation message that is being accepted.
+* branch - the key of the invitation message that is being accepted. This is used to support ssb-ooo, which allows clients to
            request messages that are not visible in their follow graph. This helps clients observe the game, even if the user isn't close to one of the players in the follow graph.
 
 ```javascript
