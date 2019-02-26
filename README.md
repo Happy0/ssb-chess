@@ -47,7 +47,8 @@ Type `chess_invite`
 ### Fields
 * Inviting - the ID of the player being invited.
 * myColor - the colour of the inviting player (white or black.)
-* branch [optional] - As a convenience to clients, a client can optionally provide a list of the latest name / picture / description messages for the 2 players. This is so that ssb-ooo can pull these messages if one of the players is outside one of the other's follow graph. The ssb-ooo-about provided convenience functions for grabbing these.
+* root [optional] - the ID of the game this is a rematch offer from, if this is a rematch invite.
+* branch [optional] - As a convenience to clients, a client can optionally provide a list of the latest name / picture / description messages for the 2 players. This is so that ssb-ooo can pull these messages if one of the players is outside one of the other's follow graph. The ssb-ooo-about module provided convenience functions for grabbing these. This may also contain the ID of the game that this was a rematch from.
 
 ```javascript
 {

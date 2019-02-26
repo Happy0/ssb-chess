@@ -14,6 +14,8 @@ const UserGamesUpdateWatcher = require('./userGameUpdatesWatcher');
 
 const settingsCtrl = require('./settings')();
 
+const BacklinkUtils = require('../utils/backlinks_obs');
+
 /**
  * The main controller which can be used to access the functional area specific controllers.
  * 
@@ -22,13 +24,15 @@ const settingsCtrl = require('./settings')();
  */
 module.exports = (sbot, myIdent) => {
 
-  const gameSSBDao = GameSSBDao(sbot, myIdent);
+  const backlinkUtils = BacklinkUtils();
+  const socialCtrl = SocialCtrl(sbot, myIdent);
+
+  const gameSSBDao = GameSSBDao(sbot, myIdent, backlinkUtils, socialCtrl);
   const gameChallenger = GameChallenger(sbot, myIdent);
   const gameDb = GameDb(sbot);
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
-  const socialCtrl = SocialCtrl(sbot, myIdent);
   const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
 
   const movesFinderCtrl = MovesFinder();

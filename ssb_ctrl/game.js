@@ -1,12 +1,11 @@
 const computed = require('mutant/computed');
 
-const SocialCtrl = require('./social');
 const MutantUtils = require('./mutant_utils')();
 const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 
-const getFilteredBackLinks = require('./backlinks_obs')();
+const MutantArray = require('mutant/array');
 
-module.exports = (sbot, myIdent) => {
+module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
   const socialCtrl = SocialCtrl(sbot);
 
   function getPlayers(gameRootMessage) {
@@ -131,42 +130,42 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getSituationObservable(gameRootMessage) {
-    const gameMessages = getFilteredBackLinks(gameRootMessage, {
+    const gameMessages = backlinkUtils.getFilteredBackLinks(gameRootMessage, {
       filter: isSituationalChessMessage,
     });
 
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
-    return computed([players, gameMessages.sync, gameMessages],
-      (p, synced, messages) => {
+    const rematchState = getRematchState(gameMessages);
+
+    return computed([players, gameMessages.sync, gameMessages, rematchState],
+      (p, synced, messages, currentRematchState) => {
         if (!p || !synced) return null;
 
-        // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
-        // to 'move messages';
-        let msgs = filterByPlayerMoves(p, messages);
-        if (!msgs) msgs = [];
+        let moveMessages = filterByPlayerMoves(p, messages);
+        if (!moveMessages) moveMessages = [];
         if (!messages) messages = [];
 
         // Sort in ascending ply so that we get a list of moves linearly
-        msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
+        moveMessages = moveMessages.sort((a, b) => a.value.content.ply - b.value.content.ply);
 
         const latestUpdate = messages.reduce(msgWithBiggestTimestamp, null);
 
         const startFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-        const pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
-        const fenHistory = msgs.map(msg => msg.value.content.fen);
+        const pgnMoves = moveMessages.map(msg => msg.value.content.pgnMove);
+        const fenHistory = moveMessages.map(msg => msg.value.content.fen);
         fenHistory.unshift(startFen);
 
         const status = findGameStatus(p, messages);
 
-        const origDests = msgs.map(msg => ({
+        const origDests = moveMessages.map(msg => ({
           orig: msg.value.content.orig,
           dest: msg.value.content.dest,
         }));
 
-        const isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
-        const isCheckmate = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('#') !== -1 : false;
+        const isCheck = moveMessages.length > 0 ? moveMessages[moveMessages.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
+        const isCheckmate = moveMessages.length > 0 ? moveMessages[moveMessages.length - 1].value.content.pgnMove.indexOf('#') !== -1 : false;
 
         return {
           gameId: gameRootMessage,
@@ -175,13 +174,14 @@ module.exports = (sbot, myIdent) => {
           ply: pgnMoves.length,
           origDests,
           check: isCheck || isCheckmate,
-          fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
+          fen: moveMessages.length > 0 ? moveMessages[moveMessages.length - 1].value.content.fen : startFen,
           players: p,
           toMove: getPlayerToMove(p, pgnMoves.length),
           status,
           lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
           lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
           latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
+          rematchState: currentRematchState || [],
           isCheckOnMoveNumber(moveNumber) {
             const arrIdx = moveNumber - 1;
             return this.pgnMoves[arrIdx] != null && (this.pgnMoves[arrIdx].indexOf('+') !== -1 || this.pgnMoves[arrIdx].indexOf('#') !== -1);
@@ -216,6 +216,32 @@ module.exports = (sbot, myIdent) => {
           },
         };
       });
+  }
+
+  function getRematchState(gameMessagesObservable) {
+    return computed([gameMessagesObservable], (gameMessages) => {
+
+      if (!gameMessages) return [];
+
+      const rematchInvites = gameMessages.find(msg => msg.value.content.type === "game_invite" && msg.value.content.root !== null);
+
+      const gameStates = rematchInvites.map(msg => {
+
+        var situation = getSituationSummaryObservable(msg.id);
+
+        if (!situation) return [];
+
+        return computed([situation], gameState => {
+          return {
+            gameState,
+            isMyInvite: msg.value.author === myIdent
+          }
+        })
+
+      });
+
+      return MutantArray(gameStates);
+    });
   }
 
   function msgWithBiggestTimestamp(msg1, msg2) {

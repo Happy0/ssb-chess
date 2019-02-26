@@ -31,5 +31,7 @@ module.exports = () => {
     return cachedBacklinksFn(id, opts);
   }
 
-  return getCachedFilteredBacklinks;
+  return {
+    getFilteredBackLinks: getCachedFilteredBacklinks
+  }
 };
