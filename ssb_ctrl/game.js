@@ -6,7 +6,6 @@ const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 const MutantArray = require('mutant/array');
 
 module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
-  const socialCtrl = SocialCtrl(sbot);
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
@@ -20,7 +19,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
           const authorColour = result.content.myColor === 'white' ? result.content.myColor : 'black';
           const players = {};
 
-          Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName))
+          Promise.all([authorId, invited].map(socialCtrl.getDisplayName))
             .then((names) => {
               players[authorId] = {};
               players[authorId].colour = authorColour;
@@ -223,7 +222,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
       if (!gameMessages) return [];
 
-      const rematchInvites = gameMessages.find(msg => msg.value.content.type === "game_invite" && msg.value.content.root !== null);
+      const rematchInvites = gameMessages.filter(msg => msg.value.content.type === "game_invite" && msg.value.content.root !== null);
 
       const gameStates = rematchInvites.map(msg => {
 
