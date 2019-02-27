@@ -129,6 +129,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
   }
 
   function getSituationObservable(gameRootMessage) {
+
     const gameMessages = backlinkUtils.getFilteredBackLinks(gameRootMessage, {
       filter: isSituationalChessMessage,
     });
@@ -139,6 +140,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
     return computed([players, gameMessages.sync, gameMessages, rematchState],
       (p, synced, messages, currentRematchState) => {
+        
         if (!p || !synced) return null;
 
         let moveMessages = filterByPlayerMoves(p, messages);
@@ -180,7 +182,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
           lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
           lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
           latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
-          rematchState: currentRematchState || [],
+          rematches: currentRematchState || [],
           isCheckOnMoveNumber(moveNumber) {
             const arrIdx = moveNumber - 1;
             return this.pgnMoves[arrIdx] != null && (this.pgnMoves[arrIdx].indexOf('+') !== -1 || this.pgnMoves[arrIdx].indexOf('#') !== -1);
@@ -222,17 +224,20 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
       if (!gameMessages) return [];
 
-      const rematchInvites = gameMessages.filter(msg => msg.value.content.type === "game_invite" && msg.value.content.root !== null);
+      const rematchInvites = gameMessages.filter(msg => msg.value.content.type === "chess_invite" && msg.value.content.root !== null);
 
       const gameStates = rematchInvites.map(msg => {
 
-        var situation = getSituationSummaryObservable(msg.id);
-
-        if (!situation) return [];
+        var situation = getSituationSummaryObservable(msg.key);
 
         return computed([situation], gameState => {
+          if (!gameState) return {
+            status: "pending"
+          };
+
           return {
-            gameState,
+            gameId: msg.key,
+            status: gameState.status.status === "invited" ? "invited" : "accepted",
             isMyInvite: msg.value.author === myIdent
           }
         })

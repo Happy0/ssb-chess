@@ -1,0 +1,21 @@
+[
+    {
+        "key":"%UumjgODKn+5baQW7TMZSGSF8ExkISY8ERyWbmWix1xY=.sha256",
+        "value":{
+           "previous":"%Y6AGydXjmpj1/PDv6T9jJQKMa2YAwAGmgBMy5qQfMCs=.sha256",
+           "sequence":9941,
+           "author":"@HEqy940T6uB+T+d9Jaa58aNfRzLx9eRWqkZljBmnkmk=.ed25519",
+           "timestamp":1550602663140,
+           "hash":"sha256",
+           "content":{
+              "type":"chess_invite_accept",
+              "root":"%7Ko0nl87fHFxx3WmWLb2eNwGteSwdqUPYa5ybjtjR5I=.sha256",
+              "branch":"%/oFShHa0Q9FAldmIJB4TacaE4ojhfujLAu/vH9q0jxk=.sha256"
+           },
+           "signature":"0bUC1hptT/KLnmMA6CPg7BjYLo/c4vpK9YaCbP4JibzbYNAaOenX0HDtb7EPARCeyA9qxwQOzWJ98RuhWwJWAg==.sig.ed25519"
+        },
+        "timestamp":1550602669125,
+        "dest":"%/oFShHa0Q9FAldmIJB4TacaE4ojhfujLAu/vH9q0jxk=.sha256",
+        "rts":1550602663140
+     }
+]
