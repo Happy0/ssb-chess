@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "description": "A library for building UI chess clients for the ssb-chess protocol for scuttlebutt ( https://www.scuttlebutt.nz )",
   "main": "inject.js",
   "dependencies": {
