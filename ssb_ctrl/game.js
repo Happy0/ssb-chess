@@ -115,6 +115,9 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
         var situation = getSituationSummaryObservable(msg.key);
 
         return computed([situation], gameState => {
+
+          // This observable value is initially pending until we've fetched the necessary data to know whether the invite
+          // has been accepted or not
           if (!gameState) return {
             status: "pending"
           };
