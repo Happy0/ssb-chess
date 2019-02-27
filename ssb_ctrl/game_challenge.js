@@ -5,7 +5,7 @@ module.exports = (sbot, myIdent) => {
   const about = About(sbot, {});
   const getLatestAboutMsgIds = Promise.promisify(about.async.getLatestMsgIds);
 
-  function inviteToPlay(invitingPubKey, asWhite) {
+  function inviteToPlay(invitingPubKey, asWhite, rematchFromGameId) {
     return new Promise((resolve, reject) => {
       // Give some messages that give both player's latest 'about' messages
       // so that their name (about about) can be displayed to spectators who
@@ -23,6 +23,10 @@ module.exports = (sbot, myIdent) => {
           inviting: invitingPubKey,
           myColor: asWhite ? 'white' : 'black',
         };
+
+        if (rematchFromGameId) {
+          post.root = rematchFromGameId;
+        }
 
         if (aboutInfo && aboutInfo.length != 0) {
           post.branch = aboutInfo;
