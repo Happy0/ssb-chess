@@ -94,7 +94,13 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
     const rematchState = getRematchState(gameMessages);
 
-    return computed([gameRootMessage, myIdent, players, gameMessages.sync, gameMessages, rematchState], makeSituation);
+    return computed([gameRootMessage, myIdent, players, gameMessages, gameMessages.sync, rematchState], (
+      gameId, ident, p, gameMessagesBacklinks, isSynced, rematchInfo
+
+    ) => {
+      if (!isSynced || !p) return null;
+      return makeSituation(gameId, ident, p, gameMessagesBacklinks, rematchInfo)
+    });
   }
 
   function getRematchState(gameMessagesObservable) {
