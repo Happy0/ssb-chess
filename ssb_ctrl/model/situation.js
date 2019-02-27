@@ -42,7 +42,7 @@ module.exports = function makeSituation(gameId, myIdent, players, gameMessagesSy
       status,
       lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
       lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
-      latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
+      latestUpdateMsg: latestUpdate ? latestUpdate.key : gameId,
       rematches: currentRematchState || [],
       isCheckOnMoveNumber(moveNumber) {
         const arrIdx = moveNumber - 1;
