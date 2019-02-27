@@ -1,13 +1,12 @@
 const computed = require('mutant/computed');
 
-const SocialCtrl = require('./social');
 const MutantUtils = require('./mutant_utils')();
-const ChessMsgUtils = require('../ssb_model/chess_msg_utils')();
 
-const getFilteredBackLinks = require('./backlinks_obs')();
+const MutantArray = require('mutant/array');
 
-module.exports = (sbot, myIdent) => {
-  const socialCtrl = SocialCtrl(sbot);
+const makeSituation = require('./model/situation');
+
+module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
@@ -21,7 +20,7 @@ module.exports = (sbot, myIdent) => {
           const authorColour = result.content.myColor === 'white' ? result.content.myColor : 'black';
           const players = {};
 
-          Promise.all([authorId, invited].map(socialCtrl.getPlayerDisplayName))
+          Promise.all([authorId, invited].map(socialCtrl.getDisplayName))
             .then((names) => {
               players[authorId] = {};
               players[authorId].colour = authorColour;
@@ -64,51 +63,6 @@ module.exports = (sbot, myIdent) => {
     return MutantUtils.mutantToPromise(getSituationSummaryObservable(gameRootMessage));
   }
 
-  function findGameStatus(players, gameMessages) {
-    const gameFinishedMsg = gameMessages.find(msg => msg.value.content.type === 'chess_game_end');
-
-    const inviteAcceptMsg = gameMessages.find(msg => msg.value.content.type === 'chess_invite_accept');
-
-    let gameStatus = 'invited';
-    if (gameFinishedMsg) {
-      gameStatus = gameFinishedMsg.value.content.status;
-    } else if (inviteAcceptMsg) {
-      gameStatus = 'started';
-    }
-
-
-    const status = {
-      status: gameStatus,
-      winner: gameFinishedMsg != null
-        ? ChessMsgUtils.winnerFromEndMsgPlayers(
-          Object.keys(players),
-          gameFinishedMsg,
-        ) : null,
-    };
-
-    return status;
-  }
-
-  function filterByPlayerMoves(players, messages) {
-    return messages.filter(msg => ({}).hasOwnProperty.call(players, msg.value.author)
-      && (msg.value.content.type === 'chess_move'
-        || (msg.value.content.type === 'chess_game_end' && msg.value.content.orig != null)));
-  }
-
-  function getPlayerToMove(players, numMoves) {
-    const colourToMove = numMoves % 2 === 0 ? 'white' : 'black';
-
-    const playerIds = Object.keys(players);
-
-    for (let i = 0; i < playerIds.length; i += 1) {
-      if (players[playerIds[i]].colour === colourToMove) {
-        return playerIds[i];
-      }
-    }
-
-    throw new Error('Unable to find player ID', colourToMove);
-  }
-
   /**
   * Returns 'true' if the given scuttlebutt message is something that changes
   * the chess board situation. For example, a move or invite. Returns false
@@ -131,102 +85,54 @@ module.exports = (sbot, myIdent) => {
   }
 
   function getSituationObservable(gameRootMessage) {
-    const gameMessages = getFilteredBackLinks(gameRootMessage, {
+
+    const gameMessages = backlinkUtils.getFilteredBackLinks(gameRootMessage, {
       filter: isSituationalChessMessage,
     });
 
     const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
 
-    return computed([players, gameMessages.sync, gameMessages],
-      (p, synced, messages) => {
-        if (!p || !synced) return null;
+    const rematchState = getRematchState(gameMessages);
 
-        // TODO: use an IDE that makes it easy to rename variables and rename 'msgs'
-        // to 'move messages';
-        let msgs = filterByPlayerMoves(p, messages);
-        if (!msgs) msgs = [];
-        if (!messages) messages = [];
+    return computed([gameRootMessage, myIdent, players, gameMessages, gameMessages.sync, rematchState], (
+      gameId, ident, p, gameMessagesBacklinks, isSynced, rematchInfo
 
-        // Sort in ascending ply so that we get a list of moves linearly
-        msgs = msgs.sort((a, b) => a.value.content.ply - b.value.content.ply);
-
-        const latestUpdate = messages.reduce(msgWithBiggestTimestamp, null);
-
-        const startFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
-        const pgnMoves = msgs.map(msg => msg.value.content.pgnMove);
-        const fenHistory = msgs.map(msg => msg.value.content.fen);
-        fenHistory.unshift(startFen);
-
-        const status = findGameStatus(p, messages);
-
-        const origDests = msgs.map(msg => ({
-          orig: msg.value.content.orig,
-          dest: msg.value.content.dest,
-        }));
-
-        const isCheck = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('+') !== -1 : false;
-        const isCheckmate = msgs.length > 0 ? msgs[msgs.length - 1].value.content.pgnMove.indexOf('#') !== -1 : false;
-
-        return {
-          gameId: gameRootMessage,
-          pgnMoves,
-          fenHistory,
-          ply: pgnMoves.length,
-          origDests,
-          check: isCheck || isCheckmate,
-          fen: msgs.length > 0 ? msgs[msgs.length - 1].value.content.fen : startFen,
-          players: p,
-          toMove: getPlayerToMove(p, pgnMoves.length),
-          status,
-          lastMove: origDests.length > 0 ? origDests[origDests.length - 1] : null,
-          lastUpdateTime: latestUpdate ? latestUpdate.value.timestamp : 0,
-          latestUpdateMsg: latestUpdate ? latestUpdate.key : gameRootMessage,
-          isCheckOnMoveNumber(moveNumber) {
-            const arrIdx = moveNumber - 1;
-            return this.pgnMoves[arrIdx] != null && (this.pgnMoves[arrIdx].indexOf('+') !== -1 || this.pgnMoves[arrIdx].indexOf('#') !== -1);
-          },
-          getInitialFen() {
-            return startFen;
-          },
-          getWhitePlayer() {
-            return Object.values(this.players).find(player => player.colour === 'white');
-          },
-          getBlackPlayer() {
-            return Object.values(this.players).find(player => player.colour === 'black');
-          },
-          hasPlayer(id) {
-            return this.players[id] != null;
-          },
-          currentPlayerIsInGame() {
-            return this.players[myIdent] != null;
-          },
-          coloursToPlayer() {
-            return mapColoursToPlayer(this.players);
-          },
-          getOtherPlayer(id) {
-            let otherPlayer;
-            Object.keys(this.players).forEach((k) => {
-              if (k !== id) {
-                otherPlayer = this.players[k];
-              }
-            });
-
-            return otherPlayer;
-          },
-        };
-      });
+    ) => {
+      if (!isSynced || !p) return null;
+      return makeSituation(gameId, ident, p, gameMessagesBacklinks, rematchInfo)
+    });
   }
 
-  function msgWithBiggestTimestamp(msg1, msg2) {
-    if (msg1 == null) {
-      return msg2;
-    } if (msg2 == null) {
-      return msg1;
-    } if (msg1.value.timestamp > msg2.value.timestamp) {
-      return msg1;
-    }
-    return msg2;
+  function getRematchState(gameMessagesObservable) {
+    return computed([gameMessagesObservable], (gameMessages) => {
+
+      if (!gameMessages) return [];
+
+      const rematchInvites = gameMessages.filter(msg => msg.value.content.type === "chess_invite" && msg.value.content.root !== null);
+
+      const gameStates = rematchInvites.map(msg => {
+
+        var situation = getSituationSummaryObservable(msg.key);
+
+        return computed([situation], gameState => {
+
+          // This observable value is initially pending until we've fetched the necessary data to know whether the invite
+          // has been accepted or not
+          if (!gameState) return {
+            status: "pending"
+          };
+
+          return {
+            gameId: msg.key,
+            status: gameState.status.status === "invited" ? "invited" : "accepted",
+            isMyInvite: msg.value.author === myIdent
+          }
+        })
+
+      });
+
+      return MutantArray(gameStates);
+    });
   }
 
   function getSituationSummaryObservable(gameRootMessage) {
@@ -344,14 +250,6 @@ module.exports = (sbot, myIdent) => {
         }
       });
     });
-  }
-
-  function mapColoursToPlayer(json) {
-    const ret = {};
-    Object.keys(json).forEach((key) => {
-      ret[json[key].colour] = json[key];
-    });
-    return ret;
   }
 
   return {
