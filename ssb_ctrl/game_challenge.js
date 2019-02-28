@@ -26,6 +26,9 @@ module.exports = (sbot, myIdent) => {
 
         if (rematchFromGameId) {
           post.root = rematchFromGameId;
+
+          // TODO: Make this branch off the previous game's 'chess_game_end'
+          // message to support ssb-ooo. Not important for now.
         }
 
         if (aboutInfo && aboutInfo.length != 0) {

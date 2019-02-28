@@ -12,8 +12,8 @@ const Value = require('mutant/value');
  */
 module.exports = (myIdent, gameChallenger, gameDb, myGameUpdates) => {
 
-    function inviteToPlay(playerKey, asWhite) {
-        return gameChallenger.inviteToPlay(playerKey, asWhite);
+    function inviteToPlay(playerKey, asWhite, rematchFromGameId) {
+        return gameChallenger.inviteToPlay(playerKey, asWhite, rematchFromGameId);
     }
     
     function acceptChallenge(rootGameMessage) {
