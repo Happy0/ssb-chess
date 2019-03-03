@@ -1,23 +1,17 @@
 const computed = require('mutant/computed');
-
 const MutantUtils = require('./mutant_utils')();
-
 const MutantArray = require('mutant/array');
-
 const makeSituation = require('./model/situation');
+const Value = require('mutant/value');
 
 module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
-      sbot.get(gameRootMessage, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          const authorId = result.author;
-          const invited = result.content.inviting;
+          const authorId = gameRootMessage.author;
+          const invited = gameRootMessage.content.inviting;
 
-          const authorColour = result.content.myColor === 'white' ? result.content.myColor : 'black';
+          const authorColour = gameRootMessage.content.myColor === 'white' ? gameRootMessage.content.myColor : 'black';
           const players = {};
 
           Promise.all([authorId, invited].map(socialCtrl.getDisplayName))
@@ -34,9 +28,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
               resolve(players);
             });
-        }
       });
-    });
   }
 
   function situationToSummary(gameSituation) {
@@ -59,8 +51,8 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
    * Return just the FEN, players, and who's move it is.
    * This might be used for a miniboard view of a game, for example.
    */
-  function getSmallGameSummary(gameRootMessage) {
-    return MutantUtils.mutantToPromise(getSituationSummaryObservable(gameRootMessage));
+  function getSmallGameSummary(gameId) {
+    return MutantUtils.mutantToPromise(getSituationSummaryObservable(gameId));
   }
 
   /**
@@ -84,31 +76,51 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     return isSituationMsg !== undefined;
   }
 
-  function getSituationObservable(gameRootMessage) {
+  function getSituationObservable(gameId) {
 
-    const gameMessages = backlinkUtils.getFilteredBackLinks(gameRootMessage, {
+    const gameMessages = backlinkUtils.getFilteredBackLinks(gameId, {
       filter: isSituationalChessMessage,
     });
 
-    const players = MutantUtils.promiseToMutant(getPlayers(gameRootMessage));
+    const msgRoot = getRootMessage(gameId);
 
-    const rematchState = getRematchState(gameMessages);
+    const players = computed([msgRoot], (msg) => {
+        if (!msg) return null;
+        else return MutantUtils.promiseToMutant(getPlayers(msg))
+      }
+    );
 
-    return computed([gameRootMessage, myIdent, players, gameMessages, gameMessages.sync, rematchState], (
-      gameId, ident, p, gameMessagesBacklinks, isSynced, rematchInfo
+    const rematchState = getRematchState(gameId, gameMessages);
+
+    return computed([msgRoot, myIdent, players, gameMessages, gameMessages.sync, rematchState], (
+      rootMessage, ident, p, gameMessagesBacklinks, isSynced, rematchInfo
 
     ) => {
-      if (!isSynced || !p) return null;
-      return makeSituation(gameId, ident, p, gameMessagesBacklinks, rematchInfo)
+      if (!rootMessage || !isSynced || !p) return null;
+      return makeSituation(gameId, rootMessage, ident, p, gameMessagesBacklinks, rematchInfo)
     });
   }
 
-  function getRematchState(gameMessagesObservable) {
+  function getRootMessage(gameId) {
+    var result = Value();
+
+    sbot.get(gameId, (err, msg) => {
+      if (msg) {
+        result.set(msg);
+      } else {
+        throw new Error(err);
+      }
+    });
+
+    return result;
+  }
+
+  function getRematchState(gameId, gameMessagesObservable) {
     return computed([gameMessagesObservable], (gameMessages) => {
 
       if (!gameMessages) return [];
 
-      const rematchInvites = gameMessages.filter(msg => msg.value.content.type === "chess_invite" && msg.value.content.root !== null);
+      const rematchInvites = gameMessages.filter(msg => msg.value.content.type === "chess_invite" && msg.value.content.root === gameId);
 
       const gameStates = rematchInvites.map(msg => {
 
@@ -135,8 +147,8 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     });
   }
 
-  function getSituationSummaryObservable(gameRootMessage) {
-    return computed([getSituationObservable(gameRootMessage)], (situation) => {
+  function getSituationSummaryObservable(gameId) {
+    return computed([getSituationObservable(gameId)], (situation) => {
       if (situation == null) {
         return null;
       }
@@ -144,12 +156,12 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     });
   }
 
-  function getSituation(gameRootMessage) {
-    return MutantUtils.mutantToPromise(getSituationObservable(gameRootMessage));
+  function getSituation(gameId) {
+    return MutantUtils.mutantToPromise(getSituationObservable(gameId));
   }
 
   function makeMove(
-    gameRootMessage,
+    gameId,
     ply,
     originSquare,
     destinationSquare,
@@ -161,7 +173,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     const post = {
       type: 'chess_move',
       ply,
-      root: gameRootMessage,
+      root: gameId,
       orig: originSquare,
       dest: destinationSquare,
       pgnMove,
@@ -193,11 +205,11 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     }
   }
 
-  function resignGame(gameRootMessage, respondsTo) {
+  function resignGame(gameId, respondsTo) {
     const post = {
       type: 'chess_game_end',
       status: 'resigned',
-      root: gameRootMessage,
+      root: gameId,
     };
 
     addPropertyIfNotEmpty(post, 'branch', respondsTo);
@@ -214,7 +226,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
   }
 
   function endGame(
-    gameRootMessage,
+    gameId,
     status,
     winner,
     fen,
@@ -230,7 +242,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
         status,
         ply,
         fen,
-        root: gameRootMessage,
+        root: gameId,
       };
 
       // If game aborted or agreed to draw / claimed draw, some of these
