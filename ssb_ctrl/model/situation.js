@@ -1,6 +1,6 @@
 const ChessMsgUtils = require('../../ssb_model/chess_msg_utils')();
 
-module.exports = function makeSituation(gameId, myIdent, players, gameMessages, currentRematchState) {
+module.exports = function makeSituation(gameId, gameRootMessage, myIdent, players, gameMessages, currentRematchState) {
 
     let moveMessages = filterByPlayerMoves(players, gameMessages);
     if (!moveMessages) moveMessages = [];
@@ -29,6 +29,7 @@ module.exports = function makeSituation(gameId, myIdent, players, gameMessages, 
 
     return {
       gameId,
+      rematchFrom: gameRootMessage.content.root,
       pgnMoves,
       fenHistory,
       ply: pgnMoves.length,
