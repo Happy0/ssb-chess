@@ -85,6 +85,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     const msgRoot = getRootMessage(gameId);
 
     const players = computed([msgRoot], (msg) => {
+        // msg may be null if we don't have the root message yet.
         if (!msg) return null;
         else return MutantUtils.promiseToMutant(getPlayers(msg))
       }
@@ -108,7 +109,13 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
       if (msg) {
         result.set(msg);
       } else {
-        throw new Error(err);
+        console.log(err);
+
+        // It's possible to get the reply to the first invite message before the root
+        // message in rare cases, which can result in an error (because the message)
+        // isn't found - so we just return null and then return null for the whole
+        // observable
+        return null;
       }
     });
 
