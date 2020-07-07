@@ -31,7 +31,7 @@
   "homepage": "https://github.com/Happy0/ssb-chess",
   "license": "GPL-2.0",
   "devDependencies": {
-    "electron": "^2.0.11",
+    "electron": "^9.1.0",
     "eslint": "^5.6.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-airbnb-base": "^13.1.0",
