@@ -1,4 +1,3 @@
-const mutantPullReduce = require('mutant-pull-reduce');
 const computed = require('mutant/computed');
 const GameComparer = require('./gameComparer')();
 const Value = require('mutant/value');
@@ -13,36 +12,50 @@ const Value = require('mutant/value');
  */
 module.exports = (myIdent, gameChallenger, gameDb, myGameUpdates) => {
 
-  function inviteToPlay(playerKey, asWhite, rematchFromGameId) {
-      return gameChallenger.inviteToPlay(playerKey, asWhite, rematchFromGameId);
-  }
-  
-  function acceptChallenge(rootGameMessage) {
-      return gameChallenger.acceptChallenge(rootGameMessage);
-  }
-
-  function pendingChallengesSent() {
-      const pendingChallengesSource = gameDb.pendingChallengesSent(myIdent);
-  
-      return mutantPullReduce(pendingChallengesSource, (state, next) => next, {
-        nextTick: true,
-        sync: true,
-      });
+    function inviteToPlay(playerKey, asWhite, rematchFromGameId) {
+        return gameChallenger.inviteToPlay(playerKey, asWhite, rematchFromGameId);
+    }
+    
+    function acceptChallenge(rootGameMessage) {
+        return gameChallenger.acceptChallenge(rootGameMessage);
     }
 
-  function pendingChallengesReceived() {
-    const challengesReceivedSource = gameDb.pendingChallengesReceived(myIdent);
+    function pendingChallengesSent() {
+        const observable = Value([]);
+    
+        gameDb.pendingChallengesSent(myIdent).then(observable.set);
+    
+        // todo: not necessary to re-query all pending challenges for _ all _ game updates, just invite based ones
+        const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesSent(myIdent)
+          .then(observable.set));
+    
+        return computed([observable], a => a, {
+          comparer: GameComparer.hasSameGames,
+          onUnlisten: unlistenUpdates,
+        });
+      }
+    
+      function pendingChallengesReceived() {
+        const observable = Value([]);
+    
+        gameDb.pendingChallengesReceived(myIdent).then(observable.set);
+    
+        // todo: not necessary to re-query all pending challenges for _ all _ game updates, just invite based ones
+        const unlistenUpdates = myGameUpdates(() => gameDb.pendingChallengesReceived(myIdent)
+          .then(observable.set));
+    
+        return computed(
+          [observable], a => a, {
+            comparer: GameComparer.hasSameGames,
+            onUnlisten: unlistenUpdates,
+          },
+        );
+      }
 
-    return mutantPullReduce(challengesReceivedSource, (state, next) => next, {
-      nextTick: true,
-      sync: true,
-    });
-  }
-
-  return {
-      inviteToPlay,
-      acceptChallenge,
-      pendingChallengesSent,
-      pendingChallengesReceived,
-  }
+    return {
+        inviteToPlay,
+        acceptChallenge,
+        pendingChallengesSent,
+        pendingChallengesReceived,
+    }
 }

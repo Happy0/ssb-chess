@@ -1,41 +1,62 @@
-const { pull } = require('pull-stream');
-
-module.exports = (chessIndex) => {
-
+module.exports = (sbot) => {
   function pendingChallengesSent(playerId) {
-    return chessIndex.pendingChallengesSent(playerId);
+    return new Promise((resolve, reject) => {
+      sbot.ssbChessIndex.pendingChallengesSent(playerId, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
   }
 
   function pendingChallengesReceived(playerId) {
-    return chessIndex.pendingChallengesReceived(playerId);
+    return new Promise((resolve, reject) => {
+      sbot.ssbChessIndex.pendingChallengesReceived(playerId, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
   }
 
   function getGamesAgreedToPlayIds(playerId) {
     return new Promise((resolve, reject) => {
-      pull(
-        chessIndex.getGamesInProgressIds(playerId),
-        pull.take(1),
-        pull.drain(result => resolve(result) )
-      );
+      sbot.ssbChessIndex.getGamesAgreedToPlayIds(playerId, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
     });
   }
 
   function getObservableGames(playerId) {
     return new Promise((resolve, reject) => {
-      pull(
-        chessIndex.getObservableGamesIds(playerId),
-        pull.take(1),
-        pull.drain(result => resolve(result) )
-      );
+      sbot.ssbChessIndex.getObservableGames(playerId, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
     });
   }
 
   function getGamesFinished(playerId) {
-    return chessIndex.getGamesFinishedIds(playerId);
+    return sbot.ssbChessIndex.getGamesFinished(playerId);
   }
 
   function getAllGameIds() {
-    return chessIndex,getAllGamesInDb();
+    if (sbot.ssbChessIndex.getAllGamesInDb) {
+      return sbot.ssbChessIndex.getAllGamesInDb();
+    } else {
+      throw new Error("Please install the latest version of ssb-chess-db with the 'getAllGames' function.");
+    }
   }
 
   return {

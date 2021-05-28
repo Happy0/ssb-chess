@@ -1,6 +1,6 @@
 const GameChallenger = require('../ssb_ctrl/game_challenge');
 const GameSSBDao = require('../ssb_ctrl/game');
-const ChessIndex = require('ssb-chess-index');
+
 const GameDb = require('../db/game_db');
 const SocialCtrl = require('./social');
 const PlayerCtrl = require('./player');
@@ -24,14 +24,12 @@ const BacklinkUtils = require('../utils/backlinks_obs');
  */
 module.exports = (sbot, myIdent) => {
 
-  const chessIndex = ChessIndex(sbot);
-
   const backlinkUtils = BacklinkUtils();
-  const socialCtrl = SocialCtrl(sbot, myIdent, chessIndex);
+  const socialCtrl = SocialCtrl(sbot, myIdent);
 
   const gameSSBDao = GameSSBDao(sbot, myIdent, backlinkUtils, socialCtrl);
   const gameChallenger = GameChallenger(sbot, myIdent);
-  const gameDb = GameDb(chessIndex);
+  const gameDb = GameDb(sbot);
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
@@ -39,7 +37,7 @@ module.exports = (sbot, myIdent) => {
 
   const movesFinderCtrl = MovesFinder();
 
-  const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot, chessIndex);
+  const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot);
 
   const myGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
 
@@ -56,6 +54,26 @@ module.exports = (sbot, myIdent) => {
   function getMyIdent() {
     return myIdent;
   }
+
+  function setUpGamesIndex() {
+    // In older versions of ssb-chess-db, the plugin was given 'ssbChessIndex'
+    // as a name. This caused issues when loading the plugin into a standalone
+    // scuttlebot ( https://github.com/Happy0/ssb-chess-db/issues/1 )
+    // We deal with this old name for backwards compatibility.
+    if (sbot['chess-db']) {
+      sbot.ssbChessIndex = sbot['chess-db'];
+    }
+    else if (sbot.chessDb) {
+      // (13/12/2018) lol... ssbc/secret-stack was recently changed to transform
+      // plugins with -'s in them to camcel case, so here we are again...
+      // (https://github.com/ssbc/secret-stack/pull/29)
+      sbot.ssbChessIndex = sbot.chessDb;
+    } else if (!sbot.ssbChessIndex) {
+      throw new Error('Missing plugin ssb-chess-db');
+    }
+  }
+
+  setUpGamesIndex();
 
   return {
     /**
