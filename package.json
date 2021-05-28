@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "3.1.9",
+  "version": "3.2.0",
   "description": "A library for building UI chess clients for the ssb-chess protocol for scuttlebutt ( https://www.scuttlebutt.nz )",
   "main": "inject.js",
   "dependencies": {
@@ -16,7 +16,10 @@
     "pull-cat": "^1.1.11",
     "pull-high-watermark": "^0.2.0",
     "pull-many": "^1.0.8",
+    "pull-resolve": "^1.2.0",
     "pull-stream": "3.6.0",
+    "ssb-chess-index": "^1.0.2",
+    "ssb-client": "^4.9.0",
     "ssb-ooo-about": "^1.0.0",
     "tiny-worker": "2.1.1"
   },
@@ -31,7 +34,6 @@
   "homepage": "https://github.com/Happy0/ssb-chess",
   "license": "GPL-2.0",
   "devDependencies": {
-    "electron": "^2.0.11",
     "eslint": "^5.6.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-airbnb-base": "^13.1.0",

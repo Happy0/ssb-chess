@@ -6,7 +6,7 @@ const many = require('pull-many');
 const MutantArray = require('mutant/array');
 const MutantPullReduce = require('mutant-pull-reduce');
 
-module.exports = (sbot) => {
+module.exports = (sbot, ssbChessIndex) => {
   const chessTypeMessages = [
     'chess_invite',
     'chess_move',
@@ -114,7 +114,7 @@ module.exports = (sbot) => {
           if (gameId == null) {
             cb(null, false);
           } else {
-            sbot.ssbChessIndex.gameHasPlayer(gameId, playerId, (err, result) => {
+            ssbChessIndex.gameHasPlayer(gameId, playerId, (err, result) => {
               if (playerShouldBeInGame) {
                 cb(err, !result);
               } else {
