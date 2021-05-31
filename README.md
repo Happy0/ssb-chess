@@ -4,9 +4,6 @@ A library for building chess clients for the scuttlebutt platform. This library 
 
 For an example of a scuttlebutt chess client built using this library see [ssb-chess-mithril](https://www.github.com/happy0/ssb-chess-mithril).
 
-# Required scuttlebot plugins
-
-* Requires the [ssb-chess-db](https://www.github.com/happy0/ssb-chess-db) which is used to index the state of all the known games.
 
 # Protocol
 
@@ -132,7 +129,7 @@ Type `chess_game_end`
 
 ```javascript
 {
- "type": "ssb_chess_game_end",
+ "type": "chess_game_end",
   "status": "mate",
   "ply": 20,
   "fen": "rnb2rk1/ppp2ppp/3p4/4p1qK/2P1n3/8/P2P1PPP/RNB2BNR w - - 2 11",
@@ -145,7 +142,7 @@ Type `chess_game_end`
 ```
 
 ## Chess Chat
-Type `ssb_chess_chat`
+Type `chess_chat`
 
 *Note*: If this is a private message between the two players in the game, the content of the message is encrypted using [`sbot.private.publish`](https://ssbc.github.io/docs/scuttlebot/howto-publish-encrypted-messages.html) with an array of the IDs of the players of the game as the `recipients` parameter.
 
@@ -165,3 +162,11 @@ If it is not a private message, it is a public message in the observer chat betw
 # Chess logic library
 
 * [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
+
+
+# Required scuttlebutt plugins
+
+This library expects to be able to call the following functions on the `sbot` plugin passed in: `publish`, `messagesByType`, `links` and `backlinks.read`.
+
+I believe `publish` and `messagesByType` and `links` are available by standard in `ssb-server` (https://www.github.com/ssbc/ssb-server) while `backlinks` is a custom ssb-server plugin. This plugin is used by the `ssb-server` created used by patchwork and other clients.
+
