@@ -164,7 +164,7 @@ If it is not a private message, it is a public message in the observer chat betw
 * [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
 
 
-# Required scuttlebutt plugins
+# Required ssb-server plugins
 
 This library expects to be able to call the following functions on the `sbot` plugin passed in: `publish`, `messagesByType`, `links` and `backlinks.read`.
 
