@@ -2,12 +2,15 @@ const ChessMsgUtils = require('../../ssb_model/chess_msg_utils')();
 
 module.exports = function makeSituation(gameId, gameRootMessage, myIdent, players, gameMessages, currentRematchState) {
 
+    const whitePlayer = Object.values(players).find(player => player.colour === 'white');
+    const blackPlayer = Object.values(players).find(player => player.colour === 'black');
+
     let moveMessages = filterByPlayerMoves(players, gameMessages);
     if (!moveMessages) moveMessages = [];
     if (!gameMessages) gameMessages = [];
 
-    // Sort in ascending ply so that we get a list of moves linearly
-    moveMessages = moveMessages.sort((a, b) => a.value.content.ply - b.value.content.ply);
+    // Remove duplicate moves
+    moveMessages = removeDuplicateMoves(moveMessages.sort(sortMoveOrder));
 
     const latestUpdate = gameMessages.reduce(msgWithBiggestTimestamp, null);
 
@@ -51,10 +54,10 @@ module.exports = function makeSituation(gameId, gameRootMessage, myIdent, player
         return startFen;
       },
       getWhitePlayer() {
-        return Object.values(this.players).find(player => player.colour === 'white');
+        return whitePlayer;
       },
       getBlackPlayer() {
-        return Object.values(this.players).find(player => player.colour === 'black');
+        return blackPlayer;
       },
       hasPlayer(id) {
         return this.players[id] != null;
@@ -76,6 +79,29 @@ module.exports = function makeSituation(gameId, gameRootMessage, myIdent, player
         return otherPlayer;
       },
     };
+  }
+
+  /**
+   * Compares first on move ply and then on sequence number (in case client moved twice.)
+   */
+  function sortMoveOrder(moveMessage1, moveMessage2) {
+    if (moveMessage1.value.content.ply != moveMessage2.value.content.ply) {
+      return moveMessage1.value.content.ply - moveMessage2.value.content.ply
+    } else {
+      return moveMessage1.value.sequence - moveMessage2.value.sequence;
+    }
+  }
+
+  /**
+   * If a client is buggy a player a player can accidentally move twice consecutively. 
+   * This function removes the later move
+   * 
+   * @param {*} moves a list of moves sorted by ply in ascending order.
+   */
+  function removeDuplicateMoves(moves) {
+    return moves.filter((move, pos, arr) => {
+      return pos == 0 || (move.value.content.ply != arr[pos -1].value.content.ply)
+    });
   }
 
   function mapColoursToPlayer(json) {
