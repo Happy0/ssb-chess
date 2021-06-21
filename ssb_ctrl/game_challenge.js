@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 
 module.exports = (dataAccess, myIdent) => {
-  const getLatestAboutMsgIds = Promise.promisify(dataAccess.getLatestAboutMsgIds);
+  const getLatestAboutMsgIds = Promise.promisify(dataAccess.getLatestAboutMsgIds.bind(dataAccess));
 
   function inviteToPlay(invitingPubKey, asWhite, rematchFromGameId) {
     return new Promise((resolve, reject) => {
