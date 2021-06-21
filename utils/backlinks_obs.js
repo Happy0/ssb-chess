@@ -1,37 +1,61 @@
-const nest = require('depnest');
-const patchCore = require('patchcore');
-const combine = require('depject');
+const { pull } = require("pull-stream");
+const Scan = require('pull-scan');
+const Value = require('mutant/value')
+const Abortable = require('pull-abortable');
+const computed = require('mutant/computed')
 
 /**
  * Mostly copied and pasted from backlinks.obs.for in the patchcore library
  * but with an optional parameter to filter messages
  */
-module.exports = () => {
-  const backlinksObs = {
-    needs: nest(
-      {
-        'backlinks.obs.filter': 'first',
-        'backlinks.obs.cache': 'first',
-      },
-    ),
-  };
+module.exports = (dataAccess) => {
+  
+  // TODO: re-add caching
+  function getFilteredBackLinks(id, opts) {
+    const obs = Value([]);
+    const sync = Value(false);
 
-  const api = combine([backlinksObs, patchCore]);
+    const abortable = Abortable()
+    const filter = opts.filter;
 
-  const Cache = api.backlinks.obs.cache[0];
+    const state = {
+      result: [],
+      live: false
+    }
 
-  // Cache the backlinks observables for 1 minute once there are no subscribers
-  // to the observable
-  const cache = Cache(60000);
+    const source = pull(
+      dataAccess.allGameMessages(id, true),
+      abortable,
+      pull.filter(msg => msg.sync || filter(msg)),
+      Scan( (acc, msg) => {
+       // console.log(msg);
+        if (msg.sync) {
+          acc.live = true;
+        } else {
+          acc.result.push(msg)
+        }
 
-  const cachedBacklinksFn = api.backlinks.obs.filter[0];
+        return acc;
+      }, state)
+    );
 
-  function getCachedFilteredBacklinks(id, opts) {
-    opts.cache = cache;
-    return cachedBacklinksFn(id, opts);
+    pull(source, pull.drain(state => {
+        obs.set(state.result)
+        sync.set(state.live)
+      })
+    );
+
+    const result = computed([obs], a => a, {
+      onUnlisten: abortable.abort,
+    })
+
+    result.sync = sync;
+
+    return result;
   }
 
+
   return {
-    getFilteredBackLinks: getCachedFilteredBacklinks
+    getFilteredBackLinks: getFilteredBackLinks
   }
 };

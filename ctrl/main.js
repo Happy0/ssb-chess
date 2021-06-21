@@ -19,27 +19,27 @@ const BacklinkUtils = require('../utils/backlinks_obs');
 /**
  * The main controller which can be used to access the functional area specific controllers.
  * 
- * @param {*} sbot the scuttlebot instance
+ * @param {*} dataAccess the ssb-chess-data-access instance
  * @param {*} myIdent the user's public key
  */
-module.exports = (sbot, myIdent) => {
+module.exports = (dataAccess, myIdent) => {
 
-  const chessIndex = ChessIndex(sbot);
+  const chessIndex = ChessIndex(dataAccess);
 
-  const backlinkUtils = BacklinkUtils();
-  const socialCtrl = SocialCtrl(sbot, myIdent, chessIndex);
+  const backlinkUtils = BacklinkUtils(dataAccess);
+  const socialCtrl = SocialCtrl(dataAccess, myIdent, chessIndex);
 
-  const gameSSBDao = GameSSBDao(sbot, myIdent, backlinkUtils, socialCtrl);
-  const gameChallenger = GameChallenger(sbot, myIdent);
+  const gameSSBDao = GameSSBDao(dataAccess, myIdent, backlinkUtils, socialCtrl);
+  const gameChallenger = GameChallenger(dataAccess, myIdent);
   const gameDb = GameDb(chessIndex);
   const moveCtrl = MoveCtrl(gameSSBDao, myIdent);
   const pgnCtrl = PgnCtrl(gameSSBDao);
 
-  const playerCtrl = PlayerCtrl(sbot, gameDb, gameSSBDao);
+  const playerCtrl = PlayerCtrl(dataAccess, gameDb, gameSSBDao);
 
   const movesFinderCtrl = MovesFinder();
 
-  const userGamesUpdateWatcher = UserGamesUpdateWatcher(sbot, chessIndex);
+  const userGamesUpdateWatcher = UserGamesUpdateWatcher(dataAccess, chessIndex);
 
   const myGameUpdates = userGamesUpdateWatcher.latestGameMessageForPlayerObs(myIdent);
 
@@ -113,12 +113,6 @@ module.exports = (sbot, myIdent) => {
      * player's turn to move, or watching for game updates to know when to update observables.
      */
     getUserGameWatcherCtrl: () => userGamesUpdateWatcher,
-
-    /**
-     * Get the sbot instance. An abstraction leak, but can be useful when using UI libraries that take the
-     * sbot instance as a parameter.
-     */
-    getSbot: () => sbot,
 
     /**
      * A controller for storing settings in local storage

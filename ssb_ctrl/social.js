@@ -1,27 +1,27 @@
 const pull = require('pull-stream');
 
-module.exports = (sbot, myIdent, chessIndex) => {
+module.exports = (dataAccess, myIdent, chessIndex) => {
   // untested
-  function followPlayer(playerPubKey) {
-    sbot.publish({
-      type: 'contact',
-      contact: playerPubKey,
-      following: true,
-    });
-  }
+  // function followPlayer(playerPubKey) {
+  //   sbot.publish({
+  //     type: 'contact',
+  //     contact: playerPubKey,
+  //     following: true,
+  //   });
+  // }
 
-  // untested
-  function unfollowPlayer(playerPubKey) {
-    sbot.publish({
-      type: 'contact',
-      contact: playerPubKey,
-      following: false,
-    });
-  }
+  // // untested
+  // function unfollowPlayer(playerPubKey) {
+  //   sbot.publish({
+  //     type: 'contact',
+  //     contact: playerPubKey,
+  //     following: false,
+  //   });
+  // }
 
-  function consumeStreamIntoArrayPromise(source, through) {
+  function toPromise(source, through) {
     return new Promise((resolve, reject) => {
-      pull(source, through, pull.collect((err, results) => {
+      pull(source, pull.collect((err, results) => {
         if (err) {
           reject(err);
         } else {
@@ -32,37 +32,35 @@ module.exports = (sbot, myIdent, chessIndex) => {
   }
 
   function followedByMe() {
-    const followsMe = sbot.links({
-      source: myIdent,
-      rel: 'contact',
-      values: true,
-      reverse: true,
+    return new Promise((resolve, reject) => {
+      pull(dataAccess.follows(myIdent, false), pull.take(1), pull.collect((err, results) => {
+        if (err) {
+          reject(err);
+        } else if (results.length == 1) {
+          resolve(results[0]);
+        } else {
+          console.log("followedByMe length is not 1");
+          console.log(results);
+          resolve([]);
+        }
+      }))
     });
-
-    const onlyStillFollowingsThrough = pull(
-      pull.unique('dest'),
-      pull.filter(msg => msg.value.content.following !== false),
-    );
-
-    return consumeStreamIntoArrayPromise(followsMe, onlyStillFollowingsThrough)
-      .then(results => results.map(a => a.dest));
   }
 
   function followingMe() {
-    const followsMe = sbot.links({
-      dest: myIdent,
-      rel: 'contact',
-      values: true,
-      reverse: true,
-    });
-
-    const onlyStillFollowingsThrough = pull(
-      pull.unique('source'),
-      pull.filter(msg => msg.value.content.following !== false),
-    );
-
-    return consumeStreamIntoArrayPromise(followsMe, onlyStillFollowingsThrough)
-      .then(results => results.map(a => a.source));
+    return new Promise((resolve, reject) => {
+      pull(dataAccess.followedBy(myIdent, false), pull.take(1), pull.collect((err, results) => {
+        if (err) {
+          reject(err);
+        } else if (results.length == 1) {
+          resolve(results[0]);
+        } else {
+          console.log("followingMe length is not 1");
+          console.log(results);
+          resolve([]);
+        }
+      }))
+    })
   }
 
   function getPlayerDisplayName(playerPubKey) {
@@ -71,23 +69,14 @@ module.exports = (sbot, myIdent, chessIndex) => {
       return Promise.resolve('<error>');
     }
 
-    const aboutStream = sbot.links({
-      dest: playerPubKey,
-      rel: 'about',
-      reverse: true,
-      values: true,
-      source: playerPubKey,
-    });
-
     return new Promise((resolve, reject) => {
-      pull(aboutStream, pull.find(msg => msg.value.content.name, (err, result) => {
+      dataAccess.getPlayerDisplayName(playerPubKey, (err, result) => {
         if (err) {
-          reject(err);
+          reject(err)
         } else {
-          result = (result && result.value.content.name) ? result.value.content.name : playerPubKey;
           resolve(result);
         }
-      }));
+      })
     });
   }
 
@@ -108,8 +97,6 @@ module.exports = (sbot, myIdent, chessIndex) => {
   return {
     followingMe,
     followedByMe,
-    followPlayer,
-    unfollowPlayer,
     getPlayerDisplayName,
     getWeightedPlayFrequencyList
   };

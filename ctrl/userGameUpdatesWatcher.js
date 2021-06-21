@@ -6,7 +6,7 @@ const many = require('pull-many');
 const MutantArray = require('mutant/array');
 const MutantPullReduce = require('mutant-pull-reduce');
 
-module.exports = (sbot, ssbChessIndex) => {
+module.exports = (dataAccess, ssbChessIndex) => {
   const chessTypeMessages = [
     'chess_invite',
     'chess_move',
@@ -42,48 +42,11 @@ module.exports = (sbot, ssbChessIndex) => {
   }
 
   function chessMessagesForPlayerGames(playerId, opts) {
-    const since = opts ? opts.since : null;
-    const reverse = opts ? opts.reverse : false;
-    const messageTypes = opts && opts.messageTypes ? opts.messageTypes : chessTypeMessages;
-
-    // Default to live
-    const liveStream = (opts && (opts.live !== undefined && opts.live !== null)) ? opts.live : true;
-
-    const liveFeed = sbot.createLogStream({
-      live: liveStream,
-      gt: since,
-      reverse,
-    });
-
-    return pull(
-      liveFeed,
-      msgMatchesFilter(
-        playerId,
-        true,
-        messageTypes,
-      ),
-    );
+    return dataAccess.chessMessagesForPlayerGames(playerId, opts);
   }
 
   function chessMessagesForOtherPlayersGames(playerId, opts) {
-    const since = opts ? opts.since : null;
-    const reverse = opts ? opts.reverse : false;
-    const messageTypes = opts && opts.messageTypes ? opts.messageTypes : chessTypeMessages;
-
-    const liveFeed = sbot.createLogStream({
-      live: true,
-      gt: since,
-      reverse,
-    });
-
-    return pull(
-      liveFeed,
-      msgMatchesFilter(
-        playerId,
-        false,
-        messageTypes,
-      ),
-    );
+    return dataAccess.chessMessagesForOtherPlayersGames(playerId, opts);
   }
 
   function getGameId(msg) {
@@ -127,13 +90,13 @@ module.exports = (sbot, ssbChessIndex) => {
     );
   }
 
-  function getRingBufferGameMsgsForPlayer(id, getSituationObservable, msgTypes, size, opts) {
+  // todo: refactor method implementation
+  function getRingBufferForFinishedGames(id, getSituationObservable, size, opts) {
     const since = opts ? opts.since : null;
 
-    const nonLiveMsgSources = msgTypes.map(type => pull(
-      sbot.messagesByType({ type, reverse: true, gte: since }),
-      msgMatchesFilter(id, true, msgTypes),
-    ));
+    const msgTypes = ["chess_game_end"]
+
+    const nonLiveMsgSources = [dataAccess.chessEndMessages(false, true, since)];
 
     const liveStream = chessMessagesForPlayerGames(id, {
       live: true,
@@ -202,12 +165,11 @@ module.exports = (sbot, ssbChessIndex) => {
     latestGameMessageForOtherPlayersObs,
 
     /**
-    * Get a ring buffer of game messages of a given type concerning a player's game.
-    * @playerId the id of the player to track game messages for.
-    * @msgs an array of game type messages to fill the buffer with, and a size for the
+    * Get a ring buffer of game end messages of a given type concerning a player's game.
+    * @playerId the id of the player to track game end messages for.
     * @size The size of the ring buffer.
     */
-    getRingBufferGameMsgsForPlayer,
+     getRingBufferForFinishedGames,
 
     /**
    * A stream of chess game messages (excluding chat messages) for the given

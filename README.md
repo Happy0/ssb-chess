@@ -163,10 +163,3 @@ If it is not a private message, it is a public message in the observer chat betw
 
 * [Scalachessjs](https://github.com/veloce/scalachessjs) is used for move validation and check / end condition detection.
 
-
-# Required ssb-server plugins
-
-This library expects to be able to call the following functions on the `sbot` plugin passed in: `publish`, `messagesByType`, `links` and `backlinks.read`.
-
-I believe `publish` and `messagesByType` and `links` are available by standard in `ssb-server` (https://www.github.com/ssbc/ssb-server) while `backlinks` is a custom ssb-server plugin. This plugin is used by the `ssb-server` created used by patchwork and other clients.
-
