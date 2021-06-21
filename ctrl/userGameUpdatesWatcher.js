@@ -96,7 +96,9 @@ module.exports = (dataAccess, ssbChessIndex) => {
 
     const msgTypes = ["chess_game_end"]
 
-    const nonLiveMsgSources = [dataAccess.chessEndMessages(false, true, since)];
+    const nonLiveMsgSources = [
+      pull(dataAccess.chessEndMessages(false, true, since), msgMatchesFilter(id, true, msgTypes))
+    ];
 
     const liveStream = chessMessagesForPlayerGames(id, {
       live: true,
