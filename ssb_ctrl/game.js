@@ -4,7 +4,7 @@ const MutantArray = require('mutant/array');
 const makeSituation = require('./model/situation');
 const Value = require('mutant/value');
 
-module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
+module.exports = (dataAccess, myIdent, backlinkUtils, socialCtrl) => {
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
@@ -57,7 +57,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
 
   /**
   * Returns 'true' if the given scuttlebutt message is something that changes
-  * the chess board situation. For example, a move or invite. Returns false
+  * the chess board situation. For example, a move or invite accept. Returns false
   * for messages that do not modify the situation (such as chat messages.)
   */
   function isSituationalChessMessage(msg) {
@@ -66,7 +66,6 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     }
 
     const relevantMessageTypes = [
-      'chess_invite',
       'chess_invite_accept',
       'chess_move',
       'chess_game_end'];
@@ -105,7 +104,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
   function getRootMessage(gameId) {
     var result = Value();
 
-    sbot.get(gameId, (err, msg) => {
+    dataAccess.getInviteMessage(gameId, (err, msg) => {
       if (msg) {
         result.set(msg);
       } else {
@@ -196,7 +195,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     }
 
     return new Promise((resolve, reject) => {
-      sbot.publish(post, (err, msg) => {
+      dataAccess.publishPublicChessMessage(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {
@@ -222,7 +221,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
     addPropertyIfNotEmpty(post, 'branch', respondsTo);
 
     return new Promise((resolve, reject) => {
-      sbot.publish(post, (err, msg) => {
+      dataAccess.publishPublicChessMessage(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {
@@ -261,7 +260,7 @@ module.exports = (sbot, myIdent, backlinkUtils, socialCtrl) => {
       addPropertyIfNotEmpty(post, 'pgnMove', pgnMove);
       addPropertyIfNotEmpty(post, 'branch', respondsTo);
 
-      sbot.publish(post, (err, msg) => {
+      dataAccess.publishPublicChessMessage(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {

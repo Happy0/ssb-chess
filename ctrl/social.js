@@ -1,7 +1,7 @@
 const SocialCtrl = require('../ssb_ctrl/social');
 
-module.exports = (sbot, myIdent, chessIndex) => {
-  const socialCtrl = SocialCtrl(sbot, myIdent, chessIndex);
+module.exports = (dataAccess, myIdent, chessIndex) => {
+  const socialCtrl = SocialCtrl(dataAccess, myIdent, chessIndex);
 
   function followedByMe() {
     return socialCtrl.followedByMe();

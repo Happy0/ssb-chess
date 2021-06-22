@@ -1,9 +1,7 @@
-const About = require('ssb-ooo-about');
 const Promise = require('bluebird');
 
-module.exports = (sbot, myIdent) => {
-  const about = About(sbot, {});
-  const getLatestAboutMsgIds = Promise.promisify(about.async.getLatestMsgIds);
+module.exports = (dataAccess, myIdent) => {
+  const getLatestAboutMsgIds = Promise.promisify(dataAccess.getLatestAboutMsgIds.bind(dataAccess));
 
   function inviteToPlay(invitingPubKey, asWhite, rematchFromGameId) {
     return new Promise((resolve, reject) => {
@@ -35,7 +33,7 @@ module.exports = (sbot, myIdent) => {
           post.branch = aboutInfo;
         }
 
-        sbot.publish(post, (err, msg) => {
+        dataAccess.publishPublicChessMessage(post, (err, msg) => {
           if (err) {
             reject(err);
           } else {
@@ -56,7 +54,7 @@ module.exports = (sbot, myIdent) => {
     };
 
     return new Promise((resolve, reject) => {
-      sbot.publish(post, (err, msg) => {
+      dataAccess.publishPublicChessMessage(post, (err, msg) => {
         if (err) {
           reject(err);
         } else {

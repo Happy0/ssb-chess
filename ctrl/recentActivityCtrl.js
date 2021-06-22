@@ -3,7 +3,7 @@ const Value = require('mutant/value');
 const userViewingGame = require('./userViewingGame')();
 
 module.exports = (userGamesUpdateWatcher, getSituationObs, myIdent) => {
-  const activityObs = userGamesUpdateWatcher.getRingBufferGameMsgsForPlayer(myIdent, getSituationObs, ['chess_game_end'], 10);
+  const activityObs = userGamesUpdateWatcher.getRingBufferForFinishedGames(myIdent, getSituationObs, 10);
 
   function getRecentActivity() {
     return activityObs;
