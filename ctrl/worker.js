@@ -1,16 +1,19 @@
 // The worker we construct depends on the environment we're in (nodejs or webbrowser);
 
-let ChessWorker = null;
-try {
-    // Reference error if in nodejs
-    ChessWorker = Worker;
-} catch (e) {
-    ChessWorker = require('tiny-worker');
-}
-
-const rootDir = `${__dirname.replace('ctrl', '')}/`;
-const path =`${rootDir}vendor/scalachessjs/scalachess.js`;
+const webworkify = require('webworkify');
 
 module.exports = function makeChessWorker() {
-    return new ChessWorker(path);
+    try {
+        // Reference error if in nodejs
+        Worker;
+        const worker = webworkify(require('../vendor/scalachessjs/scalachess'));
+        return worker;
+    } catch (e) {
+        const rootDir = `${__dirname.replace('ctrl', '')}/`;
+        const path =`${rootDir}vendor/scalachessjs/scalachess.js`;
+        const ChessWorker = require('tiny-worker');
+        return new ChessWorker(path);
+    }
+
+
 }
