@@ -2,8 +2,7 @@
 
 A library for building chess clients for the scuttlebutt platform. This library is intended to make it easier to build your own ssb-chess client, bot or tool.
 
-For an example of a scuttlebutt chess client built using this library see [ssb-chess-mithril](https://www.github.com/happy0/ssb-chess-mithril).
-
+For an example of a scuttlebutt chess client built using this library see [ssb-chess-mithril](https://www.github.com/happy0/ssb-chess-mithril). It is embedded in this fork of the patchwork client: https://github.com/soapdog/patchwork/
 
 # Protocol
 
