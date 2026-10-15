@@ -96,7 +96,7 @@ module.exports = (dataAccess, myIdent, backlinkUtils, socialCtrl) => {
       rootMessage, ident, p, gameMessagesBacklinks, isSynced, rematchInfo
 
     ) => {
-      if (!rootMessage || !isSynced || !p) return null;
+      if (!rootMessage || !isSynced || !p) return;
       return makeSituation(gameId, rootMessage, ident, p, gameMessagesBacklinks, rematchInfo)
     });
   }
