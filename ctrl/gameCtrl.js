@@ -124,13 +124,6 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
         return g2.lastUpdateTime - g1.lastUpdateTime;
     }
 
-    function getGameUpdatesObservable(ident) {
-        if (ident === myIdent) {
-            return myGameUpdates;
-        }
-        return userGamesUpdateWatcher.latestGameMessageForPlayerObs(ident);
-    }
-
     function getAllGamesInDbIds() {
         return gameDb.getAllGameIds();
     }
