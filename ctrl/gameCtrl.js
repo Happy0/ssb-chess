@@ -1,6 +1,7 @@
 const computed = require('mutant/computed');
 const GameComparer = require('./gameComparer')();
 const MutantArray = require('mutant/array');
+const mutantPullReduce = require('mutant-pull-reduce');
 
 /**
  * A controller for fetching games.
@@ -17,10 +18,8 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
         const myGamesInProgress = getMyGamesInProgress();
 
         return computed([myGamesInProgress],
-            gamesInProgress => computed(
-                [gamesInProgress],
-                games => filterGamesMyMove(games).sort(compareGameTimestamps),
-            ));
+            gamesInProgress => filterGamesMyMove(gamesInProgress).sort(compareGameTimestamps),
+        );
     }
 
     function getSituationObservable(gameId) {
@@ -74,32 +73,27 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
         );
     }
 
-    function gamesAgreedToPlaySummaries(playerId) {
-        return gameDb.getGamesAgreedToPlayIds(playerId).then(gamesInProgress => Promise.all(
-            gamesInProgress.map(ssbGameCtrl.getSmallGameSummary),
-        ));
-    }
-
     function getGamesInProgress(playerId) {
-        const observable = MutantArray([]);
-        gamesAgreedToPlaySummaries(playerId).then(g => observable.set(g.sort(compareGameTimestamps)));
+        const stream = gameDb.getGamesInProgressIdsStream(playerId)
 
-        const playerGameUpdates = getGameUpdatesObservable(playerId);
+        const streamAsObservable = mutantPullReduce(stream, (state, next) => next, {
+            startValue: []
+        });
 
-        const unlistenUpdates = playerGameUpdates(
-            newUpdate => updateObservableWithGameChange(
-                () => gamesAgreedToPlaySummaries(playerId),
-                newUpdate,
-                observable,
-            ),
-        );
+        return computed(streamAsObservable, (gamesInProgress) => {
+            const observables = gamesInProgress.map(getSituationSummaryObservable)
 
-        return computed(
-            [observable],
-            a => a, {
-                onUnlisten: unlistenUpdates,
-            },
-        );
+            return computed(observables, function (x) {
+                if (x) {
+                    const all = Array.from(arguments)
+                    const ready = !all.some(elem => elem == null)
+                    return ready ? all : []
+                } else {
+                    return []
+                }
+            })
+        })
+
     }
 
     function updateObservableWithGameChange(summaryListPromiseFn, newUpdate, observable) {

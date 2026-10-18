@@ -39,12 +39,17 @@ module.exports = (chessIndex) => {
     return chessIndex,getAllGamesInDb();
   }
 
+  function getGamesInProgressIdsStream(playerId) {
+    return chessIndex.getGamesInProgressIds(playerId);
+  }
+
   return {
     pendingChallengesSent,
     pendingChallengesReceived,
     getGamesAgreedToPlayIds,
     getObservableGames,
     getGamesFinished,
-    getAllGameIds
+    getAllGameIds,
+    getGamesInProgressIdsStream
   };
 };
