@@ -31,6 +31,10 @@ module.exports = (chessIndex) => {
     });
   }
 
+  function getObservableGamesIdsStream(playerId) {
+    return chessIndex.getObservableGamesIds(playerId);
+  }
+
   function getGamesFinished(playerId) {
     return chessIndex.getGamesFinishedIds(playerId);
   }
@@ -48,6 +52,7 @@ module.exports = (chessIndex) => {
     pendingChallengesReceived,
     getGamesAgreedToPlayIds,
     getObservableGames,
+    getObservableGamesIdsStream,
     getGamesFinished,
     getAllGameIds,
     getGamesInProgressIdsStream

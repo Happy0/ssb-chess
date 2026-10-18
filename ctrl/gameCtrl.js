@@ -38,39 +38,26 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
         return ssbGameCtrl.getSituationSummaryObservable(gameId);
     }
 
-    function getFriendsObservableGames(startArg, endArg) {
-        const observable = MutantArray([]);
+    function getFriendsObservableGames() {
+        const stream = gameDb.getObservableGamesIdsStream(myIdent);
 
-        const start = startArg || 0;
-        const end = endArg || 20;
+        const streamAsObservable = mutantPullReduce(stream, (state, next) => next, {
+            startValue: []
+        });
 
-        gameDb.getObservableGames(myIdent, start, end).then(
-            gameIds => Promise.all(
-                gameIds.map(ssbGameCtrl.getSmallGameSummary),
-            ),
-        ).then(a => a.sort(compareGameTimestamps)).then(observable.set);
+        return computed(streamAsObservable, (gamesInProgress) => {
+            const observables = gamesInProgress.map(getSituationSummaryObservable)
 
-        const observingUpdates = userGamesUpdateWatcher.latestGameMessageForOtherPlayersObs(myIdent);
-
-        const unlistenObservingUpdates = observingUpdates(
-            newUpdate => updateObservableWithGameChange(
-                () => gameDb.getObservableGames(myIdent, start, end).then(
-                    gameIds => Promise.all(
-                        gameIds.map(ssbGameCtrl.getSmallGameSummary),
-                    ),
-                ),
-                newUpdate,
-                observable,
-            ),
-        );
-
-        return computed(
-            [observable],
-            a => a.sort(compareGameTimestamps), {
-                comparer: GameComparer.hasSameGames,
-                onUnlisten: unlistenObservingUpdates,
-            },
-        );
+            return computed(observables, function (x) {
+                if (x) {
+                    const all = Array.from(arguments)
+                    const ready = !all.some(elem => elem == null)
+                    return ready ? all.sort(compareGameTimestamps) : []
+                } else {
+                    return []
+                }
+            })
+        })
     }
 
     function getGamesInProgress(playerId) {
