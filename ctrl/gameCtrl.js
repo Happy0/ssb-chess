@@ -87,13 +87,12 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
                 if (x) {
                     const all = Array.from(arguments)
                     const ready = !all.some(elem => elem == null)
-                    return ready ? all : []
+                    return ready ? all.sort(compareGameTimestamps) : []
                 } else {
                     return []
                 }
             })
         })
-
     }
 
     function updateObservableWithGameChange(summaryListPromiseFn, newUpdate, observable) {
