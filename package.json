@@ -1,6 +1,6 @@
 {
   "name": "ssb-chess",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "description": "A library for building UI chess clients for the ssb-chess protocol for scuttlebutt ( https://www.scuttlebutt.nz )",
   "main": "inject.js",
   "dependencies": {
@@ -9,11 +9,11 @@
     "mutant": "3.29.0",
     "mutant-pull-reduce": "^1.1.0",
     "pubsub-js": "1.5.7",
-    "pull-abortable": "^4.1.1",
     "pull-async-filter": "^1.0.0",
     "pull-cat": "^1.1.11",
     "pull-high-watermark": "^0.2.0",
     "pull-many": "^1.0.8",
+    "pull-pause": "^0.0.2",
     "pull-resolve": "^1.2.0",
     "pull-scan": "^1.0.0",
     "pull-stream": "^3.6.14",

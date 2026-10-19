@@ -79,27 +79,9 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
                     return []
                 }
             })
+        }, {
+
         })
-    }
-
-    function updateObservableWithGameChange(summaryListPromiseFn, newUpdate, observable) {
-        const type = newUpdate.value ? newUpdate.value.content.type : null;
-        if (type === 'chess_move') {
-            ssbGameCtrl.getSmallGameSummary(newUpdate.value.content.root).then(
-                (summary) => {
-                    const { gameId } = summary;
-                    const idx = observable().findIndex(s => s.gameId === gameId);
-
-                    if (idx !== -1) {
-                        observable.put(idx, summary);
-                    } else {
-                        summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)));
-                    }
-                },
-            );
-        } else {
-            summaryListPromiseFn().then(g => observable.set(g.sort(compareGameTimestamps)));
-        }
     }
 
     function filterGamesMyMove(gameSummaries) {

@@ -1,7 +1,7 @@
 const { pull } = require("pull-stream");
 const Scan = require('pull-scan');
 const Value = require('mutant/value')
-const Abortable = require('pull-abortable');
+const Pauser = require('pull-pause');
 const computed = require('mutant/computed')
 
 /**
@@ -10,12 +10,11 @@ const computed = require('mutant/computed')
  */
 module.exports = (dataAccess) => {
   
-  // TODO: re-add caching
   function getFilteredBackLinks(id, opts) {
     const obs = Value([]);
     const sync = Value(false);
 
-    const abortable = Abortable()
+    const pauser = Pauser()
     const filter = opts.filter;
 
     const state = {
@@ -25,7 +24,7 @@ module.exports = (dataAccess) => {
 
     const source = pull(
       dataAccess.allGameMessages(id, true),
-      abortable,
+      pauser,
       pull.filter(msg => msg.sync || filter(msg)),
       Scan( (acc, msg) => {
        // console.log(msg);
@@ -46,7 +45,12 @@ module.exports = (dataAccess) => {
     );
 
     const result = computed([obs], a => a, {
-      onUnlisten: abortable.abort,
+      onUnlisten: () => {
+        return pauser.pause()
+      },
+      onListen: () => {
+        pauser.resume()
+      }
     })
 
     result.sync = sync;
