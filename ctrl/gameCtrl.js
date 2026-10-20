@@ -1,7 +1,7 @@
 const computed = require('mutant/computed');
-const GameComparer = require('./gameComparer')();
-const MutantArray = require('mutant/array');
 const mutantPullReduce = require('mutant-pull-reduce');
+const Aborter = require('pull-abortable');
+const pull = require('pull-stream')
 
 /**
  * A controller for fetching games.
@@ -9,10 +9,8 @@ const mutantPullReduce = require('mutant-pull-reduce');
  * @param {*} myIdent The current user's public key
  * @param {*} ssbGameCtrl The ssb game controller which returns views of games.
  * @param {*} gameDb  The ssb game DB which tracks collections of games (my games, finished games, etc)
- * @param {*} userGamesUpdateWatcher The user game update watcher controller
- * @param {*} myGameUpdates The latest game update for the current user's games
  */
-module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUpdates) => {
+module.exports = (myIdent, ssbGameCtrl, gameDb) => {
 
     function getGamesWhereMyMove() {
         const myGamesInProgress = getMyGamesInProgress();
@@ -41,7 +39,11 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
     function getFriendsObservableGames() {
         const stream = gameDb.getObservableGamesIdsStream(myIdent);
 
-        const streamAsObservable = mutantPullReduce(stream, (state, next) => next, {
+        const aborter = Aborter();
+        const abortableStream = pull(stream, aborter)
+
+
+        const streamAsObservable = mutantPullReduce(abortableStream, (state, next) => next, {
             startValue: []
         });
 
@@ -57,13 +59,22 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
                     return []
                 }
             })
+        },{
+            onUnlisten: () => {
+                // Called when there are 0 listeners. TODO: make it possible to 'cold restart' an existing observable
+                // that has went to 0 and has got a listener again
+                aborter.abort()
+            }
         })
     }
 
     function getGamesInProgress(playerId) {
         const stream = gameDb.getGamesInProgressIdsStream(playerId)
+        const aborter = Aborter();
 
-        const streamAsObservable = mutantPullReduce(stream, (state, next) => next, {
+        const abortableStream = pull(stream, aborter)
+
+        const streamAsObservable = mutantPullReduce(abortableStream, (state, next) => next, {
             startValue: []
         });
 
@@ -80,7 +91,11 @@ module.exports = (myIdent, ssbGameCtrl, gameDb, userGamesUpdateWatcher, myGameUp
                 }
             })
         }, {
-
+            onUnlisten: () => {
+                // Called when there are 0 listeners. TODO: make it possible to 'cold restart' an existing observable
+                // that has went to 0 and has got a listener again
+                aborter.abort()
+            }
         })
     }
 

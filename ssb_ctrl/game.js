@@ -3,8 +3,11 @@ const MutantUtils = require('./mutant_utils')();
 const MutantArray = require('mutant/array');
 const makeSituation = require('./model/situation');
 const Value = require('mutant/value');
+const mutantPullReduce = require('mutant-pull-reduce');
+const Aborter = require('pull-abortable')
+const pull = require('pull-stream')
 
-module.exports = (dataAccess, myIdent, backlinkUtils, socialCtrl) => {
+module.exports = (dataAccess, myIdent, socialCtrl) => {
 
   function getPlayers(gameRootMessage) {
     return new Promise((resolve, reject) => {
@@ -55,30 +58,20 @@ module.exports = (dataAccess, myIdent, backlinkUtils, socialCtrl) => {
     return MutantUtils.mutantToPromise(getSituationSummaryObservable(gameId));
   }
 
-  /**
-  * Returns 'true' if the given scuttlebutt message is something that changes
-  * the chess board situation. For example, a move or invite accept. Returns false
-  * for messages that do not modify the situation (such as chat messages.)
-  */
-  function isSituationalChessMessage(msg) {
-    if (!msg.value || !msg.value.content) {
-      return false;
-    }
-
-    const relevantMessageTypes = [
-      'chess_invite_accept',
-      'chess_move',
-      'chess_game_end'];
-
-    const messageType = msg.value.content.type;
-    const isSituationMsg = relevantMessageTypes.find(m => m === messageType);
-    return isSituationMsg !== undefined;
-  }
-
   function getSituationObservable(gameId) {
 
-    const gameMessages = backlinkUtils.getFilteredBackLinks(gameId, {
-      filter: isSituationalChessMessage,
+    const aborter = Aborter();
+
+    const abortableGameMessageStream = pull(
+      dataAccess.allGameMessages(gameId, true),
+      aborter
+    )
+
+    const gameMessages = mutantPullReduce(abortableGameMessageStream, (state, item) => {
+      state.push(item)
+      return state;
+    }, {
+      startValue: []
     });
 
     const msgRoot = getRootMessage(gameId);
@@ -94,10 +87,15 @@ module.exports = (dataAccess, myIdent, backlinkUtils, socialCtrl) => {
 
     return computed([msgRoot, myIdent, players, gameMessages, gameMessages.sync, rematchState], (
       rootMessage, ident, p, gameMessagesBacklinks, isSynced, rematchInfo
-
     ) => {
       if (!rootMessage || !isSynced || !p) return;
       return makeSituation(gameId, rootMessage, ident, p, gameMessagesBacklinks, rematchInfo)
+    }, {
+      onUnlisten: () => {
+        // Called when there are 0 listeners. TODO: make it possible to 'cold restart' an existing observable
+        // that has went to 0 and has got a listener again
+        aborter.abort()
+      }
     });
   }
 
