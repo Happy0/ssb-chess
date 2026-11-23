@@ -1,6 +1,5 @@
 const GameChallenger = require('../ssb_ctrl/game_challenge');
 const GameSSBDao = require('../ssb_ctrl/game');
-const ChessIndex = require('ssb-chess-index');
 const GameDb = require('../db/game_db');
 const SocialCtrl = require('./social');
 const PlayerCtrl = require('./player');
@@ -20,8 +19,7 @@ const settingsCtrl = require('./settings')();
  * @param {*} dataAccess the ssb-chess-data-access instance
  * @param {*} myIdent the user's public key
  */
-module.exports = (dataAccess, myIdent) => {
-  const chessIndex = ChessIndex(dataAccess);
+module.exports = (chessIndex, dataAccess, myIdent) => {
   const socialCtrl = SocialCtrl(dataAccess, myIdent, chessIndex);
 
   const gameSSBDao = GameSSBDao(dataAccess, myIdent, socialCtrl);

@@ -26,7 +26,6 @@ module.exports = (myIdent, gameChallenger, gameDb, myGameUpdates) => {
   
       return mutantPullReduce(pendingChallengesSource, (state, next) => next, {
         nextTick: true,
-        sync: true,
       });
     }
 
@@ -35,7 +34,6 @@ module.exports = (myIdent, gameChallenger, gameDb, myGameUpdates) => {
 
     return mutantPullReduce(challengesReceivedSource, (state, next) => next, {
       nextTick: true,
-      sync: true,
     });
   }
 
