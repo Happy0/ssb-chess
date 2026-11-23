@@ -36,8 +36,8 @@ module.exports = (myIdent, ssbGameCtrl, gameDb) => {
         return ssbGameCtrl.getSituationSummaryObservable(gameId);
     }
 
-    function getFriendsObservableGames() {
-        const stream = gameDb.getObservableGamesIdsStream(myIdent, 20);
+    function getFriendsObservableGames(max) {
+        const stream = gameDb.getObservableGamesIdsStream(myIdent, max);
 
         const aborter = Aborter();
         const abortableStream = pull(stream, aborter)
