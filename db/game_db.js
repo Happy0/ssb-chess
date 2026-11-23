@@ -21,18 +21,18 @@ module.exports = (chessIndex) => {
     });
   }
 
-  function getObservableGames(playerId) {
+  function getObservableGames(playerId, max) {
     return new Promise((resolve, reject) => {
       pull(
-        chessIndex.getObservableGamesIds(playerId),
+        chessIndex.getObservableGamesIds(playerId, max),
         pull.take(1),
         pull.drain(result => resolve(result) )
       );
     });
   }
 
-  function getObservableGamesIdsStream(playerId) {
-    return chessIndex.getObservableGamesIds(playerId);
+  function getObservableGamesIdsStream(playerId, max) {
+    return chessIndex.getObservableGamesIds(playerId, max);
   }
 
   function getGamesFinished(playerId) {

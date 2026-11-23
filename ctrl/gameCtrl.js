@@ -37,7 +37,7 @@ module.exports = (myIdent, ssbGameCtrl, gameDb) => {
     }
 
     function getFriendsObservableGames() {
-        const stream = gameDb.getObservableGamesIdsStream(myIdent);
+        const stream = gameDb.getObservableGamesIdsStream(myIdent, 20);
 
         const aborter = Aborter();
         const abortableStream = pull(stream, aborter)
